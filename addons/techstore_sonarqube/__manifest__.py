@@ -1,0 +1,22 @@
+{
+    'name': 'TechStore - Práctica SonarQube',
+    'version': '1.1.0',
+    'summary': 'Gestión de productos, proveedores, ventas e inventario para práctica de calidad de software',
+    'category': 'Sales',
+    'author': 'Práctica Académica',
+    'license': 'LGPL-3',
+    'depends': ['base'],
+    'data': [
+        'security/ir.model.access.csv',
+        'data/sequence.xml',
+        'views/category_views.xml',
+        'views/supplier_views.xml',
+        'views/customer_views.xml',
+        'views/product_views.xml',
+        'views/stock_movement_views.xml',
+        'views/sale_order_views.xml',
+        'views/menu_views.xml',
+    ],
+    'installable': True,
+    'application': True,
+}

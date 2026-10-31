@@ -1,0 +1,10 @@
+<odoo>
+    <menuitem id="menu_techstore_root" name="TechStore" sequence="10"/>
+    <menuitem id="menu_techstore_catalog" name="Catálogo" parent="menu_techstore_root" sequence="10"/>
+    <menuitem id="menu_techstore_product" name="Productos" parent="menu_techstore_catalog" action="action_techstore_product" sequence="10"/>
+    <menuitem id="menu_techstore_category" name="Categorías" parent="menu_techstore_catalog" action="action_techstore_category" sequence="20"/>
+    <menuitem id="menu_techstore_supplier" name="Proveedores" parent="menu_techstore_root" action="action_techstore_supplier" sequence="20"/>
+    <menuitem id="menu_techstore_customer" name="Clientes" parent="menu_techstore_root" action="action_techstore_customer" sequence="30"/>
+    <menuitem id="menu_techstore_sales" name="Ventas" parent="menu_techstore_root" action="action_techstore_sale_order" sequence="40"/>
+    <menuitem id="menu_techstore_stock" name="Inventario" parent="menu_techstore_root" action="action_techstore_stock_movement" sequence="50"/>
+</odoo>

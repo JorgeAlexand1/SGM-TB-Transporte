@@ -1,0 +1,11 @@
+<odoo>
+    <record id="view_techstore_customer_tree" model="ir.ui.view">
+        <field name="name">techstore.customer.tree</field><field name="model">techstore.customer</field>
+        <field name="arch" type="xml"><tree><field name="name"/><field name="identification"/><field name="email"/><field name="phone"/></tree></field>
+    </record>
+    <record id="view_techstore_customer_form" model="ir.ui.view">
+        <field name="name">techstore.customer.form</field><field name="model">techstore.customer</field>
+        <field name="arch" type="xml"><form><sheet><group><field name="name"/><field name="identification"/><field name="email"/><field name="phone"/><field name="address"/><field name="active"/></group></sheet></form></field>
+    </record>
+    <record id="action_techstore_customer" model="ir.actions.act_window"><field name="name">Clientes</field><field name="res_model">techstore.customer</field><field name="view_mode">tree,form</field></record>
+</odoo>

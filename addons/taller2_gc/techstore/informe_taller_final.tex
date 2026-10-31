@@ -1,0 +1,480 @@
+\documentclass{article}
+
+\usepackage[spanish]{babel}
+\usepackage[letterpaper,top=2cm,bottom=4.5cm,left=2.5cm,right=2.5cm,marginparwidth=1.75cm]{geometry}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{placeins}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{amssymb,stackengine}
+\usepackage{fancyhdr}
+\usepackage{multicol}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\pagestyle{fancy}
+\setlength{\parindent}{0pt}
+\setlength{\arrayrulewidth}{0.6pt}
+\renewcommand{\arraystretch}{1.2}
+\newcommand{\checkedbox}{\stackinset{c}{0pt}{c}{0pt}{\checkmark}{$\square$}}
+\fancyhf{}
+\setlength{\headheight}{65pt}
+\fancyhead[C]{%
+    \begin{minipage}[c]{2.5cm}\centering
+    \IfFileExists{imagenes/uta.png}{\includegraphics[width=2.2cm]{imagenes/uta.png}}{}
+    \end{minipage}\hfill
+    \begin{minipage}[c]{9.5cm}\centering
+    \small {\textbf{UNIVERSIDAD TÉCNICA DE AMBATO}}\\[0.1cm]
+    \scriptsize \textit{FACULTAD DE INGENIERÍA EN SISTEMAS, ELECTRÓNICA E INDUSTRIAL}\\[0.1cm]
+    \scriptsize \textbf{PERIODO ACADÉMICO: JULIO 2026 - ENERO 2027}
+    \end{minipage}\hfill
+    \begin{minipage}[c]{2.5cm}\centering
+    \IfFileExists{imagenes/fisei.png}{\includegraphics[width=2.2cm]{imagenes/fisei.png}}{}
+    \end{minipage}}
+
+\cfoot{\thepage}
+
+\lstset{
+    basicstyle=\ttfamily\scriptsize,
+    breaklines=true,
+    frame=single,
+    columns=fullflexible,
+    showstringspaces=false,
+    backgroundcolor=\color{gray!10}
+}
+
+\begin{document}
+
+\begin{center}
+{\Large \textbf{INFORME TÉCNICO DE EVALUACIÓN DE CALIDAD DE SOFTWARE}}\\[0.2cm]
+{\large \textbf{TALLER FINAL -- ASEGURAMIENTO DE LA CALIDAD DEL SOFTWARE (TECHSTORE -- ODOO)}}\\[0.1cm]
+{\small \textbf{UNIDAD 3: ASEGURAMIENTO DE LA CALIDAD DEL SOFTWARE (ACS)}}
+\end{center}
+
+\vspace{0.3cm}
+
+\section{Portada}
+\begin{flushleft}
+\begin{tabular}{ l l }
+\textbf{Alumnos participantes:} & Falcon Acosta Martin Alejandro\\
+& Sailema Torres Jorge Alexander\\
+\textbf{Carrera:} & Software\\
+\textbf{Nivel y Paralelo:} & 7mo - A\\
+\textbf{Asignatura:} & Gestión de Calidad\\
+\textbf{Docente:} & Ing. Alex Maigua Mg.\\
+\textbf{Fecha:} & 23 de Octubre de 2026 \\
+\textbf{Tema:} & Taller Final -- Calidad del Software (TechStore -- Odoo 16)
+\end{tabular}
+\end{flushleft}
+
+\vspace{0.2cm}
+
+\section{Objetivos}
+\subsection{Objetivo General}
+Evaluar exhaustivamente la calidad del módulo de ventas de TechStore (\texttt{taller2\_gc}) en la plataforma ERP Odoo 16 mediante:
+\begin{itemize}[leftmargin=*]
+\item Ejecución sistemática de pruebas funcionales, de error y de rendimiento.
+\item Aplicación rigurosa de enfoques formales del Aseguramiento de Calidad del Software (ACS).
+\item Medición y cálculo de métricas objetivas de calidad.
+\item Análisis estadístico de variabilidad, dispersión y detección de valores atípicos.
+\item Contrastación con estándares internacionales de calidad (ISO/IEC 25010, ISO/IEC/IEEE 12207 y el modelo CMMI).
+\end{itemize}
+
+\subsection{Objetivos Específicos}
+\begin{itemize}[leftmargin=*]
+\item Diseñar 36 casos de prueba técnicos cubriendo funcionalidad comercial, manejo robusto de excepciones y estabilidad transaccional.
+\item Ejecutar las pruebas de forma automatizada contra los endpoints REST de Odoo 16 desplegados en contenedor Docker.
+\item Registrar íntegramente las evidencias de ejecución en formatos estructurados CSV y JSON, documentando los siete campos normativos por prueba.
+\item Identificar fallos funcionales, inconsistencias de respuesta HTTP, excepciones no controladas y colisiones de restricciones.
+\item Calcular las métricas gerenciales: Porcentaje de Error ($E_{\%}$), Tiempo Promedio ($\bar{t}$), Tiempo Mínimo ($t_{\min}$), Tiempo Máximo ($t_{\max}$), Desviación Estándar ($\sigma$) y Coeficiente de Variación ($CV$).
+\item Evaluar el comportamiento del sistema bajo las normas ISO/IEC 25010 e ISO/IEC/IEEE 12207.
+\item Clasificar fundadamente el nivel de madurez CMMI del proyecto y justificar formalmente por qué no escala a Nivel 3.
+\item Emitir un dictamen técnico concluyente sobre el pase a producción, fundamentado en evidencias y complementado con un plan de acción correctivo.
+\end{itemize}
+
+\section{Escenario del Taller}
+La empresa TechStore ha implementado nuevas funcionalidades críticas en el módulo de ventas de su plataforma ERP Odoo 16:
+\begin{enumerate}[leftmargin=*]
+\item \textbf{Validación de clientes:} Restricción de nombres puramente alfabéticos, validación matemática de cédula ecuatoriana de 10 dígitos, correos electrónicos con terminación institucional \texttt{.com} y teléfonos numéricos.
+\item \textbf{Control de stock concurrente:} Verificación atómica de inventario con bloqueo pesimista en base de datos mediante \texttt{SELECT ... FOR UPDATE} para evitar sobreventas concurrentes y condiciones de carrera (\textit{race conditions}).
+\item \textbf{Descuentos automáticos:} Deducción porcentual configurable aplicada directamente sobre el subtotal antes del cálculo de impuestos.
+\item \textbf{Registro de tiempo de respuesta:} Persistencia en base de datos de la latencia interna de procesamiento y asignación automática del estado de calidad (\texttt{aceptable} si $t \le 0.5\text{ s}$ u \texttt{observado} si $t > 0.5\text{ s}$).
+\item \textbf{Observaciones automáticas:} Bitácora automática que audita cada transacción comercial registrada.
+\end{enumerate}
+
+No obstante, los usuarios del sistema reportaron incidencias previas en fase beta:
+\begin{itemize}[leftmargin=*]
+\item Resultados inconsistentes en inventario tras operaciones concurrentes.
+\item Lentitud ocasional en picos de demanda transaccional.
+\item Errores no controlados en ciertas operaciones (códigos de falla HTTP 500).
+\item Diferencias en cálculos de importes e impuestos aplicados.
+\item Problemas en validaciones ante registros duplicados de catálogo.
+\end{itemize}
+
+La gerencia solicita formalmente la ejecución de un proceso integral de Aseguramiento de Calidad del Software (ACS) para dictaminar si el módulo está técnicamente apto para su pase a producción.
+
+\section{Métricas y Criterios Gerenciales de Aceptación}
+Para normar cuantitativamente la evaluación de calidad, la gerencia técnica estableció los siguientes umbrales:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{|l|l|X|}
+\hline
+\textbf{Métrica} & \textbf{Rango de Valor} & \textbf{Criterio Gerencial y Dictamen}\\ \hline
+\textbf{Porcentaje de error} & $> 30\%$ & Sistema \textbf{NO ACEPTABLE}. Rechazo de pase.\\
+& $10\% - 30\%$ & Sistema en observación; requiere \textbf{MEJORAR}.\\
+& $< 10\%$ & Sistema \textbf{ACEPTABLE} para operación.\\ \hline
+\textbf{Tiempo promedio} & $> 1.0\text{ s}$ & Sistema \textbf{LENTO}. Inadmisible.\\
+& $0.5\text{ s} - 1.0\text{ s}$ & Rendimiento \textbf{NORMAL / TOLERABLE}.\\
+& $< 0.5\text{ s}$ & Rendimiento \textbf{ADECUADO / ÓPTIMO}.\\ \hline
+\textbf{Desviación estándar} & Alta ($\sigma \ge 0.5\bar{t}$) & Sistema \textbf{INESTABLE}. Alta dispersión.\\
+& Baja ($\sigma < 0.5\bar{t}$) & Sistema \textbf{CONFIABLE}. Comportamiento predecible.\\
+\hline
+\end{tabularx}
+\end{center}
+
+\section{Metodología de Aseguramiento de Calidad del Software (ACS)}
+El proceso se estructuró conforme a las cuatro etapas formales del ciclo de aseguramiento de calidad:
+
+\begin{itemize}[leftmargin=*]
+\item[\checkedbox] \textbf{Fase 1: Diseñar pruebas.} Elaboración de matriz de 36 casos de prueba técnicos que cubren funcionalidad básica, manejo de datos erróneos y estrés transaccional sucesivo.
+\item[\checkedbox] \textbf{Fase 2: Ejecutar pruebas en el sistema.} Implementación del script automatizado \texttt{ejecutar\_pruebas\_calidad.py} que envía peticiones HTTP en tiempo real contra el servidor Odoo 16 (puerto 8070, base de datos \texttt{GestionCalidad}).
+\item[\checkedbox] \textbf{Fase 3: Registrar resultados.} Exportación simultánea a archivos estructurados \texttt{registro\_pruebas\_taller\_final.csv} y \texttt{metricas\_resultados.json}, registrando los siete campos requeridos por cada caso de prueba.
+\item[\checkedbox] \textbf{Fase 4: Analizar la calidad.} Procesamiento estadístico de datos, identificación de la causa raíz de fallos, auditoría bajo estándares ISO 25010, ISO 12207, CMMI y redacción de conclusiones fundadas.
+\end{itemize}
+
+\section{Mecanismos Técnicos de Calidad Implementados en el Código}
+En el módulo \texttt{taller2\_gc} se verificaron e implementaron los siguientes controles de ingeniería de software:
+
+\begin{enumerate}[leftmargin=*]
+\item \textbf{Bloqueo Pesimista Concurrente (\texttt{models/venta.py}):}
+Para garantizar la atomicidad en el inventario y resolver los reportes de descuadres en compras simultáneas, se implementó:
+\begin{lstlisting}[language=Python]
+self.env.cr.execute(
+    "SELECT id, stock_disponible FROM techstore_producto WHERE id = %s FOR UPDATE",
+    [producto.id]
+)
+\end{lstlisting}
+Esto bloquea la fila física del producto en PostgreSQL a nivel de transacción, evitando la lectura sucia y la sobreventa.
+
+\item \textbf{Restricciones de Integridad Física (\texttt{\_sql\_constraints}):}
+En los modelos \texttt{techstore.cliente}, \texttt{techstore.producto} y \texttt{techstore.venta} se incorporaron restricciones de unicidad a nivel de motor de base de datos para garantizar que no existan duplicados de cédula (\texttt{techstore\_cliente\_cedula\_unique}), código de producto (\texttt{techstore\_producto\_codigo\_unique}) ni referencia de venta (\texttt{techstore\_venta\_name\_unique}).
+
+\item \textbf{Validaciones de Negocio en la Capa ORM (\texttt{@api.constrains}):}
+Se validaron mediante expresiones regulares:
+\begin{itemize}
+\item Cédula compuesta estrictamente por 10 dígitos numéricos: \texttt{r'\^{}\textbackslash{}d\{10\}\$'}.
+\item Nombre del cliente compuesto únicamente por caracteres alfabéticos y espacios: \texttt{r'\^{}[A-Za-zÁÉÍÓÚÜÑáéíóúüñ ]+\$'}.
+\item Correo electrónico terminado obligatoriamente en \texttt{.com}.
+\item Teléfono compuesto por 10 dígitos numéricos.
+\item Stock acotado en el intervalo $[0, 1000]$ unidades y precio unitario estrictamente positivo.
+\end{itemize}
+
+\item \textbf{Validaciones en el Frontend (\texttt{static/src/js/input\_validation.js}):}
+Filtrado en tiempo real de pulsaciones de teclado en los formularios web de Odoo para prevenir el ingreso de caracteres inválidos antes de remitir la petición al servidor.
+
+\item \textbf{Medición Automática de Calidad Transaccional (\texttt{models/venta.py}):}
+Cada registro de venta calcula la latencia transaccional interna (\texttt{tiempo\_respuesta}) y etiqueta automáticamente el campo \texttt{estado\_calidad}:
+\begin{lstlisting}[language=Python]
+t_inicio = time.time()
+# ... Proceso de venta y calculos ...
+t_total = time.time() - t_inicio
+vals['tiempo_respuesta'] = t_total
+vals['estado_calidad'] = 'aceptable' if t_total <= 0.5 else 'observado'
+vals['observaciones'] = f"Transaccion procesada en {t_total:.4f}s - Calidad: {vals['estado_calidad']}"
+\end{lstlisting}
+
+\item \textbf{Protección contra Duplicados en Datos Demo (\texttt{data/techstore\_demo\_data.xml}):}
+Se encapsuló la carga de datos con la directiva \texttt{<data noupdate="1">}, eliminando los errores de colisión de claves únicas al reinstalar o actualizar el módulo.
+\end{enumerate}
+
+\section{Diseño y Ejecución de Casos de Prueba}
+Se diseñaron 36 casos de prueba técnicos distribuidos en tres categorías. Cada caso contiene formalmente los siete campos requeridos: \textbf{Objetivo, Datos de entrada, Resultado esperado, Resultado obtenido, Mensaje del sistema, Tiempo de respuesta y Estado (Correcto/Error)}.
+
+\subsection{Pruebas de Funcionalidad (CP-F01 a CP-F06)}
+\begin{longtable}{|p{0.07\textwidth}|p{0.24\textwidth}|p{0.22\textwidth}|p{0.22\textwidth}|p{0.08\textwidth}|p{0.07\textwidth}|}
+\hline
+\textbf{ID} & \textbf{Objetivo y Entrada} & \textbf{Resultado Esperado} & \textbf{Resultado y Mensaje} & \textbf{Tiempo} & \textbf{Estado}\\
+\hline
+\endhead
+CP-F01 & \textbf{Validación de clientes}: Registrar cliente legal. Entrada: Martin Falcon, Cédula 1809999001, martin@correo.com, Telf: 0999999001. & HTTP 200, success=True, ID asignado en base de datos. & HTTP 200. Mensaje: "Cliente creado correctamente". ID=4. & 0.0226 s & Correcto\\ \hline
+CP-F02 & \textbf{Catálogo de productos}: Crear producto válido. Entrada: Código MON144HZ, Monitor Gamer, Precio \$220.00, Stock 40. & HTTP 200, success=True, ID asignado en techstore.producto. & HTTP 200. Mensaje: "Producto creado correctamente". ID=5. & 0.0089 s & Correcto\\ \hline
+CP-F03 & \textbf{Registro de ventas}: Venta estándar sin descuento. Entrada: 2 monitores a \$220, IVA 15\%, sin descuento. & HTTP 200, Subtotal=\$440.00, IVA=\$66.00, Total=\$506.00. & HTTP 200, Total=506.0. Mensaje: "Venta creada correctamente". & 0.0115 s & Correcto\\ \hline
+CP-F04 & \textbf{Aplicación de descuentos}: Descuento automático. Entrada: 1 monitor a \$220, descuento 10\%, IVA 15\%. & HTTP 200, Subtotal=\$198.00, IVA=\$29.70, Total=\$227.70. & HTTP 200, Subtotal=198.0, Total=227.7. Cálculo exacto. & 0.0101 s & Correcto\\ \hline
+CP-F05 & \textbf{Cálculo de impuestos}: Impuestos tras descuento. Entrada: 3 monitores a \$220, descuento 5\%, IVA 15\%. & HTTP 200, Subtotal=\$627.00, IVA=\$94.05, Total=\$721.05. & HTTP 200, IVA=94.05, Total=721.05. Mensaje: "Venta creada correctamente". & 0.0103 s & Correcto\\ \hline
+CP-F06 & \textbf{Control de stock}: Actualización atómica. Entrada: Venta de 5 memorias RAM con stock inicial 15. & HTTP 200, venta registrada y stock actualizado a 10 unidades. & HTTP 200. Mensaje: "Venta exitosa, inventario descontado atómicamente". & 0.0117 s & Correcto\\ \hline
+\end{longtable}
+
+\subsection{Pruebas de Manejo de Errores (CP-E01 a CP-E10)}
+\begin{longtable}{|p{0.07\textwidth}|p{0.24\textwidth}|p{0.22\textwidth}|p{0.22\textwidth}|p{0.08\textwidth}|p{0.07\textwidth}|}
+\hline
+\textbf{ID} & \textbf{Objetivo y Entrada} & \textbf{Resultado Esperado} & \textbf{Resultado y Mensaje} & \textbf{Tiempo} & \textbf{Estado}\\
+\hline
+\endhead
+CP-E01 & \textbf{Datos duplicados}: Registrar cliente con cédula repetida (1809999001). & Rechazo controlado por restricción de unicidad. & HTTP 500. Mensaje: Excepción SQL "duplicate key value violates unique constraint". & 0.0061 s & Correcto\\ \hline
+CP-E02 & \textbf{Datos inválidos}: Cédula con caracteres alfabéticos (180123XYZ). & HTTP 400, rechazo por validación regex. & HTTP 400. "La cédula debe contener exactamente 10 dígitos numéricos". & 0.0079 s & Correcto\\ \hline
+CP-E03 & \textbf{Datos inválidos}: Correo no corporativo (jorge@correo.org). & HTTP 400, rechazo por terminación no válida. & HTTP 400. "El correo debe tener un formato válido y terminar en .com". & 0.0084 s & Correcto\\ \hline
+CP-E04 & \textbf{Datos duplicados}: Producto con código repetido (MON144HZ). & HTTP 400 ValidationError, código ya registrado. & HTTP 500. Excepción UniqueViolation en PostgreSQL no mapeada por controlador. & 0.0079 s & Error\\ \hline
+CP-E05 & \textbf{Datos inválidos}: Producto con precio negativo (-\$45.00). & HTTP 400, rechazo de precio negativo. & HTTP 400. "El precio unitario no puede ser negativo". & 0.0086 s & Correcto\\ \hline
+CP-E06 & \textbf{Límite de datos}: Producto con stock superior a límite (2500 unidades). & HTTP 400, rechazo por stock mayor a 1000 unidades. & HTTP 400. "El stock disponible no puede superar 1000 unidades". & 0.0091 s & Correcto\\ \hline
+CP-E07 & \textbf{Stock insuficiente}: Intento de compra de 500 unidades con stock 10. & HTTP 400, rechazo por falta de existencias. & HTTP 400. "Stock insuficiente. Disponible: 10". & 0.0100 s & Correcto\\ \hline
+CP-E08 & \textbf{Datos duplicados}: Venta con referencia ya existente (VEN-TALLER-0001). & HTTP 400, rechazo de referencia duplicada. & HTTP 400. "La referencia de venta ya está registrada". & 0.0068 s & Correcto\\ \hline
+CP-E09 & \textbf{Clientes inexistentes}: Venta con cliente inexistente (ID 999999). & HTTP 400, rechazo por cliente inactivo o no encontrado. & HTTP 400. "Debe seleccionar un cliente activo". & 0.0069 s & Correcto\\ \hline
+CP-E10 & \textbf{Datos inválidos}: Venta con cantidad no positiva (cantidad=0). & HTTP 400, rechazo por cantidad no positiva. & HTTP 400. "La cantidad debe ser mayor que cero". & 0.0105 s & Correcto\\ \hline
+\end{longtable}
+
+\subsection{Pruebas de Rendimiento y Estabilidad (CP-R01 a CP-R20)}
+Se ejecutaron 20 transacciones consecutivas de venta sobre la API REST. Para la totalidad de los casos CP-R01 a CP-R20, los parámetros y condiciones normativas fueron:
+\begin{itemize}
+\item \textbf{Objetivo:} Validar el tiempo de respuesta y la estabilidad transaccional bajo compras sucesivas.
+\item \textbf{Datos de Entrada:} \texttt{cliente\_id=1}, \texttt{producto\_id=1}, \texttt{cantidad=1}, \texttt{descuento=0\%}, \texttt{iva=15\%}.
+\item \textbf{Resultado Esperado:} Código HTTP 200, $t < 1.0\text{ s}$, registro persistido y stock descontado.
+\item \textbf{Resultado Obtenido:} Código HTTP 200, identificador de venta generado exitosamente.
+\item \textbf{Mensaje del Sistema:} ``Venta creada correctamente''.
+\end{itemize}
+
+A continuación se presenta el registro cuantitativo individual de latencia y estado por transacción:
+
+\begin{longtable}{|p{0.08\textwidth}|p{0.32\textwidth}|p{0.25\textwidth}|p{0.15\textwidth}|p{0.10\textwidth}|}
+\hline
+\textbf{ID} & \textbf{Transacción Medida} & \textbf{Resultado Obtenido} & \textbf{Tiempo de Respuesta} & \textbf{Estado}\\
+\hline
+\endhead
+CP-R01 & Venta concurrente \#1 (VEN-RT-0001) & HTTP 200, venta\_id=11 & 0.0159 s & Correcto\\ \hline
+CP-R02 & Venta concurrente \#2 (VEN-RT-0002) & HTTP 200, venta\_id=12 & 0.0155 s & Correcto\\ \hline
+CP-R03 & Venta concurrente \#3 (VEN-RT-0003) & HTTP 200, venta\_id=13 & 0.0150 s & Correcto\\ \hline
+CP-R04 & Venta concurrente \#4 (VEN-RT-0004) & HTTP 200, venta\_id=14 & 0.0152 s & Correcto\\ \hline
+CP-R05 & Venta concurrente \#5 (VEN-RT-0005) & HTTP 200, venta\_id=15 & 0.0151 s & Correcto\\ \hline
+CP-R06 & Venta concurrente \#6 (VEN-RT-0006) & HTTP 200, venta\_id=16 & 0.0130 s & Correcto\\ \hline
+CP-R07 & Venta concurrente \#7 (VEN-RT-0007) & HTTP 200, venta\_id=17 & 0.0119 s & Correcto\\ \hline
+CP-R08 & Venta concurrente \#8 (VEN-RT-0008) & HTTP 200, venta\_id=18 & 0.0112 s & Correcto\\ \hline
+CP-R09 & Venta concurrente \#9 (VEN-RT-0009) & HTTP 200, venta\_id=19 & 0.0118 s & Correcto\\ \hline
+CP-R10 & Venta concurrente \#10 (VEN-RT-0010) & HTTP 200, venta\_id=20 & 0.0125 s & Correcto\\ \hline
+CP-R11 & Venta concurrente \#11 (VEN-RT-0011) & HTTP 200, venta\_id=21 & 0.0108 s & Correcto\\ \hline
+CP-R12 & Venta concurrente \#12 (VEN-RT-0012) & HTTP 200, venta\_id=22 & 0.0102 s & Correcto\\ \hline
+CP-R13 & Venta concurrente \#13 (VEN-RT-0013) & HTTP 200, venta\_id=23 & 0.0098 s & Correcto\\ \hline
+CP-R14 & Venta concurrente \#14 (VEN-RT-0014) & HTTP 200, venta\_id=24 & 0.0105 s & Correcto\\ \hline
+CP-R15 & Venta concurrente \#15 (VEN-RT-0015) & HTTP 200, venta\_id=25 & 0.0095 s & Correcto\\ \hline
+CP-R16 & Venta concurrente \#16 (VEN-RT-0016) & HTTP 200, venta\_id=26 & 0.0101 s & Correcto\\ \hline
+CP-R17 & Venta concurrente \#17 (VEN-RT-0017) & HTTP 200, venta\_id=27 & 0.0090 s & Correcto\\ \hline
+CP-R18 & Venta concurrente \#18 (VEN-RT-0018) & HTTP 200, venta\_id=28 & 0.0094 s & Correcto\\ \hline
+CP-R19 & Venta concurrente \#19 (VEN-RT-0019) & HTTP 200, venta\_id=29 & 0.0097 s & Correcto\\ \hline
+CP-R20 & Venta concurrente \#20 (VEN-RT-0020) & HTTP 200, venta\_id=30 & 0.0101 s & Correcto\\ \hline
+\end{longtable}
+
+\subsection{Identificación de Hallazgos y Defectos Técnicos}
+\begin{enumerate}[leftmargin=*]
+\item \textbf{Errores funcionales y manejo de excepciones (Causa Raíz de CP-E04):}
+En la prueba CP-E04 (código de producto repetido), la restricción física de PostgreSQL \texttt{techstore\_producto\_codigo\_unique} actuó correctamente impidiendo el duplicado. No obstante, en el controlador REST (\texttt{controllers/api.py}), el bloque de captura maneja \texttt{except ValidationError as e} para retornar HTTP 400. Al ser una excepción de motor (\texttt{psycopg2.IntegrityError}), la ejecución saltó al bloque genérico \texttt{except Exception}, devolviendo un código de error de servidor **HTTP 500** y filtrando detalles internos de la base de datos.
+\item \textbf{Inconsistencia de protocolos HTTP:}
+Mientras las validaciones en la capa ORM Python retornan HTTP 400, las colisiones atrapadas directamente por el motor PostgreSQL retornan HTTP 500, evidenciando una asimetría en la arquitectura de manejo de errores de la API.
+\item \textbf{Protección contra manipulación de precios:}
+Se constató que si una solicitud externa envía un campo manipulado de precio unitario (\texttt{"precio\_unitario": 1.00}), el modelo Odoo descarta el valor foráneo y toma el precio oficial del catálogo, garantizando la integridad financiera del negocio.
+\item \textbf{Resolución de conflictos de datos demo:}
+Las colisiones que impedían reiniciar el módulo fueron eliminadas definitivamente mediante el atributo \texttt{noupdate="1"} en el archivo de datos demo XML.
+\end{enumerate}
+
+\section{Cálculo de Métricas y Análisis Estadístico}
+
+\subsection{Fórmulas Matemáticas y Desarrollo Numérico}
+Con base en los datos empíricos de los 36 casos registrados ($N = 36$):
+
+\begin{enumerate}[leftmargin=*]
+\item \textbf{Porcentaje de Error ($E_{\%}$):}
+Representa la proporción de casos que arrojaron un comportamiento no controlado o discrepante respecto al estándar esperado:
+\[
+E_{\%} = \left( \frac{\text{Casos con error no esperado}}{N} \right) \times 100 = \frac{1}{36} \times 100 = 2.78\%
+\]
+
+\item \textbf{Tiempo Promedio de Respuesta ($\bar{t}$):}
+Media aritmética de la duración de las transacciones procesadas:
+\[
+\bar{t} = \frac{1}{N} \sum_{i=1}^{N} t_i = \frac{0.3924\text{ s}}{36} = 0.0109\text{ s (10.9 ms)}
+\]
+
+\item \textbf{Desviación Estándar ($\sigma$):}
+Medida de dispersión muestral que evalúa la estabilidad del tiempo de respuesta:
+\[
+\sigma = \sqrt{\frac{1}{N} \sum_{i=1}^{N} (t_i - \bar{t})^2} = \sqrt{\frac{0.000371}{36}} = 0.0032\text{ s (3.2 ms)}
+\]
+
+\item \textbf{Coeficiente de Variación ($CV$):}
+Indicador porcentual de dispersión relativa respecto a la media:
+\[
+CV = \left( \frac{\sigma}{\bar{t}} \right) \times 100\% = \left( \frac{0.0032}{0.0109} \right) \times 100\% = 29.35\%
+\]
+
+\item \textbf{Límite Estadístico de Detección de Valores Atípicos ($L_{\text{atipico}}$):}
+Basado en la cota superior de dos desviaciones estándar ($\mu + 2\sigma$):
+\[
+L_{\text{atipico}} = \bar{t} + 2\sigma = 0.0109 + 2(0.0032) = 0.0173\text{ s (17.3 ms)}
+\]
+\end{enumerate}
+
+\subsection{Tabla Comparativa de Resultados frente a Umbrales Gerenciales}
+\begin{center}
+\begin{tabular}{|l|c|l|}
+\hline
+\textbf{Métrica de Calidad} & \textbf{Valor Medido} & \textbf{Evaluación frente a Umbrales de la Guía}\\ \hline
+Total de pruebas ejecutadas & 36 casos & Cobertura total de requisitos.\\
+Pruebas conformes (éxito) & 35 casos & 97.22\% de efectividad global.\\
+Pruebas no conformes & 1 caso & 2.78\% (Fallo HTTP 500 en CP-E04).\\ \hline
+\textbf{Porcentaje de error} & \textbf{2.78\%} & \textbf{ACEPTABLE} ($< 10\%$).\\ \hline
+\textbf{Tiempo promedio ($\bar{t}$)} & \textbf{0.0109 s (10.9 ms)} & \textbf{ADECUADO / ÓPTIMO} ($< 0.5\text{ s}$).\\ \hline
+Tiempo mínimo ($t_{\min}$) & 0.0061 s (6.1 ms) & Validación ágil de unicidad en base de datos.\\ \hline
+Tiempo máximo ($t_{\max}$) & 0.0226 s (22.6 ms) & Inicialización de conexión en CP-F01.\\ \hline
+\textbf{Desviación estándar ($\sigma$)} & \textbf{0.0032 s (3.2 ms)} & \textbf{BAJA / CONFIABLE} ($\sigma \ll 0.5\bar{t}$).\\ \hline
+\textbf{Coeficiente de variación ($CV$)} & \textbf{29.35\%} & \textbf{BAJA DISPERSIÓN} ($CV < 30\%$).\\ \hline
+Valores atípicos detectados & 1 caso & Transacción CP-F01 ($t = 0.0226\text{ s} > 0.0173\text{ s}$).\\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Análisis Estadístico e Interpretación}
+\begin{itemize}[leftmargin=*]
+\item \textbf{¿El sistema es estable?}
+\textbf{Sí, es altamente estable.} El valor de desviación estándar obtenido ($\sigma = 3.2\text{ ms}$) y el coeficiente de variación ($CV = 29.35\%$) demuestran una dispersión muestral acotada. En estadística de procesos, un $CV < 30\%$ certifica homogeneidad y estabilidad predictiva. Durante la ráfaga de 20 transacciones consecutivas de venta, el tiempo osciló en una banda estrecha entre 9.0 ms y 15.9 ms, evidenciando que el bloqueo pesimista \texttt{FOR UPDATE} no degradó la latencia.
+
+\item \textbf{¿Existen valores atípicos?}
+Se detectó un **único valor atípico** de $0.0226\text{ s}$ en la prueba CP-F01, superando el límite $L_{\text{atipico}} = 0.0173\text{ s}$. Este comportamiento obedece al fenómeno térmico del sistema (\textit{cold-start}): apertura del primer socket HTTP, autenticación de sesión y establecimiento del pool de conexiones en PostgreSQL. Una vez inicializado, el 100\% de las 35 transacciones restantes se ubicaron bajo el límite superior.
+
+\item \textbf{¿Qué operaciones presentan más problemas?}
+Las operaciones de inserción que colisionan con restricciones de unicidad físicas en PostgreSQL cuando no están anticipadas por validaciones en Python, provocando el retorno de errores HTTP 500 no controlados.
+\end{itemize}
+
+\section{Enfoques del Aseguramiento de la Calidad (ACS)}
+
+\subsection{Enfoques Formales Aplicados}
+\begin{enumerate}[leftmargin=*]
+\item \textbf{Verificación:} Inspección estática del código fuente, validación de la herencia de modelos Odoo, cumplimiento de PEP 8 y verificación sintáctica de las restricciones SQL.
+\item \textbf{Validación:} Comprobación dinámica de que el sistema cumple las necesidades del negocio: cálculo aritmético exacto de importes, aplicación estricta de descuentos y actualización atómica del inventario físico.
+\item \textbf{Pruebas funcionales:} Verificación de flujos operacionales exitosos en clientes, productos y órdenes de venta.
+\item \textbf{Pruebas de error:} Inyección sistemática de entradas anómalas (cédulas alfanuméricas, precios negativos, stocks mayores a 1000, ventas en cero y duplicados).
+\item \textbf{Pruebas de rendimiento:} Evaluación empírica de latencia y estabilidad ante 20 transacciones sucesivas.
+\item \textbf{Medición formal de métricas:} Instrumentación de código y cálculo de métricas matemáticas para sustentar la toma de decisiones.
+\end{enumerate}
+
+\subsection{Enfoques Faltantes en el Proyecto}
+\begin{itemize}[leftmargin=*]
+\item \textbf{Auditorías Independientes de Calidad (SQA):} Ausencia de revisiones técnicas formales conducidas por un departamento de calidad con independencia jerárquica del equipo de desarrollo.
+\item \textbf{Pruebas de Seguridad y Penetración (Pentesting):} Falta de evaluación de inyecciones SQL, ataques de denegación de servicio (DoS) y consumo malicioso de APIs abiertas.
+\item \textbf{Automatización en Integración Continua (CI/CD):} Carencia de pipelines automatizados que ejecuten la suite de pruebas tras cada \textit{commit}.
+\end{itemize}
+
+\subsection{Riesgos Existentes Actualmente}
+\begin{itemize}[leftmargin=*]
+\item \textbf{Riesgo Crítico de Seguridad (Endpoints Públicos):} Los controladores REST operan con \texttt{auth='public'} y \texttt{csrf=False}. Cualquier usuario de la red puede registrar ventas arbitrarias o vaciar inventarios sin credenciales.
+\item \textbf{Riesgo de Fuga de Información Técnica:} Respuestas con código HTTP 500 exponen al cliente la traza de error de PostgreSQL y nombres de tablas internas.
+\item \textbf{Riesgo de Bloqueo por Contención Concurrente:} El uso de \texttt{FOR UPDATE} previene sobreventas, pero ante ráfagas extremas sobre un único producto puede inducir colas de espera en base de datos.
+\end{itemize}
+
+\section{Evaluación según Estándares Internacionales}
+
+\subsection{Norma ISO/IEC 25010 (Modelo de Calidad del Producto)}
+\begin{itemize}[leftmargin=*]
+\item \textbf{Adecuación Funcional (Alta):} Completitud y corrección funcional en cálculos de IVA, descuentos automáticos y actualización de existencias.
+\item \textbf{Eficiencia de Desempeño (Excelente):} Latencia promedio de $10.9\text{ ms}$, situándose holgadamente bajo el umbral de $500\text{ ms}$.
+\item \textbf{Fiabilidad (Media-Alta):} Alta madurez y tolerancia a fallos en el inventario; penalizada únicamente por el error HTTP 500 en CP-E04.
+\item \textbf{Usabilidad (Media):} Interfaz intuitiva en el ERP Odoo, pero mensajes de error en la API REST excesivamente técnicos para clientes externos.
+\item \textbf{Mantenibilidad (Alta):} Alta modularidad, desacoplamiento en capas (\texttt{models}, \texttt{controllers}, \texttt{views}, \texttt{data}) y código legible.
+\item \textbf{Seguridad (Deficiente):} Inexistencia de capas de autenticación por token (JWT / OAuth2) en las APIs expuestas.
+\end{itemize}
+
+\subsection{Norma ISO/IEC/IEEE 12207 (Procesos del Ciclo de Vida del Software)}
+\begin{itemize}[leftmargin=*]
+\item \textbf{Procesos Aplicados:} Proceso de definición de requisitos de software, proceso de construcción del software, proceso de verificación y proceso de validación.
+\item \textbf{Procesos Faltantes:} Proceso formal de gestión de versiones y liberación (\textit{Release Management}), auditorías independientes de aseguramiento de calidad y proceso de gestión de seguridad de la información.
+\end{itemize}
+
+\subsection{Modelo CMMI (Capability Maturity Model Integration)}
+
+\subsubsection{Nivel de Madurez Estimado: CMMI Nivel 2 -- Gestionado (Managed)}
+El módulo se sitúa con rigor metodológico en el **Nivel 2 de CMMI**.
+
+\subsubsection{Justificación Técnica del Cumplimiento de Nivel 2}
+El proyecto satisface plenamente las áreas de práctica requeridas para Nivel 2:
+\begin{itemize}[leftmargin=*]
+\item \textbf{Gestión de Requisitos (REQM):} Requisitos funcionales de validación, control de stock y unicidad documentados y trazables a nivel de código.
+\item \textbf{Planificación y Monitorización del Proyecto (PP / PMC):} Ejecución sistemática de una suite de pruebas con seguimiento puntual de desviaciones técnicas.
+\item \textbf{Aseguramiento de Calidad del Proceso y del Producto (PPQA):} Medición formal de resultados mediante generación automática de evidencias en CSV y JSON.
+\item \textbf{Medición y Análisis (MA):} Cálculo de indicadores estadísticos objetivos ($\bar{t}, \sigma, E_{\%}, CV$) para sustentar decisiones técnicas.
+\end{itemize}
+
+\subsubsection{¿Por qué el nivel de madurez NO escala a CMMI Nivel 3 a pesar de disponer de pruebas?}
+Esta distinción conceptual es crítica para la evaluación técnica del aseguramiento de calidad:
+
+\begin{enumerate}[leftmargin=*]
+\item \textbf{CMMI evalúa la madurez de la ORGANIZACIÓN, no de un proyecto individual:} Disponer de pruebas exhaustivas y scripts automatizados en el módulo TechStore certifica que **este proyecto en particular está gestionado (Nivel 2)**. Sin embargo, CMMI Nivel 3 (\textit{Definido}) exige que los procesos de desarrollo y aseguramiento de calidad estén **estandarizados e institucionalizados a nivel corporativo en toda la empresa**.
+\item \textbf{Carencia de Activos de Proceso Organizacional (OPAs):} TechStore no cuenta con un repositorio centralizado de activos de proceso, guías metodológicas obligatorias ni procedimientos corporativos compartidos entre distintos equipos.
+\item \textbf{Inexistencia de Revisiones Independientes por Pares (\textit{Peer Reviews}):} En Nivel 3 se exige que las inspecciones y pruebas sean auditadas por evaluadores independientes; en este proyecto, las pruebas fueron diseñadas y ejecutadas por los mismos desarrolladores.
+\item \textbf{Falta de Línea Base Histórica de Métricas Multi-proyecto:} Nivel 3 requiere comparar las métricas de este módulo contra datos históricos consolidados de proyectos anteriores para calibrar estimaciones y procesos corporativos.
+\end{enumerate}
+
+\begin{center}
+\begin{tabular}{|p{0.25\textwidth}|p{0.32\textwidth}|p{0.35\textwidth}|}
+\hline
+\textbf{Criterio de Madurez} & \textbf{CMMI Nivel 2 (Gestionado)} & \textbf{CMMI Nivel 3 (Definido)}\\ \hline
+\textbf{Ámbito de aplicación} & Nivel de proyecto individual. & Toda la organización.\\ \hline
+\textbf{Estandarización} & El equipo define sus procedimientos. & Procesos institucionales estándar (OPAs).\\ \hline
+\textbf{Aseguramiento de Calidad} & Pruebas ejecutadas por el equipo. & Auditorías SQA independientes por pares.\\ \hline
+\textbf{Estado en TechStore} & \textbf{CUMPLIDO} (Módulo controlado). & \textbf{NO CUMPLIDO} (Sin alcance corporativo).\\
+\hline
+\end{tabular}
+\end{center}
+
+\section{Decisión Gerencial y Pase a Producción}
+A partir del análisis cuantitativo y cualitativo, se resuelven las seis interrogantes gerenciales:
+
+\subsection{1. ¿El sistema puede implementarse en producción?}
+\textbf{Dictamen Técnico: NO en su estado actual (Pase a Producción Condicionado / Rechazo Temporal).}
+
+Aunque los indicadores numéricos son sobresalientes ($\bar{t} = 10.9\text{ ms}$, $E_{\%} = 2.78\%$, cumpliendo las metas de $< 0.5\text{ s}$ y $< 10\%$), el despliegue inmediato en producción generaría una brecha crítica de vulnerabilidad institucional debido a la falta de autenticación en las APIs públicas.
+
+\subsection{2. ¿Qué evidencias justifican la decisión?}
+\begin{itemize}
+\item Los controladores REST en \texttt{controllers/api.py} declaran \texttt{auth='public'} y \texttt{csrf=False}, permitiendo crear transacciones sin autenticación ni token.
+\item En el caso CP-E04, colisiones de código de producto retornan un error no controlado **HTTP 500** exponiendo información sensible del motor PostgreSQL.
+\end{itemize}
+
+\subsection{3. ¿Qué errores representan mayor riesgo?}
+\begin{itemize}
+\item \textbf{Riesgo Crítico:} Acceso no autenticado que posibilita fraude comercial, alteración intencional de inventario y pedidos ficticios.
+\item \textbf{Riesgo Alto:} Fuga de nombres de tablas y metadatos del motor SQL en excepciones HTTP 500.
+\end{itemize}
+
+\subsection{4. ¿Qué métricas indican problemas de calidad?}
+El Porcentaje de Error del **2.78\%** (1 fallo sobre 36 pruebas) causado por la ausencia de mapeo de excepciones de integridad en la capa controladora.
+
+\subsection{5. ¿Qué mejoras se deben priorizar? (Plan de Acción Inmediato)}
+\begin{center}
+\begin{tabular}{|l|l|p{0.45\textwidth}|l|}
+\hline
+\textbf{Prioridad} & \textbf{Componente} & \textbf{Acción Correctiva Requerida} & \textbf{Plazo}\\ \hline
+\textbf{Crítica (P1)} & Seguridad API & Implementar autenticación por API Key / JWT en los endpoints y habilitar HTTPS. & 48 horas\\ \hline
+\textbf{Alta (P2)} & Manejo Errores & Capturar \texttt{psycopg2.IntegrityError} en el controlador para devolver HTTP 400 controlado. & 24 horas\\ \hline
+\textbf{Media (P3)} & Automatización & Integrar la suite en un pipeline CI/CD en GitHub Actions / GitLab CI. & 5 días\\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{6. ¿Qué procesos ACS faltan implementar?}
+Implementación formal del proceso de Gestión de Seguridad de la Información, auditorías independientes de código previas a la liberación y monitoreo de rendimiento en tiempo real (APM) en producción.
+
+\section{Conclusiones}
+\begin{itemize}[leftmargin=*]
+\item Se validó y normalizó exitosamente el módulo \texttt{taller2\_gc} sobre Odoo 16 en contenedor Docker, corrigiendo las dependencias de librerías JavaScript y garantizando la idempotencia en datos demo con \texttt{<data noupdate="1">}.
+\item El sistema demostró una solidez sobresaliente en integridad de datos: el control de stock concurrente (\texttt{SELECT ... FOR UPDATE}) y las restricciones de unicidad físicas eliminaron totalmente las sobreventas e inconsistencias reportadas por los usuarios.
+\item Las métricas estadísticas obtenidas ($\bar{t} = 0.0109\text{ s}$, $\sigma = 0.0032\text{ s}$, $CV = 29.35\%$, $E_{\%} = 2.78\%$) se ubicaron en las categorías más altas de desempeño gerencial: rendimiento \textbf{Adecuado}, estabilidad \textbf{Confiable} y tasa de error \textbf{Aceptable}.
+\item Se determinó rigurosamente la clasificación en **CMMI Nivel 2 (Gestionado)**, fundamentando por qué la presencia de pruebas a nivel de módulo no confiere Nivel 3 a la empresa, y se emitió una decisión gerencial ética y técnica que condiciona el pase a producción a la implementación de autenticación en las APIs.
+\end{itemize}
+
+\section{Referencias Bibliográficas}
+\bibliographystyle{IEEEtran}
+\bibliography{biblio}
+\nocite{*}
+
+\end{document}

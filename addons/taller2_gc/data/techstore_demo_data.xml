@@ -1,0 +1,63 @@
+<odoo>
+    <data noupdate="1">
+    <record id="cliente_juan" model="techstore.cliente">
+        <field name="name">Juan Pérez</field>
+        <field name="cedula">1800000001</field>
+        <field name="email">juan@example.com</field>
+        <field name="telefono">0991111111</field>
+    </record>
+
+    <record id="cliente_maria" model="techstore.cliente">
+        <field name="name">María López</field>
+        <field name="cedula">1800000002</field>
+        <field name="email">maria@example.com</field>
+        <field name="telefono">0992222222</field>
+    </record>
+
+    <record id="producto_laptop" model="techstore.producto">
+        <field name="name">Laptop</field>
+        <field name="codigo">10000001</field>
+        <field name="precio_unitario">850.00</field>
+        <field name="stock_disponible">5</field>
+    </record>
+
+    <record id="producto_mouse" model="techstore.producto">
+        <field name="name">Mouse</field>
+        <field name="codigo">10000002</field>
+        <field name="precio_unitario">15.00</field>
+        <field name="stock_disponible">20</field>
+    </record>
+
+    <record id="producto_teclado" model="techstore.producto">
+        <field name="name">Teclado</field>
+        <field name="codigo">10000003</field>
+        <field name="precio_unitario">35.00</field>
+        <field name="stock_disponible">10</field>
+    </record>
+
+    <record id="producto_monitor" model="techstore.producto">
+        <field name="name">Monitor</field>
+        <field name="codigo">10000004</field>
+        <field name="precio_unitario">220.00</field>
+        <field name="stock_disponible">3</field>
+    </record>
+
+    <record id="venta_juan_laptop" model="techstore.venta">
+        <field name="name">VEN-DEMO-001</field>
+        <field name="cliente_id" ref="cliente_juan"/>
+        <field name="producto_id" ref="producto_laptop"/>
+        <field name="cantidad">1</field>
+        <field name="descuento">0</field>
+        <field name="observacion">Venta demo cargada por el módulo.</field>
+    </record>
+
+    <record id="venta_maria_mouse" model="techstore.venta">
+        <field name="name">VEN-DEMO-002</field>
+        <field name="cliente_id" ref="cliente_maria"/>
+        <field name="producto_id" ref="producto_mouse"/>
+        <field name="cantidad">2</field>
+        <field name="descuento">0</field>
+        <field name="observacion">Venta demo cargada por el módulo.</field>
+    </record>
+    </data>
+</odoo>

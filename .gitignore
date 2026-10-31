@@ -1,0 +1,73 @@
+# ==============================================================================
+# .gitignore - Sistema de Gestión y Monitoreo del Transporte en Buses (SGM-TB)
+# Entorno: Odoo 16 Community / PostgreSQL 15 / Docker / Python
+# ==============================================================================
+
+# Respaldos y volcados de base de datos
+backups/
+*.dump
+*.sql
+*.sql.gz
+*.tar.gz
+*.bak
+
+# Archivos de entorno y credenciales sensibles
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.crt
+*.cer
+*.pfx
+secrets/
+id_rsa*
+
+# Configuraciones locales y respaldos de configuración
+config/*.bak
+config/*.local
+config/odoo.conf.bak
+
+# Python: Caches, Bytecode y Ambientes Virtuales
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv/
+
+# Testing y Cobertura de Calidad
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.mypy_cache/
+.ruff_cache/
+
+# Archivos temporales de Odoo y logs
+*.log
+*.pid
+odoo.log
+odoo-web-data/
+odoo-db-data/
+pgdata/
+
+# IDEs y Editores de Código
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*~
+.directory
+
+# Archivos del Sistema Operativo
+.DS_Store
+Thumbs.db
+ehthumbs.db
+.scannerwork/

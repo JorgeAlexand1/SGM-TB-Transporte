@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_math_operation_tree"
+    model="ir.ui.view">
+        <field name="name">math.operation.tree</field>
+        <field name="model">math.operation</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="operand_1"/>
+                <field name="operand_2"/>
+                <field name="operation_type"/>
+                <field name="estado"/>
+                <field name="result"/>
+                <field name="operation_date"/>
+                <field name="user_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_math_operation_form" model="ir.ui.view">
+        <field name="name">math.operation.form</field>
+        <field name="model">math.operation</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name" readonly="1"/>
+                        <field name="operand_1"/>
+                        <field name="operand_2"/>
+                        <field name="operation_type"/>
+                        <field name="estado"/>
+                        <field name="result" readonly="1"/>
+                        <field name="operation_date"/>
+                        <field name="user_id" readonly="1"/>
+                        <field name="notes"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_math_operation" model="ir.actions.act_window">
+        <field name="name">Operaciones Matemáticas</field>
+        <field name="res_model">math.operation</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem name="Math Operations" sequence="10" id = "math_operations.menu_root"/>
+    <menuitem id="menu_math_operations" name="Operaciones"
+              parent="math_operations.menu_root" action="action_math_operation" sequence="1"/>
+</odoo>

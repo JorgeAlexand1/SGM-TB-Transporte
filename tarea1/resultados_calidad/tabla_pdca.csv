@@ -1,0 +1,5 @@
+Etapa,Actividad,Indicador,Criterio,Resultado
+Plan,Definir errores en las 5 operaciones nuevas,Hallazgos,5 casos delimitados,5 casos
+Do,"Corregir nombres, formulas y validaciones",Correcciones,5 correcciones,5 aplicadas
+Check,Ejecutar las pruebas automatizadas,Fallos de pruebas,0 fallos,0 de 11
+Act,Conservar pruebas y restricciones para futuros cambios,Cobertura de operaciones,5 de 5,5 de 5

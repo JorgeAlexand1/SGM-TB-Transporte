@@ -1,0 +1,16 @@
+<odoo>
+    <record id="view_techstore_product_tree" model="ir.ui.view">
+        <field name="name">techstore.product.tree</field><field name="model">techstore.product</field>
+        <field name="arch" type="xml"><tree><field name="code"/><field name="name"/><field name="category_id"/><field name="price"/><field name="stock"/><field name="status"/></tree></field>
+    </record>
+    <record id="view_techstore_product_form" model="ir.ui.view">
+        <field name="name">techstore.product.form</field><field name="model">techstore.product</field>
+        <field name="arch" type="xml">
+            <form>
+                <header><button name="action_add_stock" type="object" string="+ Stock"/><button name="action_remove_stock" type="object" string="- Stock"/><button name="action_validate_product" type="object" string="Validar"/></header>
+                <sheet><group><group><field name="code"/><field name="name"/><field name="category_id"/><field name="supplier_id"/></group><group><field name="cost"/><field name="price"/><field name="stock"/><field name="minimum_stock"/><field name="status" readonly="1"/><field name="active"/></group></group><field name="description"/></sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_techstore_product" model="ir.actions.act_window"><field name="name">Productos</field><field name="res_model">techstore.product</field><field name="view_mode">tree,form</field></record>
+</odoo>

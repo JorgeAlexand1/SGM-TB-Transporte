@@ -1,0 +1,8 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_techstore_category,techstore.category,model_techstore_category,base.group_user,1,1,1,1
+access_techstore_supplier,techstore.supplier,model_techstore_supplier,base.group_user,1,1,1,1
+access_techstore_customer,techstore.customer,model_techstore_customer,base.group_user,1,1,1,1
+access_techstore_product,techstore.product,model_techstore_product,base.group_user,1,1,1,1
+access_techstore_stock_movement,techstore.stock.movement,model_techstore_stock_movement,base.group_user,1,1,1,1
+access_techstore_sale_order,techstore.sale.order,model_techstore_sale_order,base.group_user,1,1,1,1
+access_techstore_sale_order_line,techstore.sale.order.line,model_techstore_sale_order_line,base.group_user,1,1,1,1

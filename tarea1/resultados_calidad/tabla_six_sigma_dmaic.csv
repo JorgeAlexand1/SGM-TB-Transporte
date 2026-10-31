@@ -1,0 +1,6 @@
+Etapa,Actividad,Indicador,Criterio,Resultado
+Define,Resultados incorrectos o no controlados,Alcance,5 operaciones,5 operaciones
+Measure,"Medir frecuencia, severidad e impacto",Hallazgos,5 hallazgos,5; 3 criticos; 2 altos
+Analyze,Relacionar hallazgos con causas raiz,Causas identificadas,100% clasificados,5 de 5 en Ishikawa
+Improve,"Corregir formulas, claves y validaciones",Correcciones,5 correcciones,5 aplicadas
+Control,Repetir pruebas despues de cada cambio,Pruebas fallidas,0 fallos,0 de 11

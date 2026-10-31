@@ -1,0 +1,657 @@
+RESUMEN DEL PROYECTO
+TECHSTORE QUALITY TALLER 2
+
+1. OBJETIVO DEL TRABAJO
+
+El objetivo fue completar y dejar funcionando el módulo de Odoo
+"techstore_quality_taller_2" para administrar clientes, productos y ventas.
+Además, se implementó una API HTTP para que los datos pudieran ser creados
+desde un programa externo, específicamente desde generador.py, sin tener que
+registrarlos manualmente desde la interfaz de Odoo.
+
+El flujo final del sistema quedó así:
+
+generador.py
+    -> requests.post()
+    -> API HTTP de Odoo
+    -> controllers/api.py
+    -> modelos Odoo
+    -> PostgreSQL de la base GestionCalidad
+
+La API no se conecta directamente a PostgreSQL. La API recibe los datos,
+utiliza el ORM de Odoo y el ORM es el encargado de guardar la información en
+la base de datos.
+
+
+2. PROBLEMAS ENCONTRADOS AL INICIO
+
+Se encontraron varios problemas que impedían que el módulo funcionara
+correctamente:
+
+- La estructura del módulo estaba anidada de forma incorrecta.
+- Los controladores de la API no estaban registrados en Odoo.
+- Las rutas /api/clientes, /api/productos y /api/ventas devolvían 404.
+- generador.py intentaba interpretar como JSON una respuesta HTML 404.
+- El cálculo del subtotal era incorrecto.
+- Existía una modificación incorrecta del precio cuando la cantidad superaba
+  cierto valor.
+- La pantalla de ventas no tenía registros demo.
+- La actualización del módulo fallaba por atributos XML como readonly="id".
+- La carga de datos demo volvía a intentar modificar ventas ya registradas.
+- Odoo no seleccionaba automáticamente la base GestionCalidad en las
+  solicitudes HTTP porque existían varias bases disponibles.
+- El generador enviaba ventas en paralelo y algunas operaciones competían por
+  actualizar el mismo inventario.
+
+
+3. ESTRUCTURA Y CARGA DEL MÓDULO
+
+Se normalizó la estructura para que el módulo tuviera directamente sus
+archivos principales:
+
+techstore_quality_taller_2/
+    __init__.py
+    __manifest__.py
+    controllers/
+    models/
+    views/
+    data/
+    security/
+
+En __init__.py se dejaron cargados los paquetes models y controllers.
+En controllers/__init__.py se importaron main y api. Esta importación es
+fundamental porque Odoo solamente registra las rutas decoradas con
+@http.route cuando el archivo del controlador es importado durante la carga
+del módulo.
+
+El manifiesto se actualizó a la versión 1.1 y se mantuvieron declarados los
+archivos de seguridad, datos demo y vistas.
+
+
+4. CAMBIOS EN LOS MODELOS
+
+4.1. techstore_cliente.py
+
+Se mantuvo el modelo de clientes con sus datos principales:
+
+- nombre
+- cédula
+- correo electrónico
+- teléfono
+- estado activo o inactivo
+
+El estado activo se utiliza como control de negocio al registrar ventas:
+un cliente inactivo no puede ser utilizado en una venta nueva.
+
+
+4.2. techstore_producto.py
+
+Se mantuvo el modelo de productos con:
+
+- nombre
+- código
+- precio unitario
+- stock disponible
+- estado activo o inactivo
+
+Se agregaron validaciones para impedir:
+
+- precios negativos
+- cantidades de stock negativas
+
+El precio y el stock del producto son utilizados por el modelo de ventas para
+evitar que la venta reciba valores arbitrarios enviados por el cliente HTTP.
+
+
+4.3. techstore_venta.py
+
+Este fue el modelo con más cambios porque concentra las reglas del negocio.
+
+Campos importantes:
+
+- cliente_id: cliente relacionado
+- producto_id: producto relacionado
+- cantidad: unidades vendidas
+- precio_unitario: precio tomado del producto
+- stock_disponible: stock registrado al momento de vender
+- descuento: porcentaje de descuento aplicado
+- subtotal: importe antes del IVA
+- iva: impuesto calculado
+- total: valor final
+- tiempo_respuesta: métrica generada para la venta
+- estado_calidad: pendiente, observado o aceptable
+- observacion: detalle adicional
+
+
+5. CONTROLES DE NEGOCIO IMPLEMENTADOS EN VENTAS
+
+5.1. Cliente obligatorio y activo
+
+Antes de crear una venta se verifica que el cliente exista y que su campo
+activo sea verdadero. Si no existe o está inactivo, Odoo devuelve:
+
+"Debe seleccionar un cliente activo."
+
+5.2. Producto obligatorio y activo
+
+También se verifica que el producto exista y que esté activo. Un producto
+inactivo no puede utilizarse para una venta.
+
+5.3. Cantidad positiva
+
+La cantidad debe ser mayor que cero. Esto evita ventas con cero unidades o
+con cantidades negativas.
+
+5.4. Control de stock
+
+Se compara la cantidad solicitada con el stock disponible. Si no existe
+suficiente stock, la operación se rechaza con un error de validación.
+
+Después de crear la venta, la cantidad vendida se descuenta automáticamente
+del stock del producto.
+
+5.5. Control de concurrencia
+
+Antes de consultar y descontar el stock se ejecuta:
+
+SELECT id FROM techstore_producto WHERE id = %s FOR UPDATE
+
+FOR UPDATE bloquea el registro del producto durante la operación. Así se
+evita que dos ventas simultáneas lean el mismo stock y terminen dejando un
+inventario incorrecto.
+
+5.6. Precio controlado por el servidor
+
+El precio unitario no se acepta como un valor confiable enviado desde la
+API. Al crear la venta, el precio se toma directamente del producto en
+Odoo:
+
+vals['precio_unitario'] = producto.precio_unitario
+
+Esto evita que un usuario modifique el precio desde una petición HTTP.
+
+5.7. Descuento válido
+
+El descuento representa un porcentaje. Debe estar entre 0 % y 100 %; de esta
+forma se evita que el subtotal resulte negativo.
+
+5.8. Cálculo correcto del subtotal
+
+El subtotal se corrigió para utilizar la fórmula:
+
+descuento_monetario = cantidad * precio_unitario * (descuento / 100)
+subtotal = cantidad * precio_unitario - descuento_monetario
+
+El campo descuento_aplicado muestra en los resultados el valor monetario que
+se resta por ese porcentaje. El total definitivo se calcula después del
+descuento y de sumar el IVA configurado.
+
+Anteriormente se estaba utilizando una operación incorrecta y también se
+modificaba artificialmente el precio dependiendo de la cantidad.
+
+5.9. Cálculo del IVA y total
+
+El IVA se calcula usando el porcentaje indicado en la venta, cuyo valor
+predeterminado es 15 %:
+
+iva = subtotal * (iva_porcentaje / 100)
+total = subtotal + iva
+
+Estos valores son campos calculados y almacenados por Odoo.
+
+5.10. Protección contra modificaciones posteriores
+
+Una vez creada una venta no se permite cambiar:
+
+- cliente
+- producto
+- cantidad
+- precio unitario
+
+Esto se controla sobrescribiendo el método write(). La razón es proteger la
+trazabilidad de la venta y evitar inconsistencias con el inventario.
+
+5.11. Restauración del stock al eliminar
+
+Al eliminar una venta, el método unlink() devuelve al producto la cantidad
+que había sido descontada. También utiliza FOR UPDATE para proteger la
+actualización del inventario.
+
+5.12. Estado y tiempo de calidad
+
+Al crear una venta se registra un tiempo de respuesta aleatorio entre 0.10 y
+3.50 segundos y la venta inicia con estado "observado". También existen
+acciones para marcar una venta como "observado" o "aceptable".
+
+5.13. Control de registros duplicados
+
+El sistema impide duplicar los identificadores principales de cada entidad:
+
+- La cédula de un cliente debe ser única.
+- El código de un producto debe ser único.
+- La referencia o código de una venta debe ser único.
+
+Cada modelo valida el duplicado antes de crear o actualizar un registro y
+también tiene una restricción única en PostgreSQL para proteger la integridad
+cuando existen operaciones simultáneas. Si se intenta registrar un valor
+repetido, la operación se rechaza con un mensaje de validación.
+
+
+6. API HTTP IMPLEMENTADA
+
+El archivo principal de la API es:
+
+controllers/api.py
+
+La clase TechStoreAPI hereda de http.Controller y expone tres endpoints:
+
+POST /api/clientes
+POST /api/productos
+POST /api/ventas
+
+También se aceptan las rutas con barra final:
+
+/api/clientes/
+/api/productos/
+/api/ventas/
+
+Cada endpoint:
+
+1. Lee el cuerpo HTTP.
+2. Convierte el contenido JSON a un diccionario Python.
+3. Valida que se hayan recibido datos.
+4. Llama al modelo de Odoo usando request.env.
+5. Usa sudo() para que la API pueda crear registros con autenticación
+   pública.
+6. Devuelve una respuesta JSON con success, id y mensaje.
+7. Devuelve errores HTTP 400 para datos inválidos y 500 para errores
+   inesperados.
+
+Ejemplo de creación de cliente:
+
+POST /api/clientes?db=GestionCalidad
+
+{
+    "name": "Cliente API de prueba"
+}
+
+Ejemplo de creación de producto:
+
+POST /api/productos?db=GestionCalidad
+
+{
+    "name": "Producto API",
+    "codigo": "12345678",
+    "precio_unitario": 25,
+    "stock_disponible": 10
+}
+
+Ejemplo de creación de venta:
+
+POST /api/ventas?db=GestionCalidad
+
+{
+    "name": "VEN-API-001",
+    "cliente_id": 3,
+    "producto_id": 5,
+    "cantidad": 1,
+    "descuento": 0,
+    "observacion": "Prueba API"
+}
+
+La respuesta de ventas incluye el identificador, cliente, producto, cantidad,
+precio, stock, descuento, subtotal, IVA, total, tiempo de respuesta y estado
+de calidad.
+
+
+7. CORRECCIÓN DEL ERROR 404
+
+El error 404 no era causado por el JSON ni por los identificadores. Significaba
+que Odoo no encontraba una ruta HTTP válida para la base seleccionada.
+
+Primero se comprobó que:
+
+- addons_path incluía /opt/odoo/custom-addons/gc_odoo.
+- el módulo estaba instalado en GestionCalidad.
+- api.py tenía las rutas correctas.
+- controllers/__init__.py importaba api.
+
+Después se confirmó que las rutas sí estaban registradas internamente en el
+registro de Odoo. El problema restante era que las solicitudes HTTP nuevas no
+seleccionaban una base porque había varias bases disponibles.
+
+La solución fue configurar en /etc/odoo/odoo.conf:
+
+dbfilter = ^GestionCalidad$
+
+Después se reinició Odoo y se actualizó el módulo. Desde ese momento las
+rutas empezaron a responder correctamente.
+
+
+8. CAMBIOS EN generador.py
+
+generador.py se convirtió en el cliente externo de la API.
+
+Configuración utilizada:
+
+BASE_URL = "http://localhost:8069"
+DB_NAME = "GestionCalidad"
+
+El generador crea:
+
+- 100 clientes
+- 100 productos
+- 2000 ventas
+
+Los clientes y productos se envían usando requests.post() y el programa
+guarda los IDs devueltos por la API para utilizarlos al generar las ventas.
+
+También se corrigió el manejo de errores. Antes, cuando Odoo devolvía HTML
+por un 404, el programa ejecutaba response.json() y mostraba únicamente:
+
+Expecting value: line 1 column 1
+
+Ahora generador.py informa el código HTTP, el cuerpo de la respuesta y si la
+respuesta no contiene JSON.
+
+El generador utiliza varios hilos para enviar datos más rápido. Por esa razón
+algunas ventas pueden competir por el stock del mismo producto. El modelo
+rechaza de forma segura las operaciones que no tienen stock suficiente o que
+entran en conflicto de concurrencia.
+
+
+9. DATOS DEMO Y VISTAS
+
+Se agregaron ventas demo para que el menú de ventas no apareciera vacío al
+instalar el módulo:
+
+- VEN-DEMO-001
+- VEN-DEMO-002
+
+El archivo de datos demo se declaró con noupdate="1". Esto evita que durante
+cada actualización Odoo intente modificar nuevamente ventas demo ya creadas,
+lo cual entraba en conflicto con la protección del método write().
+
+También se corrigió en la vista de ventas el atributo:
+
+readonly="id"
+
+por:
+
+readonly="1"
+
+En Odoo 16, readonly recibe una expresión o un valor booleano válido; usar
+id producía un NameError durante la carga de la vista.
+
+
+10. RESULTADOS DE LAS PRUEBAS
+
+Se reinició el servicio Odoo y se actualizó el módulo en GestionCalidad.
+Se probaron los endpoints de clientes, productos y ventas, el descuento
+automático del stock, el cálculo de subtotal, IVA y total, y el rechazo de
+datos inválidos.
+
+La carga masiva produjo:
+
+Clientes insertados : 100
+Clientes con error  : 0
+Productos insertados: 100
+Productos con error : 0
+Ventas insertadas   : 1923
+Ventas con error    : 77
+
+Las ventas rechazadas correspondieron principalmente a stock insuficiente y
+conflictos de actualización simultánea. Esto demuestra que los controles de
+inventario funcionaron en lugar de registrar ventas incorrectas.
+
+
+11. CÓMO SE HIZO LA INTEGRACIÓN COMPLETA
+
+El cliente externo fue generador.py. Este programa creó los datos y ejecutó
+requests.post() contra los endpoints de Odoo. El archivo controllers/api.py
+recibió cada JSON y llamó a request.env para usar los modelos Odoo.
+
+El modelo techstore.venta concentró las reglas importantes: cliente y
+producto activos, cantidad positiva, stock suficiente, descuento válido,
+precio tomado del producto, cálculo de totales y descuento del inventario.
+Después el ORM de Odoo guardó los registros en PostgreSQL.
+
+La secuencia real fue:
+
+generador.py -> HTTP/JSON -> api.py -> request.env -> modelos Odoo
+-> PostgreSQL GestionCalidad
+
+El error 404 se resolvió importando correctamente los controladores,
+actualizando el módulo y configurando dbfilter = ^GestionCalidad$ en
+/etc/odoo/odoo.conf, porque Odoo tenía varias bases disponibles y no estaba
+seleccionando GestionCalidad para las solicitudes nuevas.
+
+
+12. EVALUACIÓN CON CMMI, ISO 12207 E ISO 25010
+
+12.1. NIVEL CMMI ALCANZADO
+
+La valoración corresponde al alcance de este proyecto y no es una
+certificación oficial. El proyecto alcanzó principalmente prácticas
+compatibles con CMMI Nivel 2, Gestionado.
+
+Se evidencia porque se definió el objetivo, se identificaron los componentes,
+se controlaron las reglas de negocio, se hicieron pruebas con curl, se
+ejecutó una carga masiva, se registraron errores y se documentaron los
+resultados.
+
+No se afirma Nivel 3 completo porque todavía no existen procesos
+organizacionales estandarizados, plantillas institucionales, revisiones
+independientes ni métricas históricas de varios proyectos.
+
+Cómo se aplicó:
+
+Primero se identificó el 404 y la falta de datos. Luego se planificaron
+correcciones en estructura, controladores, modelos y generador. Después se
+probaron los endpoints individualmente y solo entonces se ejecutó la carga
+masiva. Finalmente se verificaron los registros y se documentó el resultado.
+
+Frase para la defensa:
+
+"Llegamos principalmente al Nivel 2 de CMMI, Gestionado, porque tuvimos
+planificación básica, control técnico, pruebas, seguimiento de errores y
+documentación. No afirmamos Nivel 3 porque no existe todavía un proceso
+organizacional estandarizado para varios proyectos."
+
+
+12.2. ETAPAS DE ISO/IEC/IEEE 12207 APLICADAS
+
+La norma 12207 se aplicó para ordenar el ciclo de vida del software dentro
+del alcance del módulo:
+
+1. Acuerdo: se definió que el módulo debía administrar clientes, productos y
+   ventas mediante una API HTTP en la base GestionCalidad.
+2. Habilitación: se preparó Odoo 16, PostgreSQL, el servicio odoo, el módulo
+   y generador.py.
+3. Requisitos y análisis: se definieron endpoints, respuestas JSON, clientes
+   y productos activos, cantidades válidas, stock y descuentos.
+4. Arquitectura y diseño: se separaron las capas generador.py, controlador
+   HTTP, modelos Odoo, ORM y PostgreSQL.
+5. Implementación: se corrigieron modelos, controladores, imports, vistas,
+   datos demo, cálculos, validaciones y generador.py.
+6. Integración: se conectaron controladores, modelos, vistas, servicio y
+   base de datos; también se configuraron addons_path y dbfilter.
+7. Verificación: se validaron Python, XML, endpoints, stock y totales.
+8. Operación y mantenimiento: se reinició Odoo, se actualizó el módulo, se
+   corrigió el 404 y se dejó lista la carga repetible.
+
+La explicación correcta es que aplicamos estos procesos al proyecto; no que
+toda la organización tenga certificación ISO 12207.
+
+
+12.3. EVALUACIÓN SEGÚN ISO/IEC 25010
+
+ISO 25010 se utilizó para evaluar la calidad del producto, no como una
+certificación formal:
+
+- Adecuación funcional: alta dentro del alcance; funcionan los tres
+  endpoints, las validaciones, el inventario y los totales.
+- Eficiencia de desempeño: media; se usaron timeout, carga concurrente y
+  tiempo_respuesta, pero faltan métricas formales de latencia y throughput.
+- Compatibilidad: media; existe integración entre Odoo 16, PostgreSQL,
+  el servicio y un cliente Python por HTTP/JSON.
+- Usabilidad: media-alta; existen menús y vistas y la API devuelve mensajes
+  JSON comprensibles.
+- Fiabilidad: alta dentro del flujo probado; se rechaza stock insuficiente,
+  se usa FOR UPDATE y se restaura stock al eliminar ventas.
+- Seguridad: básica o media-baja; auth pública, csrf=False y sudo() facilitan
+  la integración, pero para producción faltan autenticación, HTTPS, límites
+  de solicitudes y autorización.
+- Mantenibilidad: media-alta; controladores, modelos y vistas están separados
+  y la lógica de ventas está centralizada.
+- Portabilidad: básica o media; depende de Odoo 16, PostgreSQL y la
+  configuración del servicio.
+
+Cómo se evaluó:
+
+Se relacionó cada característica con evidencia real del proyecto. Por
+ejemplo, la fiabilidad se demuestra con las validaciones y FOR UPDATE; la
+adecuación funcional con los tres endpoints funcionando; y la mantenibilidad
+con la separación entre controladores, modelos y vistas.
+
+
+12.4. CONCLUSIÓN PARA LA DEFENSA
+
+"El proyecto alcanzó principalmente CMMI Nivel 2, Gestionado, porque fue
+planificado, controlado, probado y documentado. En ISO 12207 aplicamos las
+etapas de acuerdo, requisitos, diseño, implementación, integración,
+verificación, operación y mantenimiento. Según ISO 25010, las fortalezas
+principales son la adecuación funcional, la fiabilidad del inventario y la
+mantenibilidad. Las mejoras pendientes son autenticación de la API, pruebas
+formales de rendimiento y portabilidad del despliegue."
+
+
+13. CONTROLES DE VALIDACIÓN AGREGADOS
+
+Se agregaron controles tanto en la interfaz de Odoo como en los modelos
+Python. La interfaz evita escribir caracteres inválidos cuando el campo lo
+permite y los modelos vuelven a validar todo antes de guardar. Esto es
+importante porque la API, una importación o cualquier otro cliente también
+deben cumplir las mismas reglas.
+
+13.1. Clientes
+
+- El nombre es obligatorio y acepta únicamente letras, incluyendo letras
+  acentuadas, Ñ y espacios.
+- La cédula es obligatoria y debe tener exactamente 10 dígitos.
+- El teléfono es obligatorio y debe tener exactamente 10 dígitos.
+- El correo es obligatorio, debe contener @ y debe terminar en .com.
+- Los campos cédula y teléfono tienen un límite de 10 caracteres.
+- En el formulario, letras y caracteres no numéricos se eliminan o bloquean
+  mientras se escribe en cédula y teléfono.
+
+La validación se implementó con una expresión regular en
+models/techstore_cliente.py y se ejecuta mediante @api.constrains. Si la
+información es incorrecta se lanza ValidationError con un mensaje específico.
+
+13.2. Productos
+
+- El nombre y el código son obligatorios.
+- El precio unitario es numérico y admite dos decimales.
+- El precio no puede ser negativo ni superar 99.999,99.
+- El stock debe ser un número entero no negativo.
+- En el formulario, el precio y el descuento solo aceptan caracteres
+  numéricos y separadores decimales.
+
+El límite del precio se controla en models/techstore_producto.py y también se
+define precisión de dos decimales en el campo Float. Así se controla tanto lo
+que se escribe en pantalla como lo que llega por API.
+
+13.3. Ventas
+
+- La referencia tiene un tamaño máximo de 50 caracteres.
+- La cantidad debe ser un entero mayor que cero y no puede superar 999.999.
+- El descuento es porcentual y debe estar entre 0 % y 100 %.
+- El IVA es porcentual y debe estar entre 0 % y 100 %; por defecto es 15 %.
+- El cliente y el producto deben existir y estar activos.
+- El stock debe ser suficiente.
+- El precio se toma del producto y no del valor enviado por el usuario.
+
+Los controles de cantidad y descuento se aplican en @api.constrains y también
+en create(), porque create() es el punto que descuenta el stock y debe
+proteger la operación completa.
+
+13.4. Control de captura en la interfaz
+
+Se creó static/src/js/input_validation.js y se incluyó en web.assets_backend
+desde __manifest__.py. El script utiliza los eventos beforeinput e input:
+
+- cédula y teléfono: elimina todo lo que no sea dígito y corta el contenido a
+  10 posiciones;
+- nombre del cliente: bloquea caracteres que no sean letras o espacios;
+- precio, descuento e IVA: elimina letras y conserva solamente números y
+  separadores decimales.
+
+Este control mejora la experiencia del usuario, pero la seguridad real está
+en las validaciones de los modelos. Por eso aunque alguien intente llamar
+directamente a la API, Odoo vuelve a validar antes de guardar.
+
+13.5. Mensajes de error
+
+Cuando el dato no cumple la regla, la API responde HTTP 400 con JSON. Algunos
+mensajes implementados son:
+
+- "La cédula debe contener exactamente 10 dígitos numéricos."
+- "El teléfono debe contener exactamente 10 dígitos numéricos."
+- "El nombre del cliente solo puede contener letras y espacios."
+- "El correo debe tener un formato válido y terminar en .com."
+- "El precio unitario no puede superar 99.999,99."
+- "La cantidad debe ser mayor que cero."
+- "El descuento no puede ser negativo."
+
+13.6. Pruebas realizadas
+
+Se probó por API un cliente con nombre numérico, cédula con letras, correo
+inválido y teléfono incompleto. Odoo lo rechazó con HTTP 400 y un mensaje de
+validación. También se probó un producto con precio 100.000 y fue rechazado
+con HTTP 400. Finalmente, un cliente con nombre, cédula, correo y teléfono
+válidos fue creado correctamente con HTTP 200.
+
+13.7. Controles adicionales de productos
+
+El código del producto acepta letras y números, con un máximo de 8 caracteres.
+El modelo no usa un recorte silencioso del campo: si llegan 9 o más
+caracteres, se rechaza el valor completo con ValidationError.
+El stock disponible debe ser entero, mayor que cero y no puede superar 1000
+unidades. El precio unitario permite como máximo 5 dígitos antes del punto y
+2 después, por lo que su máximo es 99999.99.
+
+En el formulario, el código, el stock y la cantidad bloquean letras mientras
+se escribe. Si se pega texto mezclado, el JavaScript conserva únicamente los
+dígitos. La validación del modelo permanece como segunda barrera y devuelve
+mensajes ValidationError:
+
+- "El código solo puede contener letras y números, con máximo 8 caracteres."
+- "El stock disponible debe ser mayor que cero."
+- "El stock disponible no puede superar 1000 unidades."
+
+También se actualizó generador.py para enviar códigos numéricos y se
+reemplazaron los códigos alfanuméricos de los datos demo.
+
+13.8. Stock agotado, porcentaje de IVA y descuento porcentual
+
+El stock mayor que cero se exige al crear un producto. Sin embargo, la
+validación general solo impide valores negativos, por lo que una venta puede
+descontar todo el inventario y dejar el producto exactamente en cero. Esto
+representa un producto agotado y es un estado válido.
+
+Antes el IVA estaba fijo al 5 %. Se cambió a un campo iva_porcentaje en la
+venta, con valor predeterminado de 15 %. El usuario puede modificarlo entre
+0 % y 100 %. El cálculo quedó:
+
+iva = subtotal * (iva_porcentaje / 100)
+total = subtotal + iva
+
+La API acepta iva_porcentaje y usa 15 % cuando no se envía. La respuesta de
+la venta también devuelve el porcentaje aplicado. Así, una venta con subtotal
+100 y el IVA predeterminado calcula IVA 15 y total 115.
+
+El descuento dejó de representar un valor monetario y ahora representa un
+porcentaje entre 0 % y 100 %. Por ejemplo, con un importe bruto de 200 y un
+descuento de 10 %, el campo descuento aplicado muestra 20, el subtotal queda
+en 180 y con IVA del 15 % el total definitivo es 207.

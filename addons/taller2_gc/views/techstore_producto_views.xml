@@ -1,0 +1,39 @@
+<odoo>
+    <record id="view_techstore_producto_tree" model="ir.ui.view">
+        <field name="name">techstore.producto.tree</field>
+        <field name="model">techstore.producto</field>
+        <field name="arch" type="xml">
+            <tree string="Productos">
+                <field name="name" placeholder="Nombre del producto"/>
+                <field name="codigo" placeholder="Letras o números, máximo 8 caracteres"/>
+                <field name="precio_unitario" placeholder="Máximo 99999.99"/>
+                <field name="stock_disponible" placeholder="Entre 1 y 1000"/>
+                <field name="activo"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_techstore_producto_form" model="ir.ui.view">
+        <field name="name">techstore.producto.form</field>
+        <field name="model">techstore.producto</field>
+        <field name="arch" type="xml">
+            <form string="Producto">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="codigo" placeholder="Letras o números, máximo 8 caracteres"/>
+                        <field name="precio_unitario" placeholder="Máximo 99999.99"/>
+                        <field name="stock_disponible" placeholder="Entre 1 y 1000"/>
+                        <field name="activo"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_techstore_producto" model="ir.actions.act_window">
+        <field name="name">Productos</field>
+        <field name="res_model">techstore.producto</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>
