@@ -129,6 +129,32 @@ class TransporteViaje(models.Model):
                         "La hora de llegada planificada debe ser estrictamente posterior a la hora de salida planificada."
                     )
 
+    @api.constrains('driver_id')
+    def _check_conductor_elegible(self):
+        for viaje in self:
+            if viaje.driver_id:
+                if not viaje.driver_id.es_conductor:
+                    raise ValidationError(
+                        f"El empleado '{viaje.driver_id.name}' no está registrado con funciones de conductor de bus."
+                    )
+                if not viaje.driver_id.licencia_habilitada:
+                    raise ValidationError(
+                        f"El conductor '{viaje.driver_id.name}' no cuenta con una licencia vigente y habilitada para conducir."
+                    )
+
+    @api.constrains('vehicle_id')
+    def _check_bus_elegible(self):
+        for viaje in self:
+            if viaje.vehicle_id:
+                if not viaje.vehicle_id.es_bus_pasajeros:
+                    raise ValidationError(
+                        f"El vehículo '{viaje.vehicle_id.name}' no está identificado como bus de transporte de pasajeros."
+                    )
+                if viaje.vehicle_id.capacidad_total <= 0:
+                    raise ValidationError(
+                        f"El bus '{viaje.vehicle_id.name}' tiene capacidad total igual a 0. Revise su configuración de aforo."
+                    )
+
     def _check_conflictos_horarios(self):
         """Valida que ni el bus ni el conductor estén asignados a otros viajes en horarios superpuestos."""
         for record in self:
@@ -262,7 +288,7 @@ class TransporteViaje(models.Model):
             record.vehicle_id.write({'estado_operativo': 'en_servicio'})
 
     def action_completar(self):
-        """Finaliza el viaje, liberando el bus a estado disponible."""
+        """Finaliza el viaje, liberando el bus a estado disponible únicamente si estaba en servicio."""
         for record in self:
             if record.state != 'in_progress':
                 raise UserError("Solo se pueden completar viajes que estén actualmente 'En Ruta'.")
@@ -276,7 +302,9 @@ class TransporteViaje(models.Model):
                 'hora_llegada_real': fields.Datetime.now(),
                 'state': 'completed',
             })
-            record.vehicle_id.write({'estado_operativo': 'disponible'})
+            # Preservar el estado del bus si fue colocado en mantenimiento o fuera de servicio durante el viaje
+            if record.vehicle_id.estado_operativo == 'en_servicio':
+                record.vehicle_id.write({'estado_operativo': 'disponible'})
 
     def action_cancelar(self):
         """Cancela el viaje y libera el bus si estaba en ruta o programado."""
@@ -331,3 +359,4 @@ class TransporteViaje(models.Model):
                     "Solo se pueden eliminar viajes en estado Borrador o Cancelado."
                 )
         return super().unlink()
+

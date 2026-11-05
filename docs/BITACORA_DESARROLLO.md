@@ -17,6 +17,7 @@
 5. [2026-11-04 | Fase 1.1: Catálogo de Paradas Georreferenciadas y Rutas con Secuencias](#2026-11-04--fase-11-catálogo-de-paradas-georreferenciadas-y-rutas-con-secuencias)
 6. [2026-11-04 | Fase 1.2: Extensión de Flota de Buses y Conductores](#2026-11-04--fase-12-extensión-de-flota-de-buses-y-conductores)
 7. [2026-11-04 | Fase 1.3: Planificación, Despacho y Ejecución Manual de Viajes](#2026-11-04--fase-13-planificación-despacho-y-ejecución-manual-de-viajes)
+8. [2026-11-04 | Fase 1.4: Carga de Datos DEMO SGM-TB y Validación Integral E2E del Despacho Manual](#2026-11-04--fase-14-carga-de-datos-demo-sgm-tb-y-validación-integral-e2e-del-despacho-manual)
 
 ---
 
@@ -332,5 +333,107 @@
 - **Decisiones Técnicas y Justificación:**
   - *Instantánea desacoplada de paradas*: Se implementó `transporte.viaje.parada` como una copia congelada de la ruta al momento de programar el despacho. Esto evita que cambios posteriores en el trazado de la ruta alteren el histórico de viajes ya realizados o en curso.
   - *Evaluación dinámica de vigencia de licencias*: Implementar `search='_search_licencia_habilitada'` permite que la habilitación se recalcule automáticamente según la fecha del sistema sin necesidad de mutar la base de datos diariamente mediante un cron.
-- **Control de Versiones:** Rama `feature/core-despacho-viajes` lista para merge en `develop`.
-- **Estado Final:** Paso 1.3 completado exitosamente. Listo para Paso 1.4 (Datos de demostración y validación E2E).
+- **Control de Versiones:** Rama `feature/core-despacho-viajes` fusionada en `develop` (commit `9c55c11`).
+- **Estado Final:** Paso 1.3 completado exitosamente y fusionado.
+
+---
+
+## 2026-11-04 | Fase 1.4: Carga de Datos DEMO SGM-TB y Validación Integral E2E del Despacho Manual
+
+- **Fase y Paso:** Fase 1 - Paso 1.4
+- **Objetivo:** Ejecutar la validación integral de extremo a extremo (E2E) del sistema de transporte en buses (`transporte_core`), cargar un conjunto representativo de datos de demostración claramente identificados como **DEMO SGM-TB** de forma controlada e idempotente, verificar la integridad de las interfaces de usuario (menús y vistas tree, form, kanban, calendar, search) y auditar formalmente las métricas del test runner de Odoo.
+- **Actividades Realizadas:**
+  1. Creación de la rama de trabajo `feature/core-validacion-e2e` desde `develop`.
+  2. Auditoría y resolución de discrepancia en reporte de pruebas (35 vs 29):
+     - Se inspeccionó el motor `odoo.tests.result` (`OdooTestResult`) y `odoo.tests.stats`.
+     - *Causa raíz*: Odoo instrumenta los métodos de clase `setUpClass` y `tearDownClass` como unidades de profiling en `self.stats` para auditar tiempos y queries SQL. Las 3 clases de prueba existentes generaban 6 mediciones de ciclo de vida (3 $\times$ 2), que sumadas a los 29 métodos de prueba unitarios daban 35 mediciones en `odoo.tests.stats`. El runner `odoo.tests.result` contabiliza exclusivamente los métodos ejecutables (`testsRun = 29`), confirmando 0 fallos y 0 errores.
+  3. Revisión de defectos y endurecimiento de modelos operativos:
+     - *Preservación de estados de flota*: En `addons/transporte_core/models/transporte_viaje.py`, se corrigió `action_completar()` para que el bus solo pase a `disponible` si se encontraba previamente en `en_servicio`. Si durante el recorrido el bus fue puesto en `mantenimiento` o `fuera_servicio` (por avería o reporte de flota), dicho estado se preserva intacto sin ser sobrescrito.
+     - *Restricción de duplicidad en paradas de viaje*: En `addons/transporte_core/models/transporte_viaje_parada.py`, se implementó restricción SQL `_sql_constraints` (`unique(viaje_id, secuencia)`) y validación `@api.constrains('viaje_id', 'secuencia')`.
+     - *Bloqueo de re-registro en paradas atendidas u omitidas*: En `action_registrar_llegada_manual()`, se reforzó el rechazo a registros repetidos o sobre paradas ya omitidas.
+     - *Restricción en vehículos no aptos*: Se incorporó `@api.constrains('vehicle_id')` en `transporte.viaje` impidiendo asociar vehículos que no sean buses de pasajeros o con capacidad total igual a 0.
+  4. Generación y Carga Controlada de Datos de Demostración (**DEMO SGM-TB**):
+     - Se diseñó el archivo de datos declarativo [`addons/transporte_core/demo/transporte_demo_data.xml`](file:///home/jorge/odoo16-docker/addons/transporte_core/demo/transporte_demo_data.xml) y se registró en `'demo'` del manifiesto [`__manifest__.py`](file:///home/jorge/odoo16-docker/addons/transporte_core/__manifest__.py).
+     - Se construyó el script idempotente y seguro [`scripts/cargar_datos_demo.py`](file:///home/jorge/odoo16-docker/scripts/cargar_datos_demo.py), el cual valida la existencia previa de registros por código, placa o nombre antes de insertar:
+       * **12 Paradas Georreferenciadas**: `DEMO-PAR-01` a `DEMO-PAR-12` con coordenadas reales urbanas y radios de detección entre 30 y 50 metros.
+       * **3 Rutas de Buses Ficticias**:
+         - `DEMO-RUT-01`: *Línea 101 Troncal Norte-Sur* (troncal, 45 min, 7 paradas ordenadas).
+         - `DEMO-RUT-02`: *Línea 202 Transversal Este-Oeste* (urbana, 35 min, 6 paradas ordenadas).
+         - `DEMO-RUT-03`: *Línea 303 Expreso Periférico* (interurbana, 40 min, 5 paradas ordenadas).
+       * **4 Buses con Capacidades y Estados Diferentes**:
+         - `TB-DEMO-01`: Tipo Padrón (35 sentados, 25 pie = 60 total), estado `disponible`.
+         - `TB-DEMO-02`: Tipo Articulado (50 sentados, 70 pie = 120 total), estado `disponible`.
+         - `TB-DEMO-03`: Tipo Microbús (22 sentados, 8 pie = 30 total), estado `disponible`.
+         - `TB-DEMO-04`: Tipo Padrón (36 sentados, 24 pie = 60 total), estado `mantenimiento` (para pruebas negativas).
+       * **4 Empleados / Conductores**:
+         - *Carlos Silva* (`LIC-DEMO-001`, Tipo D, vigencia 2 años, habilitado).
+         - *Manuel Paredes* (`LIC-DEMO-002`, Tipo E, vigencia 2.5 años, habilitado).
+         - *Andrea Morales* (`LIC-DEMO-003`, Tipo C, vigencia 1 año, habilitada).
+         - *Personal Administrativo* (No conductor, habilitado = False).
+       * **2 Viajes de Demostración**:
+         - Viaje 1 (`VJ/2026/00067`): Programado (`scheduled`) en Línea 101 Troncal con Bus `TB-DEMO-01`, Conductor Carlos Silva y 7 paradas snapshot generadas.
+         - Viaje 2 (`VJ/2026/00068`): En borrador (`draft`) en Línea 202 Transversal con Bus `TB-DEMO-02` y Conductor Manuel Paredes.
+     - Se ejecutó el script dos veces consecutivas comprobando idempotencia estricta: en la segunda ejecución se reportaron 0 registros creados y 100% de registros preexistentes detectados.
+  5. Implementación de Suite Automatizada de Pruebas E2E ([`addons/transporte_core/tests/test_flujo_e2e.py`](file:///home/jorge/odoo16-docker/addons/transporte_core/tests/test_flujo_e2e.py)):
+     - `test_01_flujo_integral_completo_12_pasos`: Validación encadenada de los 12 pasos operativos requeridos:
+       1. Selección de ruta.
+       2. Inspección de paradas ordenadas y secuencias.
+       3. Selección de bus disponible.
+       4. Selección de conductor habilitado.
+       5. Creación de viaje en borrador.
+       6. Programación y asignación de código correlativo `VJ/...`.
+       7. Verificación de generación de snapshot de paradas.
+       8. Comprobación de cálculo de tiempos estimados de arribo por parada.
+       9. Inicio de recorrido y transición de bus a `en_servicio`.
+       10. Registro manual secuencial de llegadas a paradas y cálculo de avance.
+       11. Finalización y completado de viaje con estampas de tiempo real.
+       12. Liberación automática del bus a `disponible` y estado final `completed`.
+     - `test_02_negativo_bus_no_disponible`: Bloqueo de programación con bus en mantenimiento.
+     - `test_03_negativo_licencia_vencida_para_fecha_viaje`: Bloqueo de despacho cuando la licencia vence antes de la fecha programada.
+     - `test_04_negativo_horarios_superpuestos`: Rechazo de solapamiento de horarios para la misma unidad.
+     - `test_05_negativo_registro_duplicado_parada`: Rechazo de segundo registro manual en parada ya atendida.
+     - `test_06_negativo_transiciones_invalidas_y_preservacion_mantenimiento`: Verificación de transiciones prohibidas y preservación del estado `mantenimiento` al completar viaje si el bus sufrió avería en ruta.
+  6. Validación de Interfaces de Usuario (ORM & View Architecture):
+     - Se validó programáticamente la compilación y renderizado de arquitectura XML para todas las vistas y acciones vinculadas:
+       * `transporte.parada`: Tree (527 B), Form (1,366 B), Search (345 B).
+       * `transporte.ruta`: Tree (739 B), Form (2,941 B), Search (980 B).
+       * `fleet.vehicle` (Buses): Tree (3,057 B), Kanban (4,553 B), Form (13,160 B), Search (3,443 B).
+       * `hr.employee` (Conductores): Tree (2,400 B), Kanban (5,769 B), Form (17,560 B), Search (2,411 B).
+       * `transporte.viaje`: Tree (1,425 B), Kanban (2,544 B), Calendar (362 B), Form (6,411 B), Search (1,318 B).
+     - Se verificó la estructura completa de menús bajo el nodo raíz "Transporte en Buses":
+       * `[5] Operación de Viajes` $\rightarrow$ `Viajes y Despachos`.
+       * `[10] Rutas y Paradas` $\rightarrow$ `Líneas y Rutas`, `Paradas`.
+       * `[20] Flota y Personal` $\rightarrow$ `Buses de Pasajeros`, `Conductores de Bus`.
+- **Archivos Creados o Modificados:**
+  - `addons/transporte_core/models/transporte_viaje.py` (Modificado: corrección de preservación de estado en completado y cancelación, constrains de elegibilidad)
+  - `addons/transporte_core/models/transporte_viaje_parada.py` (Modificado: restricción de secuencia única y control de paradas atendidas/omitidas)
+  - `addons/transporte_core/demo/transporte_demo_data.xml` (Nuevo: datos DEMO SGM-TB declarativos)
+  - `addons/transporte_core/__manifest__.py` (Modificado: declaración de archivo demo)
+  - `addons/transporte_core/tests/test_flujo_e2e.py` (Nuevo: suite integral E2E con 6 pruebas)
+  - `addons/transporte_core/tests/__init__.py` (Modificado: registro de suite E2E)
+  - `scripts/cargar_datos_demo.py` (Nuevo: script ejecutable e idempotente de carga DEMO)
+  - `docs/BITACORA_DESARROLLO.md` (Modificado: actualización acumulativa)
+- **Comandos Relevantes Ejecutados:**
+  ```bash
+  git checkout -b feature/core-validacion-e2e
+  docker exec odoo16_web /entrypoint.sh odoo -d transporte_universitario_gc -u transporte_core --no-http --stop-after-init
+  docker exec odoo16_web /entrypoint.sh odoo -d transporte_universitario_gc -u transporte_core --test-enable --test-tags /transporte_core --no-http --stop-after-init
+  docker exec -i odoo16_web python3 < scripts/cargar_datos_demo.py
+  curl -sI http://localhost:8075
+  ```
+- **Resultados Obtenidos:**
+  - **Pruebas Automatizadas Totales**: 35 tests descubiertos y ejecutados al 100% con éxito (`0 failed, 0 error(s) of 35 tests`).
+    * 10 tests de Catálogo de Paradas y Rutas (`test_ruta_parada.py`).
+    * 8 tests de Flota de Buses y Conductores (`test_buses_conductores.py`).
+    * 11 tests de Despacho y Operación Manual (`test_despacho_viajes.py`).
+    * 6 tests de Flujo Integral E2E y Casos Negativos (`test_flujo_e2e.py`).
+    * 43 mediciones de rendimiento registradas en `odoo.tests.stats` (35 tests unitarios + 8 ganchos de ciclo de vida `setUpClass`/`tearDownClass` de las 4 clases de prueba).
+  - **Datos DEMO en Base de Datos**: 12 paradas, 3 rutas, 4 buses, 4 empleados/conductores y 2 viajes creados sin colisiones ni duplicados.
+  - **Integridad de Entorno**: Bases de datos protegidas `GestionCalidad` y `odoo_pruebas` confirmadas intactas.
+  - **Acceso Web**: Puerto 8075 operativo (`HTTP 303` redirigiendo a `/web`).
+- **Errores Encontrados y Soluciones:**
+  - *Sobrescritura de estado en buses averiados*: Al completar viaje, se forzaba `disponible` incondicionalmente. Se condicionó la liberación a que el bus estuviera en `en_servicio`, preservando `mantenimiento` o `fuera_servicio` si el bus sufrió una falla durante el recorrido.
+  - *Discrepancia en campo de descripción de rutas*: El script demo utilizaba `description` en lugar de `descripcion`. Se corrigió el nombre de campo y los valores de selección de `tipo_ruta`.
+  - *Mutación de diccionario en creación de empleados*: La creación ORM consumía la llave `name` del diccionario de entrada en memoria. Se pasó una copia explícita `dict(c)` asegurando la integridad del mapeo.
+- **Control de Versiones:** Rama `feature/core-validacion-e2e` lista para merge en `develop`.
+- **Estado Final:** Paso 1.4 completado exitosamente. Fase 1 finalizada. Listo para revisión de cierre de fase.

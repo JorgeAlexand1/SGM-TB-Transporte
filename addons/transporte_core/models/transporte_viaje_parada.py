@@ -85,6 +85,25 @@ class TransporteViajeParada(models.Model):
         digits=(10, 6)
     )
 
+    _sql_constraints = [
+        ('viaje_secuencia_unique', 'unique(viaje_id, secuencia)',
+         'No se puede repetir el número de secuencia de parada dentro del mismo viaje.')
+    ]
+
+    @api.constrains('viaje_id', 'secuencia')
+    def _check_secuencia_unica_viaje(self):
+        for record in self:
+            if record.viaje_id and record.secuencia:
+                duplicados = self.search([
+                    ('id', '!=', record.id),
+                    ('viaje_id', '=', record.viaje_id.id),
+                    ('secuencia', '=', record.secuencia)
+                ])
+                if duplicados:
+                    raise ValidationError(
+                        f"La secuencia {record.secuencia} ya está asignada a otra parada en este mismo viaje."
+                    )
+
     def action_registrar_llegada_manual(self):
         """Registra manualmente el arribo a la parada durante un viaje en curso."""
         for record in self:
@@ -96,9 +115,14 @@ class TransporteViajeParada(models.Model):
                 raise UserError(
                     f"La parada '{record.parada_id.name}' ya fue registrada como atendida a las {record.hora_llegada_real}."
                 )
+            if record.estado_parada == 'omitida':
+                raise UserError(
+                    f"La parada '{record.parada_id.name}' se encuentra marcada como omitida y no puede ser registrada."
+                )
 
             record.write({
                 'hora_llegada_real': fields.Datetime.now(),
                 'estado_parada': 'atendida',
                 'metodo_registro': 'manual',
             })
+
