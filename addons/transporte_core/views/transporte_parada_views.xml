@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista Árbol (Lista) de Paradas -->
+    <record id="view_transporte_parada_tree" model="ir.ui.view">
+        <field name="name">transporte.parada.tree</field>
+        <field name="model">transporte.parada</field>
+        <field name="arch" type="xml">
+            <tree string="Paradas de Buses">
+                <field name="codigo"/>
+                <field name="name"/>
+                <field name="latitude"/>
+                <field name="longitude"/>
+                <field name="radio_deteccion"/>
+                <field name="active" widget="boolean_toggle"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vista Formulario de Parada -->
+    <record id="view_transporte_parada_form" model="ir.ui.view">
+        <field name="name">transporte.parada.form</field>
+        <field name="model">transporte.parada</field>
+        <field name="arch" type="xml">
+            <form string="Parada de Bus">
+                <sheet>
+                    <widget name="web_ribbon" title="Archivado" bg_color="bg-danger" attrs="{'invisible': [('active', '=', True)]}"/>
+                    <div class="oe_title">
+                        <label for="name" string="Nombre de la Parada"/>
+                        <h1>
+                            <field name="name" placeholder="Ej. Terminal Norte / Plaza Central"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Identificación">
+                            <field name="codigo" placeholder="Ej. PAR-001"/>
+                            <field name="active"/>
+                        </group>
+                        <group string="Georreferenciación y Detección">
+                            <field name="latitude" placeholder="-1.245600"/>
+                            <field name="longitude" placeholder="-78.625400"/>
+                            <field name="radio_deteccion"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista Búsqueda y Filtros de Paradas -->
+    <record id="view_transporte_parada_search" model="ir.ui.view">
+        <field name="name">transporte.parada.search</field>
+        <field name="model">transporte.parada</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Paradas">
+                <field name="name" string="Parada" filter_domain="['|', ('name', 'ilike', self), ('codigo', 'ilike', self)]"/>
+                <field name="codigo"/>
+                <separator/>
+                <filter string="Archivadas" name="inactive" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Acción de Ventana para Paradas -->
+    <record id="action_transporte_parada" model="ir.actions.act_window">
+        <field name="name">Catálogo de Paradas</field>
+        <field name="res_model">transporte.parada</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_transporte_parada_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Registra la primera parada de la red de buses.
+            </p>
+            <p>
+                Define paradas georreferenciadas con coordenadas GPS y radio de detección para control de viajes.
+            </p>
+        </field>
+    </record>
+</odoo>

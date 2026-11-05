@@ -35,3 +35,4 @@ addons/transporte_core/
 - `fleet`: Gestión oficial de flota de vehículos.
 - `hr`: Gestión oficial de empleados y conductores.
 - `mail`: Mensajería, chatter y trazabilidad de cambios de estado.
+

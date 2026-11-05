@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista Árbol (Lista) de Rutas -->
+    <record id="view_transporte_ruta_tree" model="ir.ui.view">
+        <field name="name">transporte.ruta.tree</field>
+        <field name="model">transporte.ruta</field>
+        <field name="arch" type="xml">
+            <tree string="Líneas y Rutas de Buses">
+                <field name="codigo"/>
+                <field name="name"/>
+                <field name="tipo_ruta" widget="badge" decoration-info="tipo_ruta == 'urbana'" decoration-primary="tipo_ruta == 'troncal'" decoration-success="tipo_ruta == 'alimentadora'" decoration-warning="tipo_ruta == 'interurbana'"/>
+                <field name="total_paradas"/>
+                <field name="tiempo_estimado_min"/>
+                <field name="active" widget="boolean_toggle"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vista Formulario de Ruta -->
+    <record id="view_transporte_ruta_form" model="ir.ui.view">
+        <field name="name">transporte.ruta.form</field>
+        <field name="model">transporte.ruta</field>
+        <field name="arch" type="xml">
+            <form string="Ruta de Buses">
+                <sheet>
+                    <widget name="web_ribbon" title="Archivado" bg_color="bg-danger" attrs="{'invisible': [('active', '=', True)]}"/>
+                    <div class="oe_title">
+                        <label for="name" string="Nombre de la Ruta"/>
+                        <h1>
+                            <field name="name" placeholder="Ej. Línea 01 - Troncal Norte-Sur"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Identificación y Clasificación">
+                            <field name="codigo" placeholder="Ej. L-01"/>
+                            <field name="tipo_ruta"/>
+                            <field name="active"/>
+                        </group>
+                        <group string="Tiempos y Métricas">
+                            <field name="tiempo_estimado_min"/>
+                            <field name="total_paradas" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Secuencia de Paradas" name="paradas">
+                            <field name="parada_ids">
+                                <tree editable="bottom" string="Paradas de la Ruta">
+                                    <field name="secuencia" widget="handle"/>
+                                    <field name="secuencia" string="Orden"/>
+                                    <field name="parada_id" options="{'no_create_edit': False}"/>
+                                    <field name="parada_codigo" optional="show"/>
+                                    <field name="parada_latitude" optional="hide"/>
+                                    <field name="parada_longitude" optional="hide"/>
+                                    <field name="tiempo_desde_origen_min" string="Tiempo desde Origen (min)"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Descripción y Observaciones" name="descripcion">
+                            <field name="descripcion" placeholder="Notas sobre el trazado vial, calles principales o advertencias operativas..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista Búsqueda y Filtros de Rutas -->
+    <record id="view_transporte_ruta_search" model="ir.ui.view">
+        <field name="name">transporte.ruta.search</field>
+        <field name="model">transporte.ruta</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Rutas">
+                <field name="name" string="Ruta" filter_domain="['|', ('name', 'ilike', self), ('codigo', 'ilike', self)]"/>
+                <field name="codigo"/>
+                <separator/>
+                <filter string="Urbana" name="urbana" domain="[('tipo_ruta', '=', 'urbana')]"/>
+                <filter string="Troncal" name="troncal" domain="[('tipo_ruta', '=', 'troncal')]"/>
+                <filter string="Alimentadora" name="alimentadora" domain="[('tipo_ruta', '=', 'alimentadora')]"/>
+                <filter string="Interurbana" name="interurbana" domain="[('tipo_ruta', '=', 'interurbana')]"/>
+                <separator/>
+                <filter string="Archivadas" name="inactive" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Agrupar Por">
+                    <filter string="Tipo de Ruta" name="group_by_tipo" context="{'group_by': 'tipo_ruta'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Acción de Ventana para Rutas -->
+    <record id="action_transporte_ruta" model="ir.actions.act_window">
+        <field name="name">Líneas y Rutas</field>
+        <field name="res_model">transporte.ruta</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_transporte_ruta_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crea una nueva ruta de buses.
+            </p>
+            <p>
+                Define el código, nombre, tipo de ruta y asigna la secuencia ordenada de paradas con sus tiempos estimados.
+            </p>
+        </field>
+    </record>
+</odoo>

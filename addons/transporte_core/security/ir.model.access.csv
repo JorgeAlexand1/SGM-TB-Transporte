@@ -1,1 +1,7 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_transporte_parada_user,transporte.parada.user,model_transporte_parada,group_transporte_user,1,0,0,0
+access_transporte_parada_manager,transporte.parada.manager,model_transporte_parada,group_transporte_manager,1,1,1,1
+access_transporte_ruta_user,transporte.ruta.user,model_transporte_ruta,group_transporte_user,1,0,0,0
+access_transporte_ruta_manager,transporte.ruta.manager,model_transporte_ruta,group_transporte_manager,1,1,1,1
+access_transporte_ruta_parada_user,transporte.ruta.parada.user,model_transporte_ruta_parada,group_transporte_user,1,0,0,0
+access_transporte_ruta_parada_manager,transporte.ruta.parada.manager,model_transporte_ruta_parada,group_transporte_manager,1,1,1,1
