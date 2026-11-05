@@ -18,6 +18,7 @@
 6. [2026-11-04 | Fase 1.2: Extensión de Flota de Buses y Conductores](#2026-11-04--fase-12-extensión-de-flota-de-buses-y-conductores)
 7. [2026-11-04 | Fase 1.3: Planificación, Despacho y Ejecución Manual de Viajes](#2026-11-04--fase-13-planificación-despacho-y-ejecución-manual-de-viajes)
 8. [2026-11-04 | Fase 1.4: Carga de Datos DEMO SGM-TB y Validación Integral E2E del Despacho Manual](#2026-11-04--fase-14-carga-de-datos-demo-sgm-tb-y-validación-integral-e2e-del-despacho-manual)
+9. [2026-11-04 | Fase 1.5: Preparación de la Infraestructura Colaborativa y Documentación Multiusuario](#2026-11-04--fase-15-preparación-de-la-infraestructura-colaborativa-y-documentación-multiusuario)
 
 ---
 
@@ -435,5 +436,69 @@
   - *Sobrescritura de estado en buses averiados*: Al completar viaje, se forzaba `disponible` incondicionalmente. Se condicionó la liberación a que el bus estuviera en `en_servicio`, preservando `mantenimiento` o `fuera_servicio` si el bus sufrió una falla durante el recorrido.
   - *Discrepancia en campo de descripción de rutas*: El script demo utilizaba `description` en lugar de `descripcion`. Se corrigió el nombre de campo y los valores de selección de `tipo_ruta`.
   - *Mutación de diccionario en creación de empleados*: La creación ORM consumía la llave `name` del diccionario de entrada en memoria. Se pasó una copia explícita `dict(c)` asegurando la integridad del mapeo.
-- **Control de Versiones:** Rama `feature/core-validacion-e2e` lista para merge en `develop`.
-- **Estado Final:** Paso 1.4 completado exitosamente. Fase 1 finalizada. Listo para revisión de cierre de fase.
+- **Control de Versiones:** Rama `feature/core-validacion-e2e` fusionada en `develop` (commit `42a7fe0`).
+- **Estado Final:** Paso 1.4 completado exitosamente. Fase 1 finalizada.
+
+---
+
+## 2026-11-04 | Fase 1.5: Preparación de la Infraestructura Colaborativa y Documentación Multiusuario
+
+- **Fase y Paso:** Fase 1.5
+- **Objetivo:** Preparar la infraestructura, gobernanza de Git, documentación técnica y organización del repositorio para que cuatro desarrolladores trabajen de forma concurrente, cada uno desde su computadora en ramas independientes, previniendo conflictos de código y garantizando aislamiento estricto de bases de datos.
+- **Actividades Realizadas:**
+  1. Creación de la rama `feature/integracion-devops` a partir de `develop`.
+  2. Auditoría Integral de Seguridad del Repositorio Git:
+     - Inspección del árbol de trabajo (`git status` y `git ls-files`): comprobación de árbol limpio.
+     - Auditoría de exclusiones en `.gitignore`: verificación de que volcados (`backups/*.dump`), cachés (`.pytest_cache/`, `__pycache__/`, `.scannerwork/`) y archivos `.env` reales no estén versionados.
+     - Búsqueda en historial completo con `git log -S "password"` y `git grep`: se confirmó la ausencia de tokens de GitHub (`ghp_`, `github_pat_`), claves privadas SSH/RSA o credenciales de producción. Únicamente se encuentran contraseñas de desarrollo locales en plantillas (`.env.example`).
+     - Verificación de remotos (`git remote -v`): se constató que no existe repositorio remoto preexistente configurado.
+  3. Propuesta y Configuración de GitHub:
+     - Nombre propuesto para el repositorio privado: `SGM-TB-Transporte`.
+     - Definición de ramas estratégicas:
+       * `main`: Producción / versión estable certificada.
+       * `develop`: Integración continua de funcionalidades.
+       * `feature/integracion-devops`: DevOps, infraestructura y coordinación (Integrante 1).
+       * `feature/operaciones-mejoras`: Operaciones de flota y conductores (Integrante 2).
+       * `feature/gps-traccar`: Integración telemática Traccar (Integrante 3).
+       * `feature/calidad-kpis`: Calidad y tableros de KPIs (Integrante 4).
+  4. Redacción de Documentación Técnica de Gobernanza y Despliegue:
+     - [`docs/GUIA_INSTALACION.md`](file:///home/jorge/odoo16-docker/docs/GUIA_INSTALACION.md): Procedimiento completo de aprovisionamiento local para que cada integrante clone, configure su `.env`, levante Docker, cree su base independiente (`sgmtb_dev_<alias>`), cargue datos DEMO y valide su entorno.
+     - [`docs/GUIA_GIT.md`](file:///home/jorge/odoo16-docker/docs/GUIA_GIT.md): Flujo de trabajo en 10 pasos obligatorios, normas de Conventional Commits, ciclo de vida de Pull Requests y guía de resolución de conflictos.
+     - [`docs/DISTRIBUCION_TRABAJO.md`](file:///home/jorge/odoo16-docker/docs/DISTRIBUCION_TRABAJO.md): Matriz de responsabilidades, entregables y matriz de dependencias entre los cuatro integrantes.
+     - [`docs/ARQUITECTURA.md`](file:///home/jorge/odoo16-docker/docs/ARQUITECTURA.md): Diagrama C4/bloques modular, principio de desacoplamiento unidireccional, ERD conceptual y modelo de seguridad RBAC.
+     - [`docs/PLAN_INTEGRACION.md`](file:///home/jorge/odoo16-docker/docs/PLAN_INTEGRACION.md): Hoja de ruta secuencial por fases, hitos de integración y checklist de revisión previo a merges.
+  5. Creación de Bitácoras Individuales por Desarrollador (`docs/bitacoras/`):
+     - [`docs/bitacoras/integrante_1.md`](file:///home/jorge/odoo16-docker/docs/bitacoras/integrante_1.md): Bitácora de DevOps, infraestructura y coordinación técnica (registra Fase 0 y Fase 1.5).
+     - [`docs/bitacoras/integrante_2.md`](file:///home/jorge/odoo16-docker/docs/bitacoras/integrante_2.md): Bitácora de Núcleo Operativo (registra pasos 1.1 a 1.4 de `transporte_core`).
+     - [`docs/bitacoras/integrante_3.md`](file:///home/jorge/odoo16-docker/docs/bitacoras/integrante_3.md): Bitácora de Telemática GPS Traccar (planificada para Fase 2).
+     - [`docs/bitacoras/integrante_4.md`](file:///home/jorge/odoo16-docker/docs/bitacoras/integrante_4.md): Bitácora de Calidad y KPIs (planificada para Fase 3).
+  6. Comprobación de Integridad y Aislamiento del Entorno:
+     - Bases de datos `GestionCalidad` y `odoo_pruebas` confirmadas 100% intactas.
+     - Base `transporte_universitario_gc` verificada con sus datos DEMO.
+     - Acceso web por puerto 8075 (`http://localhost:8075`) operativo.
+- **Archivos Creados o Modificados:**
+  - `docs/GUIA_INSTALACION.md` (Nuevo)
+  - `docs/GUIA_GIT.md` (Nuevo)
+  - `docs/DISTRIBUCION_TRABAJO.md` (Nuevo)
+  - `docs/ARQUITECTURA.md` (Nuevo)
+  - `docs/PLAN_INTEGRACION.md` (Nuevo)
+  - `docs/bitacoras/integrante_1.md` (Nuevo)
+  - `docs/bitacoras/integrante_2.md` (Nuevo)
+  - `docs/bitacoras/integrante_3.md` (Nuevo)
+  - `docs/bitacoras/integrante_4.md` (Nuevo)
+  - `docs/BITACORA_DESARROLLO.md` (Modificado)
+- **Comandos Relevantes Ejecutados:**
+  ```bash
+  git checkout -b feature/integracion-devops
+  git status && git branch -a && git remote -v
+  git log --all -p -S "password" --name-only
+  git grep -i -E "BEGIN (RSA|OPENSSH|PGP) PRIVATE KEY|ghp_[a-zA-Z0-9]"
+  curl -sI http://localhost:8075
+  ```
+- **Resultados Obtenidos:**
+  - Repositorio auditado y libre de secretos, listo para vincularse a GitHub cuando se autorice.
+  - Estructura documental y procedimental completa para 4 desarrolladores.
+  - Desacoplamiento total garantizado entre `transporte_core`, `transporte_gps_traccar` y `transporte_calidad`.
+- **Errores Encontrados y Soluciones:** Ninguno.
+- **Control de Versiones:** Rama `feature/integracion-devops` preparada para merge en `develop`.
+- **Estado Final:** Fase 1.5 completada localmente. A la espera de autorización para crear el repositorio privado en GitHub.
