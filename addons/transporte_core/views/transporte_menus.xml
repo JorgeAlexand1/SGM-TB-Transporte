@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menú Principal SGM-TB -->
+    <menuitem id="menu_transporte_root"
+              name="Transporte en Buses"
+              sequence="25"
+              groups="group_transporte_user"
+              web_icon="fleet,static/description/icon.png"/>
+
+    <!-- Categoría de Menú: Rutas y Paradas -->
+    <menuitem id="menu_transporte_operaciones"
+              name="Rutas y Paradas"
+              parent="menu_transporte_root"
+              sequence="10"/>
+
+    <!-- Acceso a Rutas -->
+    <menuitem id="menu_transporte_ruta"
+              name="Líneas y Rutas"
+              parent="menu_transporte_operaciones"
+              action="action_transporte_ruta"
+              sequence="10"/>
+
+    <!-- Acceso a Paradas -->
+    <menuitem id="menu_transporte_parada"
+              name="Paradas"
+              parent="menu_transporte_operaciones"
+              action="action_transporte_parada"
+              sequence="20"/>
+</odoo>

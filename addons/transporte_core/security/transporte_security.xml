@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <!-- Categoría de Módulo para Transporte en Buses -->
+        <record id="module_category_transporte" model="ir.module.category">
+            <field name="name">Transporte en Buses (SGM-TB)</field>
+            <field name="description">Gestión y control de transporte de buses, rutas, paradas y calidad.</field>
+            <field name="sequence">20</field>
+        </record>
+
+        <!-- Grupo: Usuario / Consulta (Lectura) -->
+        <record id="group_transporte_user" model="res.groups">
+            <field name="name">Usuario / Consulta</field>
+            <field name="category_id" ref="module_category_transporte"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+            <field name="comment">Permite consultar el catálogo de rutas, paradas y horarios.</field>
+        </record>
+
+        <!-- Grupo: Administrador / Operaciones (CRUD Completo) -->
+        <record id="group_transporte_manager" model="res.groups">
+            <field name="name">Administrador de Operaciones</field>
+            <field name="category_id" ref="module_category_transporte"/>
+            <field name="implied_ids" eval="[(4, ref('group_transporte_user'))]"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+            <field name="comment">Control total sobre la administración de rutas, paradas, buses y despachos.</field>
+        </record>
+    </data>
+</odoo>
