@@ -73,17 +73,17 @@
 - **Archivos Modificados:** `.gitignore`, `docker-compose.yml`, `scripts/cargar_datos_demo.py`, `docs/BITACORA_DESARROLLO.md`, `docs/bitacoras/integrante_1.md`.
 - **Pruebas:** Diagnóstico de llaves SSH (`ssh -T git@github.com`), comprobación de exclusiones con `git status --ignored`, verificación de salud de contenedores (`docker ps`) y prueba de servicio HTTP en puerto 8075 (`curl -sI http://localhost:8075`).
 - **Errores y Soluciones:** Ausencia de llave SSH y credenciales de GitHub en WSL. Se detiene el proceso de push remoto de forma segura para permitir que el usuario configure su acceso autenticado.
-- **Commit:** En preparación en rama `feature/publicacion-github`.
-- **Estado:** Listo para push una vez provista la autenticación y los nombres de usuario del equipo.
+- **Commit:** `6501324` y `b829a19`, fusionados en `develop` y publicados en `origin/develop` y `origin/main`.
+- **Estado:** Completado exitosamente. Repositorio privado en GitHub operativo.
 
 ---
 
 ## Próximas Tareas Pendientes
-- [ ] Configurar llave SSH o token de GitHub para el propietario del repositorio.
-- [ ] Crear el repositorio privado `SGM-TB-Transporte` en GitHub.
-- [ ] Enlazar el remoto `origin` y realizar el push inicial de `main` y `develop`.
+- [x] Configurar llave SSH para el propietario del repositorio (`JorgeAlexand1`).
+- [x] Crear el repositorio privado `SGM-TB-Transporte` en GitHub.
+- [x] Enlazar el remoto `origin` y realizar el push inicial de `main` y `develop`.
 - [ ] Establecer `develop` como rama predeterminada en GitHub y configurar reglas de protección de ramas.
-- [ ] Enviar invitaciones con rol `Write` a los 3 compañeros de equipo.
+- [ ] Enviar invitaciones con rol `Write` a los 3 compañeros de equipo (`@JaimXD`, `titoma1500@gmail.com`, `mfalcon6508@uta.edu.ec`).
 - [ ] Coordinar la clonación inicial y verificación de entornos con los integrantes 2, 3 y 4.
 - [ ] Apoyar al Integrante 3 en el despliegue del contenedor Traccar GPS para la Fase 2.
 

@@ -558,9 +558,11 @@ docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
   - *Solución:* Se detiene el proceso de push remoto antes de cualquier acción invasiva; se formulan instrucciones paso a paso para que el usuario genere la clave SSH o autentique GitHub de manera controlada.
 
 ### Control de Versiones
-- Rama de trabajo: `feature/publicacion-github`.
-- Commits preparados para saneamiento de configuración y documentación de Fase 1.6.
+- Rama de trabajo: `develop`.
+- Commits de saneamiento y documentación: `6501324` y `b829a19`.
+- Ramas publicadas en GitHub: `main` y `develop` con seguimiento remoto (`origin/main`, `origin/develop`).
 
 ### Estado Final
-Fase 1.6 preparada a nivel local. A la espera de que el usuario configure la autenticación en GitHub y proporcione los nombres de usuario de los tres integrantes para proceder a la creación del repositorio privado y el push inicial.
+Fase 1.6 completada exitosamente. Repositorio privado publicado en `git@github.com:JorgeAlexand1/SGM-TB-Transporte.git`. Ramas `main` y `develop` sincronizadas con `origin`. Procedimiento de invitación de colaboradores preparado para `@JaimXD`, `titoma1500@gmail.com` y `mfalcon6508@uta.edu.ec`. Entorno local en puerto 8075 plenamente operativo. Listo para iniciar Fase 2 y Fase 3.
+
 
