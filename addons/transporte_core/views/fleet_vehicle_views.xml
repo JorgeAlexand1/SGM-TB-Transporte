@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Extensión de Vista Formulario de Vehículo de Flota -->
+    <record id="view_fleet_vehicle_form_transporte" model="ir.ui.view">
+        <field name="name">fleet.vehicle.form.transporte</field>
+        <field name="model">fleet.vehicle</field>
+        <field name="inherit_id" ref="fleet.fleet_vehicle_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Operación de Transporte" name="transporte_buses">
+                    <group>
+                        <group string="Configuración de la Unidad">
+                            <field name="es_bus_pasajeros"/>
+                            <field name="tipo_bus" attrs="{'invisible': [('es_bus_pasajeros', '=', False)]}"/>
+                            <field name="estado_operativo" widget="badge"
+                                   decoration-success="estado_operativo == 'disponible'"
+                                   decoration-primary="estado_operativo == 'en_servicio'"
+                                   decoration-warning="estado_operativo == 'mantenimiento'"
+                                   decoration-danger="estado_operativo == 'fuera_servicio'"/>
+                        </group>
+                        <group string="Capacidad de Pasajeros" attrs="{'invisible': [('es_bus_pasajeros', '=', False)]}">
+                            <field name="capacidad_sentados"/>
+                            <field name="capacidad_pie"/>
+                            <field name="capacidad_total" readonly="1" class="oe_subtotal_footer_separator"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Extensión de Vista Árbol de Vehículos de Flota -->
+    <record id="view_fleet_vehicle_tree_transporte" model="ir.ui.view">
+        <field name="name">fleet.vehicle.tree.transporte</field>
+        <field name="model">fleet.vehicle</field>
+        <field name="inherit_id" ref="fleet.fleet_vehicle_view_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='driver_id']" position="after">
+                <field name="tipo_bus" optional="show"/>
+                <field name="capacidad_total" optional="show"/>
+                <field name="estado_operativo" widget="badge"
+                       decoration-success="estado_operativo == 'disponible'"
+                       decoration-primary="estado_operativo == 'en_servicio'"
+                       decoration-warning="estado_operativo == 'mantenimiento'"
+                       decoration-danger="estado_operativo == 'fuera_servicio'"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Acción de Ventana para Buses de Transporte -->
+    <record id="action_transporte_bus" model="ir.actions.act_window">
+        <field name="name">Buses de Pasajeros</field>
+        <field name="res_model">fleet.vehicle</field>
+        <field name="view_mode">tree,kanban,form</field>
+        <field name="domain">[('es_bus_pasajeros', '=', True)]</field>
+        <field name="context">{'default_es_bus_pasajeros': True}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Registra el primer bus de la flota de transporte.
+            </p>
+            <p>
+                Define la placa, modelo, tipo de bus, capacidad de pasajeros y estado operativo.
+            </p>
+        </field>
+    </record>
+</odoo>
