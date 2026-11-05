@@ -16,6 +16,7 @@
 4. [2026-11-04 | Fase 0.4: Creación e Instalación del Módulo Base transporte_core](#2026-11-04--fase-04-creación-e-instalación-del-módulo-base-transporte_core)
 5. [2026-11-04 | Fase 1.1: Catálogo de Paradas Georreferenciadas y Rutas con Secuencias](#2026-11-04--fase-11-catálogo-de-paradas-georreferenciadas-y-rutas-con-secuencias)
 6. [2026-11-04 | Fase 1.2: Extensión de Flota de Buses y Conductores](#2026-11-04--fase-12-extensión-de-flota-de-buses-y-conductores)
+7. [2026-11-04 | Fase 1.3: Planificación, Despacho y Ejecución Manual de Viajes](#2026-11-04--fase-13-planificación-despacho-y-ejecución-manual-de-viajes)
 
 ---
 
@@ -250,5 +251,86 @@
 - **Decisiones Técnicas y Justificación:**
   - Reutilización de `fleet.vehicle` y `hr.employee` mediante `_inherit` en lugar de crear modelos independientes (`transporte.bus` o `transporte.conductor`), preservando toda la potencia nativa de Odoo (odómetros, servicios de flota, contratos y contactos de empleados).
   - Almacenamiento persistente (`store=True`) de campos calculados como `capacidad_total` y `licencia_habilitada` para permitir búsquedas, ordenamientos y filtros eficientes en base de datos.
-- **Control de Versiones:** Rama `feature/core-buses-conductores`.
-- **Estado Final:** Completado. Listo para merge e inicio del Paso 1.3 (Viajes y Despachos).
+- **Control de Versiones:** Rama `feature/core-buses-conductores` fusionada en `develop` (commit `357b722`).
+- **Estado Final:** Completado y validado.
+
+---
+
+## 2026-11-04 | Fase 1.3: Planificación, Despacho y Ejecución Manual de Viajes
+
+- **Fase y Paso:** Fase 1 - Paso 1.3
+- **Objetivo:** Implementar la arquitectura central para la planificación, despacho y ciclo de vida de viajes de buses en transporte público general, garantizando la prevención de solapamientos de horarios para buses y conductores, la generación automática de instantáneas de paradas, el seguimiento operativo manual de llegadas y la sincronización con el estado de la flota.
+- **Actividades Realizadas:**
+  1. Creación de la rama `feature/core-despacho-viajes` a partir de `develop`.
+  2. Refactorización del cómputo de habilitación de licencias en `addons/transporte_core/models/hr_employee.py`:
+     - Se implementó método de búsqueda dinámico `search='_search_licencia_habilitada'` para garantizar que la vigencia frente a `fields.Date.today()` se evalúe en tiempo real en consultas y filtros sin depender de mutaciones en los registros.
+  3. Definición de secuencia numérica automática de viajes en `addons/transporte_core/data/transporte_sequence.xml`:
+     - Prefijo `VJ/%(year)s/` con padding de 5 dígitos y reinicio anual.
+  4. Implementación del modelo central `transporte.viaje` (`addons/transporte_core/models/transporte_viaje.py`):
+     - Campos: `name` (código secuencial), `ruta_id`, `vehicle_id`, `driver_id`, `state` (borrador, programado, en ruta, completado, cancelado), `fecha_viaje`, `hora_salida_planificada`, `hora_llegada_planificada`, `hora_salida_real`, `hora_llegada_real`, `line_ids` (one2many hacia paradas de viaje), `total_paradas_viaje` y `paradas_atendidas` (cómputos de avance operativo).
+     - Validación de coherencia temporal: `@api.constrains('hora_salida_planificada', 'hora_llegada_planificada')` exigiendo llegada posterior a la salida.
+     - Validación de elegibilidad de unidad: el vehículo debe ser `es_bus_pasajeros = True` y su estado operativo inicial debe ser `disponible`.
+     - Validación de elegibilidad de conductor: el empleado debe tener `es_conductor = True` y su licencia debe estar habilitada (`licencia_habilitada = True`).
+     - Validación de integridad de ruta: debe estar activa y contar con al menos una parada configurada en su catálogo de secuencia.
+     - Prevención de solapamientos horarios (`_check_conflictos_horarios`): algoritmo de detección de intersección de rangos `[Salida_A, Llegada_A]` y `[Salida_B, Llegada_B]` para el mismo bus o mismo conductor en viajes en estado `scheduled` o `in_progress`.
+     - Generación automática de instantáneas de paradas (`action_programar`): crea los registros `transporte.viaje.parada` copiando la secuencia y calculando la `hora_estimada` a partir de los minutos teóricos de la ruta.
+     - Sincronización de estados de flota: al iniciar el viaje (`action_iniciar`), el bus pasa automáticamente a `en_servicio`; al completar (`action_completar`) o cancelar (`action_cancelar`), el bus es liberado automáticamente a `disponible`.
+     - Restricción de borrado y modificación: sólo se permite eliminar registros en estado `draft` o `cancelled`. Se bloquea la edición de campos operacionales críticos una vez despachado el bus.
+  5. Implementación del modelo de paradas de viaje `transporte.viaje.parada` (`addons/transporte_core/models/transporte_viaje_parada.py`):
+     - Campos: `viaje_id`, `parada_id`, `secuencia`, `hora_estimada`, `hora_real_llegada`, `estado_parada` (`pendiente`, `atendida`, `omitida`), `observaciones`.
+     - Acción operativa manual `action_registrar_llegada_manual`: estampa la hora real (`fields.Datetime.now()`) y conmuta el estado a `atendida`.
+  6. Configuración de seguridad y ACLs (`security/ir.model.access.csv`):
+     - Permisos CRUD completos para `group_transporte_manager` y permisos de consulta y registro de paradas para `group_transporte_user`.
+  7. Diseño de interfaces de usuario XML (`views/transporte_viaje_views.xml` y `views/transporte_menus.xml`):
+     - Formulario con barra de estado, botones inteligentes de ciclo de vida y tabla inline con botón de registro de parada para el despachador.
+     - Vista de lista (Tree) con etiquetas de color (`widget="badge"`).
+     - Vista Kanban con tarjetas visuales de bus, conductor, ruta y horario.
+     - Vista de Calendario semanal/mensual indexada por horas planificadas.
+     - Menú dedicado "Operación de Viajes" -> "Viajes y Despachos".
+  8. Suite de pruebas unitarias automatizadas (`tests/test_despacho_viajes.py` con 11 pruebas):
+     - `test_01_creacion_viaje_y_secuencia_codigo`: generación automática de correlativo `VJ/...`.
+     - `test_02_programacion_y_generacion_automatica_paradas`: transición a `scheduled` y copia de paradas.
+     - `test_03_rechazo_ruta_sin_paradas`: bloqueo de programación para rutas vacías.
+     - `test_04_rechazo_bus_no_disponible`: validación de flota en mantenimiento o fuera de servicio.
+     - `test_05_rechazo_conductor_licencia_vencida`: validación de fecha de vencimiento de licencia.
+     - `test_06_prevencion_conflictos_horarios_bus`: detección de solapamiento para la misma unidad.
+     - `test_07_prevencion_conflictos_horarios_conductor`: detección de solapamiento para el mismo chofer.
+     - `test_08_ciclo_completo_despacho_y_estados_bus`: flujo completo y sincronización `disponible` $\rightarrow$ `en_servicio` $\rightarrow$ `disponible`.
+     - `test_09_registro_manual_llegada_paradas`: registro de timestamps de llegada en paradas intermedias.
+     - `test_10_cancelacion_viaje_y_liberacion_bus`: cancelación y liberación de flota.
+     - `test_11_permisos_rbac_viajes`: verificación de permisos de usuario operativo y administrador.
+- **Archivos Creados o Modificados:**
+  - `addons/transporte_core/models/transporte_viaje.py` (Nuevo)
+  - `addons/transporte_core/models/transporte_viaje_parada.py` (Nuevo)
+  - `addons/transporte_core/models/hr_employee.py` (Modificado: dynamic search en licencia)
+  - `addons/transporte_core/models/__init__.py` (Modificado)
+  - `addons/transporte_core/data/transporte_sequence.xml` (Nuevo)
+  - `addons/transporte_core/security/ir.model.access.csv` (Modificado)
+  - `addons/transporte_core/views/transporte_viaje_views.xml` (Nuevo)
+  - `addons/transporte_core/views/transporte_menus.xml` (Modificado)
+  - `addons/transporte_core/__manifest__.py` (Modificado)
+  - `addons/transporte_core/tests/test_despacho_viajes.py` (Nuevo)
+  - `addons/transporte_core/tests/__init__.py` (Modificado)
+  - `docs/BITACORA_DESARROLLO.md` (Modificado)
+- **Comandos Relevantes Ejecutados:**
+  ```bash
+  git checkout -b feature/core-despacho-viajes
+  docker exec odoo16_web /entrypoint.sh odoo -d transporte_universitario_gc -u transporte_core --no-http --stop-after-init
+  docker exec odoo16_web /entrypoint.sh odoo -d transporte_universitario_gc -u transporte_core --test-enable --test-tags /transporte_core --no-http --stop-after-init
+  curl -sI http://localhost:8075
+  ```
+- **Resultados Obtenidos:**
+  - Creación de tablas `transporte_viaje` y `transporte_viaje_parada` en PostgreSQL.
+  - 29 de 29 pruebas unitarias automatizadas aprobadas con éxito (`0 failed, 0 error(s)`):
+    * 10 pruebas de catálogo de paradas y rutas.
+    * 8 pruebas de extensión de flota y conductores.
+    * 11 pruebas de despacho y ejecución de viajes.
+  - Verificación de accesibilidad HTTP 303 en `http://localhost:8075` y `http://localhost:8070`.
+  - Bases protegidas `GestionCalidad` y `odoo_pruebas` verificadas intactas.
+- **Errores Encontrados y Soluciones:**
+  - *Advertencia de accesibilidad en vistas Kanban (`ir_ui_view`)*: Se detectó que las etiquetas `<i>` de FontAwesome requerían atributos informativos para accesibilidad. Se agregaron atributos `title` descriptivos (`Ruta`, `Bus`, `Conductor`, `Horario`), eliminando toda advertencia en la carga de vistas.
+- **Decisiones Técnicas y Justificación:**
+  - *Instantánea desacoplada de paradas*: Se implementó `transporte.viaje.parada` como una copia congelada de la ruta al momento de programar el despacho. Esto evita que cambios posteriores en el trazado de la ruta alteren el histórico de viajes ya realizados o en curso.
+  - *Evaluación dinámica de vigencia de licencias*: Implementar `search='_search_licencia_habilitada'` permite que la habilitación se recalcule automáticamente según la fecha del sistema sin necesidad de mutar la base de datos diariamente mediante un cron.
+- **Control de Versiones:** Rama `feature/core-despacho-viajes` lista para merge en `develop`.
+- **Estado Final:** Paso 1.3 completado exitosamente. Listo para Paso 1.4 (Datos de demostración y validación E2E).
