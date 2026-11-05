@@ -501,4 +501,66 @@
   - Desacoplamiento total garantizado entre `transporte_core`, `transporte_gps_traccar` y `transporte_calidad`.
 - **Errores Encontrados y Soluciones:** Ninguno.
 - **Control de Versiones:** Rama `feature/integracion-devops` preparada para merge en `develop`.
-- **Estado Final:** Fase 1.5 completada localmente. A la espera de autorización para crear el repositorio privado en GitHub.
+- **Estado Final:** Fase 1.5 completada y fusionada en `develop` (commit `c514514`).
+
+---
+
+## [2026-11-04] - Fase 1.6: Auditoría de Seguridad, Publicación Privada y Configuración de GitHub
+
+### Actividades Realizadas
+1. **Auditoría Integral de Seguridad Previa a la Publicación:**
+   - Desvinculación de `config/odoo.conf` del índice versionado de Git (`git rm --cached config/odoo.conf`) asegurando que el archivo de configuración real permanezca exclusivamente en el disco local y no se suba al repositorio.
+   - Actualización de `.gitignore` para ignorar específicamente `config/odoo.conf` y mantener únicamente la plantilla pública `!config/odoo.conf.example`.
+   - Parametrización de `docker-compose.yml` utilizando sintaxis `${VAR:-default}` para desacoplar credenciales y puertos de desarrollo local (`ODOO_HOST_PORT`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`).
+   - Parametrización en `scripts/cargar_datos_demo.py` mediante `os.environ.get(...)` para admitir credenciales de base de datos dinámicas.
+   - Inspección rigurosa de historial completo de Git (`git log -S`, `git grep`): comprobada la ausencia total de tokens (`ghp_`, `github_pat_`), claves privadas SSH/RSA/PGP, volcados de base de datos (`.sql`, `.dump`) o archivos confidenciales `.env`.
+
+2. **Verificación de Sesión y Autenticación con GitHub:**
+   - Ejecución de pruebas de diagnóstico (`which gh`, `ssh -T git@github.com`, inspección de `~/.ssh/`).
+   - Resultado: El entorno WSL no cuenta actualmente con un cliente GitHub CLI (`gh`) autenticado ni llaves SSH registradas para `git@github.com`.
+   - Cumpliendo estrictamente la instrucción de no improvisar cuentas ni publicar a ciegas, se documenta y se solicita la configuración de acceso al usuario propietario.
+
+3. **Planificación de Publicación y Protección:**
+   - Nombre propuesto del repositorio: `SGM-TB-Transporte`.
+   - Visibilidad obligatoria: `Private`.
+   - Configuración de ramas: `main` como rama de versiones estables; `develop` como rama base de integración predeterminada.
+   - Reglas de protección de ramas: exigir Pull Request para merge en `develop`, prohibir `git push --force` y commits directos sin revisión.
+
+4. **Procedimiento de Invitación a Colaboradores:**
+   - Definición de rol: Permisos `Write` (Colaborador con escritura, sin privilegios administrativos ni de eliminación).
+   - Requerimiento de nombres de usuario de GitHub para los 3 integrantes antes del envío de invitaciones.
+
+5. **Verificación de Estabilidad Operativa Local:**
+   - Verificación de contenedores Docker (`odoo16_web`, `odoo16_db`, `odoo_acceso_temporal`): todos en estado operativo continuo (Up 3+ horas).
+   - Verificación de acceso HTTP en `http://localhost:8075`: respuesta correcta `HTTP/1.0 303 SEE OTHER` redirigiendo a `/web`.
+   - Bases de datos `GestionCalidad` y `odoo_pruebas` completamente intactas.
+
+### Comandos Ejecutados
+```bash
+git checkout -b feature/publicacion-github
+git rm --cached config/odoo.conf
+git status && git status --ignored
+git log --all -S "PRIVATE KEY" -n 5
+git grep -in "password"
+curl -sI http://localhost:8075
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+```
+
+### Resultados Obtenidos
+- Árbol de trabajo auditado, saneado y libre de secretos o credenciales expuestas.
+- Archivo `config/odoo.conf` protegido contra commits accidentales mediante `.gitignore`.
+- Diagnóstico de autenticación de GitHub completado con éxito, identificando la necesidad de provisión de clave SSH o token por parte del usuario.
+- Contenedores locales y base de datos `transporte_universitario_gc` estables y disponibles sin alteraciones.
+
+### Errores Encontrados y Soluciones
+- **Bloqueo de Autenticación GitHub:**
+  - *Causa:* El sistema WSL no posee llaves SSH en `~/.ssh/` ni sesión de GitHub CLI (`gh`).
+  - *Solución:* Se detiene el proceso de push remoto antes de cualquier acción invasiva; se formulan instrucciones paso a paso para que el usuario genere la clave SSH o autentique GitHub de manera controlada.
+
+### Control de Versiones
+- Rama de trabajo: `feature/publicacion-github`.
+- Commits preparados para saneamiento de configuración y documentación de Fase 1.6.
+
+### Estado Final
+Fase 1.6 preparada a nivel local. A la espera de que el usuario configure la autenticación en GitHub y proporcione los nombres de usuario de los tres integrantes para proceder a la creación del repositorio privado y el push inicial.
+

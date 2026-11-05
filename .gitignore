@@ -24,6 +24,8 @@ secrets/
 id_rsa*
 
 # Configuraciones locales y respaldos de configuración
+config/odoo.conf
+!config/odoo.conf.example
 config/*.bak
 config/*.local
 config/odoo.conf.bak

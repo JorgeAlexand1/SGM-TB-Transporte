@@ -329,14 +329,17 @@ if __name__ == '__main__':
     try:
         import odoo
         from odoo.tools import config
+        db_name = os.environ.get('ODOO_DB_NAME', 'transporte_universitario_gc')
+        db_user = os.environ.get('POSTGRES_USER', 'odoo')
+        db_password = os.environ.get('POSTGRES_PASSWORD', 'odoo_secret_pwd')
         config.parse_config([
             '-c', '/etc/odoo/odoo.conf',
-            '-d', 'transporte_universitario_gc',
+            '-d', db_name,
             '--db_host=db',
-            '--db_user=odoo',
-            '--db_password=odoo_secret_pwd'
+            f'--db_user={db_user}',
+            f'--db_password={db_password}'
         ])
-        registry = odoo.registry('transporte_universitario_gc')
+        registry = odoo.registry(db_name)
         with registry.cursor() as cr:
             env = odoo.api.Environment(cr, odoo.SUPERUSER_ID, {})
             res = cargar_datos_demo(env)

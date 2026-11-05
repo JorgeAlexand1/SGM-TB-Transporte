@@ -61,13 +61,28 @@
 - **Archivos Modificados:** Directorio `docs/` completo y `docs/bitacoras/`.
 - **Pruebas:** Auditoría de historial Git con `git log -S "password"`, verificación de exclusiones en `.gitignore` y comprobación de integridad en base de datos.
 - **Errores y Soluciones:** Ninguno.
-- **Commit:** En preparación en rama `feature/integracion-devops`.
-- **Estado:** Listo para revisión y propuesta de repositorio GitHub.
+- **Commit:** `1a7b95c` (*"docs(devops): prepare multi-developer collaboration, installation guides, and work distribution (step 1.5)"*), fusionado en `develop` (`c514514`).
+- **Estado:** Completado.
+
+---
+
+### 2026-11-04 | Fase 1.6: Publicación Privada y Configuración de GitHub
+- **Actividad:** Ejecución de auditoría de seguridad previa al despliegue remoto: desvinculación de `config/odoo.conf` del índice de Git, actualización de `.gitignore`, parametrización de variables de entorno en `docker-compose.yml` y `scripts/cargar_datos_demo.py`. Verificación del estado de autenticación en GitHub y diagnóstico de conectividad SSH/CLI.
+- **Objetivo:** Garantizar que el repositorio Git se publique de forma 100% privada y segura, sin credenciales expuestas ni dependencias de entornos locales específicos.
+- **Archivos Modificados:** `.gitignore`, `docker-compose.yml`, `scripts/cargar_datos_demo.py`, `docs/BITACORA_DESARROLLO.md`, `docs/bitacoras/integrante_1.md`.
+- **Pruebas:** Diagnóstico de llaves SSH (`ssh -T git@github.com`), comprobación de exclusiones con `git status --ignored`, verificación de salud de contenedores (`docker ps`) y prueba de servicio HTTP en puerto 8075 (`curl -sI http://localhost:8075`).
+- **Errores y Soluciones:** Ausencia de llave SSH y credenciales de GitHub en WSL. Se detiene el proceso de push remoto de forma segura para permitir que el usuario configure su acceso autenticado.
+- **Commit:** En preparación en rama `feature/publicacion-github`.
+- **Estado:** Listo para push una vez provista la autenticación y los nombres de usuario del equipo.
 
 ---
 
 ## Próximas Tareas Pendientes
-- [ ] Presentar propuesta formal del repositorio privado `SGM-TB-Transporte` al docente/líder.
-- [ ] Configurar el repositorio remoto una vez obtenida la autorización.
+- [ ] Configurar llave SSH o token de GitHub para el propietario del repositorio.
+- [ ] Crear el repositorio privado `SGM-TB-Transporte` en GitHub.
+- [ ] Enlazar el remoto `origin` y realizar el push inicial de `main` y `develop`.
+- [ ] Establecer `develop` como rama predeterminada en GitHub y configurar reglas de protección de ramas.
+- [ ] Enviar invitaciones con rol `Write` a los 3 compañeros de equipo.
 - [ ] Coordinar la clonación inicial y verificación de entornos con los integrantes 2, 3 y 4.
 - [ ] Apoyar al Integrante 3 en el despliegue del contenedor Traccar GPS para la Fase 2.
+

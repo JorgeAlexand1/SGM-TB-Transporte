@@ -164,3 +164,4 @@ Si al intentar fusionar `develop` en tu rama existen conflictos:
 > 2. **Prohibido `git push --force`:** Nunca utilices `--force` sobre ramas compartidas (`develop`, `main`).
 > 3. **Prohibido Subir Credenciales:** Nunca incluyas tokens personales de GitHub, contraseñas reales ni archivos `.env`.
 > 4. **No Ocultar Tests Rotos:** Si un test falla tras un cambio, corrígelo de raíz; nunca desactives una aserción para que el runner pase en verde.
+

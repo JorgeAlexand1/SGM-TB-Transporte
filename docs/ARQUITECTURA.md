@@ -189,3 +189,4 @@ El sistema define dos grupos de usuarios en `security/transporte_security.xml`:
 2. **Administrador de Transporte (`group_transporte_manager`):**
    - Permisos CRUD completos sobre todo el catálogo de rutas, paradas, configuración de flota, choferes y viajes.
    - Capacidad de programar, cancelar o restablecer despachos.
+

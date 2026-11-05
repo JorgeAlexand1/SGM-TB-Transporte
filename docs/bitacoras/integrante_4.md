@@ -57,3 +57,4 @@
 - [ ] Crear la estructura del módulo `addons/transporte_calidad/`.
 - [ ] Implementar el modelo de incidencias y sus vistas de formulario y lista.
 - [ ] Desarrollar pruebas unitarias con viajes sintéticos para validar las fórmulas de OTP y cumplimiento.
+
