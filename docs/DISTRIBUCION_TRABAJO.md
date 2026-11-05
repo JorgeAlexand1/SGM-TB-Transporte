@@ -129,3 +129,4 @@ graph TD
 > [!IMPORTANT]
 > **Independencia Arquitectónica Fundamental:**  
 > `transporte_core` **NUNCA** debe importar ni declarar dependencias hacia `transporte_gps_traccar` ni hacia `transporte_calidad`. El flujo de dependencia es estrictamente unidireccional.
+

@@ -79,3 +79,4 @@
 - [ ] Diseñar reporte impreso/PDF de Hoja de Ruta para el despachador.
 - [ ] Optimizar la actualización de contadores de paradas atendidas mediante SQL directo si aumenta el volumen.
 - [ ] Coordinar con el Integrante 3 los campos telemáticos adicionales que se requieran en `transporte.viaje.parada`.
+

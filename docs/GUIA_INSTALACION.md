@@ -215,3 +215,4 @@ Abre tu navegador web e ingresa a:
 > 1. **Prohibido Volcar Bases Producción al Repositorio:** Nunca subas archivos `.dump` o `.sql` a Git.
 > 2. **Bases Locales Independientes:** Cada integrante debe mantener su propia base. Las discrepancias de datos se resuelven mediante scripts idempotentes en `./scripts/` o datos demo en `demo/`.
 > 3. **Mantenimiento y Encuestas:** No instalar módulos como `maintenance` ni `survey` a menos que sea explícitamente acordado por el equipo.
+

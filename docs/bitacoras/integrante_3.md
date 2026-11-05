@@ -52,3 +52,4 @@
 - [ ] Crear la rama de trabajo `feature/gps-traccar` a partir de `develop`.
 - [ ] Redactar el manifiesto y modelos iniciales de `transporte_gps_traccar`.
 - [ ] Coordinar con el Integrante 1 el puerto de red y variables de entorno requeridas para el webhook.
+

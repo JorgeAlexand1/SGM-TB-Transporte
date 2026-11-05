@@ -119,3 +119,4 @@ Antes de autorizar la fusión de cualquier Pull Request hacia `develop`, el Inte
 - [ ] **Sin Secretos:** No se incluyen credenciales, tokens ni rutas absolutas locales del host.
 - [ ] **Bitácora Actualizada:** El autor actualizó su archivo en `docs/bitacoras/integrante_X.md`.
 - [ ] **Idempotencia de Datos:** Si se incorporan datos XML o scripts, son reproducibles y no generan duplicados al reejecutarse.
+
