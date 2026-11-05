@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- ========================================== -->
+        <!-- PARADAS DE DEMOSTRACIÓN SGM-TB             -->
+        <!-- ========================================== -->
+        <record id="demo_parada_01" model="transporte.parada">
+            <field name="codigo">DEMO-PAR-01</field>
+            <field name="name">DEMO SGM-TB - Terminal Norte</field>
+            <field name="latitude">-1.238400</field>
+            <field name="longitude">-78.621500</field>
+            <field name="radio_deteccion">35</field>
+        </record>
+
+        <record id="demo_parada_02" model="transporte.parada">
+            <field name="codigo">DEMO-PAR-02</field>
+            <field name="name">DEMO SGM-TB - Parque Central</field>
+            <field name="latitude">-1.242300</field>
+            <field name="longitude">-78.625400</field>
+            <field name="radio_deteccion">30</field>
+        </record>
+
+        <record id="demo_parada_03" model="transporte.parada">
+            <field name="codigo">DEMO-PAR-03</field>
+            <field name="name">DEMO SGM-TB - Hospital Metropolitano</field>
+            <field name="latitude">-1.247100</field>
+            <field name="longitude">-78.629800</field>
+            <field name="radio_deteccion">40</field>
+        </record>
+
+        <record id="demo_parada_04" model="transporte.parada">
+            <field name="codigo">DEMO-PAR-04</field>
+            <field name="name">DEMO SGM-TB - Plaza Bolívar</field>
+            <field name="latitude">-1.251500</field>
+            <field name="longitude">-78.633200</field>
+            <field name="radio_deteccion">30</field>
+        </record>
+
+        <record id="demo_parada_05" model="transporte.parada">
+            <field name="codigo">DEMO-PAR-05</field>
+            <field name="name">DEMO SGM-TB - Centro Financiero</field>
+            <field name="latitude">-1.256000</field>
+            <field name="longitude">-78.637500</field>
+            <field name="radio_deteccion">35</field>
+        </record>
+
+        <record id="demo_parada_06" model="transporte.parada">
+            <field name="codigo">DEMO-PAR-06</field>
+            <field name="name">DEMO SGM-TB - Mercado Mayorista</field>
+            <field name="latitude">-1.261200</field>
+            <field name="longitude">-78.641000</field>
+            <field name="radio_deteccion">45</field>
+        </record>
+
+        <record id="demo_parada_07" model="transporte.parada">
+            <field name="codigo">DEMO-PAR-07</field>
+            <field name="name">DEMO SGM-TB - Terminal Sur</field>
+            <field name="latitude">-1.268500</field>
+            <field name="longitude">-78.647000</field>
+            <field name="radio_deteccion">50</field>
+        </record>
+
+        <record id="demo_parada_08" model="transporte.parada">
+            <field name="codigo">DEMO-PAR-08</field>
+            <field name="name">DEMO SGM-TB - Zona Industrial Este</field>
+            <field name="latitude">-1.244000</field>
+            <field name="longitude">-78.612000</field>
+            <field name="radio_deteccion">40</field>
+        </record>
+
+        <record id="demo_parada_09" model="transporte.parada">
+            <field name="codigo">DEMO-PAR-09</field>
+            <field name="name">DEMO SGM-TB - Intercambiador Este</field>
+            <field name="latitude">-1.250500</field>
+            <field name="longitude">-78.618500</field>
+            <field name="radio_deteccion">35</field>
+        </record>
+
+        <record id="demo_parada_10" model="transporte.parada">
+            <field name="codigo">DEMO-PAR-10</field>
+            <field name="name">DEMO SGM-TB - Complejo Polideportivo</field>
+            <field name="latitude">-1.258000</field>
+            <field name="longitude">-78.624000</field>
+            <field name="radio_deteccion">30</field>
+        </record>
+
+        <record id="demo_parada_11" model="transporte.parada">
+            <field name="codigo">DEMO-PAR-11</field>
+            <field name="name">DEMO SGM-TB - Av. Circunvalación Norte</field>
+            <field name="latitude">-1.233000</field>
+            <field name="longitude">-78.628000</field>
+            <field name="radio_deteccion">40</field>
+        </record>
+
+        <record id="demo_parada_12" model="transporte.parada">
+            <field name="codigo">DEMO-PAR-12</field>
+            <field name="name">DEMO SGM-TB - Portal de la Sierra</field>
+            <field name="latitude">-1.272000</field>
+            <field name="longitude">-78.652000</field>
+            <field name="radio_deteccion">50</field>
+        </record>
+
+        <!-- ========================================== -->
+        <!-- RUTAS DE DEMOSTRACIÓN SGM-TB               -->
+        <!-- ========================================== -->
+        <record id="demo_ruta_01" model="transporte.ruta">
+            <field name="codigo">DEMO-RUT-01</field>
+            <field name="name">DEMO SGM-TB - Línea 101 Troncal Norte-Sur</field>
+            <field name="tipo_ruta">troncal</field>
+            <field name="tiempo_estimado_min">45</field>
+            <field name="descripcion">Eje troncal de transporte masivo conectando las terminales intermodales Norte y Sur.</field>
+        </record>
+
+        <record id="demo_ruta_01_p1" model="transporte.ruta.parada">
+            <field name="ruta_id" ref="demo_ruta_01"/>
+            <field name="parada_id" ref="demo_parada_01"/>
+            <field name="secuencia">1</field>
+            <field name="tiempo_desde_origen_min">0</field>
+        </record>
+        <record id="demo_ruta_01_p2" model="transporte.ruta.parada">
+            <field name="ruta_id" ref="demo_ruta_01"/>
+            <field name="parada_id" ref="demo_parada_02"/>
+            <field name="secuencia">2</field>
+            <field name="tiempo_desde_origen_min">8</field>
+        </record>
+        <record id="demo_ruta_01_p3" model="transporte.ruta.parada">
+            <field name="ruta_id" ref="demo_ruta_01"/>
+            <field name="parada_id" ref="demo_parada_03"/>
+            <field name="secuencia">3</field>
+            <field name="tiempo_desde_origen_min">16</field>
+        </record>
+        <record id="demo_ruta_01_p4" model="transporte.ruta.parada">
+            <field name="ruta_id" ref="demo_ruta_01"/>
+            <field name="parada_id" ref="demo_parada_04"/>
+            <field name="secuencia">4</field>
+            <field name="tiempo_desde_origen_min">23</field>
+        </record>
+        <record id="demo_ruta_01_p5" model="transporte.ruta.parada">
+            <field name="ruta_id" ref="demo_ruta_01"/>
+            <field name="parada_id" ref="demo_parada_05"/>
+            <field name="secuencia">5</field>
+            <field name="tiempo_desde_origen_min">30</field>
+        </record>
+        <record id="demo_ruta_01_p6" model="transporte.ruta.parada">
+            <field name="ruta_id" ref="demo_ruta_01"/>
+            <field name="parada_id" ref="demo_parada_06"/>
+            <field name="secuencia">6</field>
+            <field name="tiempo_desde_origen_min">38</field>
+        </record>
+        <record id="demo_ruta_01_p7" model="transporte.ruta.parada">
+            <field name="ruta_id" ref="demo_ruta_01"/>
+            <field name="parada_id" ref="demo_parada_07"/>
+            <field name="secuencia">7</field>
+            <field name="tiempo_desde_origen_min">45</field>
+        </record>
+
+        <!-- Ruta 2 -->
+        <record id="demo_ruta_02" model="transporte.ruta">
+            <field name="codigo">DEMO-RUT-02</field>
+            <field name="name">DEMO SGM-TB - Línea 202 Transversal Este-Oeste</field>
+            <field name="tipo_ruta">urbana</field>
+            <field name="tiempo_estimado_min">35</field>
+            <field name="descripcion">Línea de interconexión transversal este-sur articulando zonas industriales y centros de salud.</field>
+        </record>
+
+        <record id="demo_ruta_02_p1" model="transporte.ruta.parada">
+            <field name="ruta_id" ref="demo_ruta_02"/>
+            <field name="parada_id" ref="demo_parada_08"/>
+            <field name="secuencia">1</field>
+            <field name="tiempo_desde_origen_min">0</field>
+        </record>
+        <record id="demo_ruta_02_p2" model="transporte.ruta.parada">
+            <field name="ruta_id" ref="demo_ruta_02"/>
+            <field name="parada_id" ref="demo_parada_09"/>
+            <field name="secuencia">2</field>
+            <field name="tiempo_desde_origen_min">7</field>
+        </record>
+        <record id="demo_ruta_02_p3" model="transporte.ruta.parada">
+            <field name="ruta_id" ref="demo_ruta_02"/>
+            <field name="parada_id" ref="demo_parada_03"/>
+            <field name="secuencia">3</field>
+            <field name="tiempo_desde_origen_min">15</field>
+        </record>
+        <record id="demo_ruta_02_p4" model="transporte.ruta.parada">
+            <field name="ruta_id" ref="demo_ruta_02"/>
+            <field name="parada_id" ref="demo_parada_05"/>
+            <field name="secuencia">4</field>
+            <field name="tiempo_desde_origen_min">22</field>
+        </record>
+        <record id="demo_ruta_02_p5" model="transporte.ruta.parada">
+            <field name="ruta_id" ref="demo_ruta_02"/>
+            <field name="parada_id" ref="demo_parada_10"/>
+            <field name="secuencia">5</field>
+            <field name="tiempo_desde_origen_min">29</field>
+        </record>
+        <record id="demo_ruta_02_p6" model="transporte.ruta.parada">
+            <field name="ruta_id" ref="demo_ruta_02"/>
+            <field name="parada_id" ref="demo_parada_07"/>
+            <field name="secuencia">6</field>
+            <field name="tiempo_desde_origen_min">35</field>
+        </record>
+
+        <!-- Ruta 3 -->
+        <record id="demo_ruta_03" model="transporte.ruta">
+            <field name="codigo">DEMO-RUT-03</field>
+            <field name="name">DEMO SGM-TB - Línea 303 Expreso Periférico</field>
+            <field name="tipo_ruta">interurbana</field>
+            <field name="tiempo_estimado_min">40</field>
+            <field name="descripcion">Servicio rápido perimetral con paradas estratégicas de alta demanda.</field>
+        </record>
+
+        <record id="demo_ruta_03_p1" model="transporte.ruta.parada">
+            <field name="ruta_id" ref="demo_ruta_03"/>
+            <field name="parada_id" ref="demo_parada_11"/>
+            <field name="secuencia">1</field>
+            <field name="tiempo_desde_origen_min">0</field>
+        </record>
+        <record id="demo_ruta_03_p2" model="transporte.ruta.parada">
+            <field name="ruta_id" ref="demo_ruta_03"/>
+            <field name="parada_id" ref="demo_parada_01"/>
+            <field name="secuencia">2</field>
+            <field name="tiempo_desde_origen_min">9</field>
+        </record>
+        <record id="demo_ruta_03_p3" model="transporte.ruta.parada">
+            <field name="ruta_id" ref="demo_ruta_03"/>
+            <field name="parada_id" ref="demo_parada_09"/>
+            <field name="secuencia">3</field>
+            <field name="tiempo_desde_origen_min">20</field>
+        </record>
+        <record id="demo_ruta_03_p4" model="transporte.ruta.parada">
+            <field name="ruta_id" ref="demo_ruta_03"/>
+            <field name="parada_id" ref="demo_parada_06"/>
+            <field name="secuencia">4</field>
+            <field name="tiempo_desde_origen_min">31</field>
+        </record>
+        <record id="demo_ruta_03_p5" model="transporte.ruta.parada">
+            <field name="ruta_id" ref="demo_ruta_03"/>
+            <field name="parada_id" ref="demo_parada_12"/>
+            <field name="secuencia">5</field>
+            <field name="tiempo_desde_origen_min">40</field>
+        </record>
+    </data>
+</odoo>

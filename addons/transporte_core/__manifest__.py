@@ -36,6 +36,9 @@ Diseñado con arquitectura desacoplada, sin dependencias hacia telemetría GPS n
         'views/transporte_viaje_views.xml',
         'views/transporte_menus.xml',
     ],
+    'demo': [
+        'demo/transporte_demo_data.xml',
+    ],
     'installable': True,
     'application': True,
     'auto_install': False,

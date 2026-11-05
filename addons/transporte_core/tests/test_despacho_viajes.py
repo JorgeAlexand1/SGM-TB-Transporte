@@ -387,3 +387,4 @@ class TestTransporteDespachoViajes(TransactionCase):
                 'hora_salida_planificada': ahora,
                 'hora_llegada_planificada': ahora + timedelta(minutes=40),
             })
+
