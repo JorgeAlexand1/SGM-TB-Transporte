@@ -7,6 +7,19 @@
               groups="group_transporte_user"
               web_icon="fleet,static/description/icon.png"/>
 
+    <!-- Categoría de Menú: Operación de Viajes -->
+    <menuitem id="menu_transporte_despachos"
+              name="Operación de Viajes"
+              parent="menu_transporte_root"
+              sequence="5"/>
+
+    <!-- Acceso a Viajes y Despachos -->
+    <menuitem id="menu_transporte_viaje"
+              name="Viajes y Despachos"
+              parent="menu_transporte_despachos"
+              action="action_transporte_viaje"
+              sequence="10"/>
+
     <!-- Categoría de Menú: Rutas y Paradas -->
     <menuitem id="menu_transporte_operaciones"
               name="Rutas y Paradas"

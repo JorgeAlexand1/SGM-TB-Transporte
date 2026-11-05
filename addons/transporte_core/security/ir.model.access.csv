@@ -5,3 +5,7 @@ access_transporte_ruta_user,transporte.ruta.user,model_transporte_ruta,group_tra
 access_transporte_ruta_manager,transporte.ruta.manager,model_transporte_ruta,group_transporte_manager,1,1,1,1
 access_transporte_ruta_parada_user,transporte.ruta.parada.user,model_transporte_ruta_parada,group_transporte_user,1,0,0,0
 access_transporte_ruta_parada_manager,transporte.ruta.parada.manager,model_transporte_ruta_parada,group_transporte_manager,1,1,1,1
+access_transporte_viaje_user,transporte.viaje.user,model_transporte_viaje,group_transporte_user,1,0,0,0
+access_transporte_viaje_manager,transporte.viaje.manager,model_transporte_viaje,group_transporte_manager,1,1,1,1
+access_transporte_viaje_parada_user,transporte.viaje.parada.user,model_transporte_viaje_parada,group_transporte_user,1,0,0,0
+access_transporte_viaje_parada_manager,transporte.viaje.parada.manager,model_transporte_viaje_parada,group_transporte_manager,1,1,1,1

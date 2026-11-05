@@ -28,10 +28,12 @@ Diseñado con arquitectura desacoplada, sin dependencias hacia telemetría GPS n
     'data': [
         'security/transporte_security.xml',
         'security/ir.model.access.csv',
+        'data/transporte_sequence.xml',
         'views/transporte_parada_views.xml',
         'views/transporte_ruta_views.xml',
         'views/fleet_vehicle_views.xml',
         'views/hr_employee_views.xml',
+        'views/transporte_viaje_views.xml',
         'views/transporte_menus.xml',
     ],
     'installable': True,

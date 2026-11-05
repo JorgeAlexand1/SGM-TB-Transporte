@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista Árbol (Lista) de Viajes -->
+    <record id="view_transporte_viaje_tree" model="ir.ui.view">
+        <field name="name">transporte.viaje.tree</field>
+        <field name="model">transporte.viaje</field>
+        <field name="arch" type="xml">
+            <tree string="Despachos y Viajes de Buses" decoration-info="state == 'draft'" decoration-primary="state == 'scheduled'" decoration-success="state == 'in_progress'" decoration-muted="state in ('completed', 'cancelled')">
+                <field name="name"/>
+                <field name="ruta_id"/>
+                <field name="vehicle_id"/>
+                <field name="driver_id"/>
+                <field name="fecha_viaje"/>
+                <field name="hora_salida_planificada"/>
+                <field name="hora_llegada_planificada"/>
+                <field name="paradas_atendidas" string="Atendidas"/>
+                <field name="total_paradas_viaje" string="Total Paradas"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-primary="state == 'scheduled'"
+                       decoration-success="state == 'in_progress'"
+                       decoration-warning="state == 'completed'"
+                       decoration-danger="state == 'cancelled'"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vista Formulario de Viaje -->
+    <record id="view_transporte_viaje_form" model="ir.ui.view">
+        <field name="name">transporte.viaje.form</field>
+        <field name="model">transporte.viaje</field>
+        <field name="arch" type="xml">
+            <form string="Despacho de Bus">
+                <header>
+                    <button name="action_programar" string="Programar Despacho" type="object" class="oe_highlight" states="draft"/>
+                    <button name="action_iniciar" string="Iniciar Recorrido" type="object" class="btn-success" states="scheduled"/>
+                    <button name="action_completar" string="Finalizar Viaje" type="object" class="btn-primary" states="in_progress"/>
+                    <button name="action_cancelar" string="Cancelar Viaje" type="object" states="draft,scheduled,in_progress"/>
+                    <button name="action_borrador" string="Restablecer a Borrador" type="object" states="cancelled"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,scheduled,in_progress,completed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="Código de Despacho"/>
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Asignación Operativa">
+                            <field name="ruta_id" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                            <field name="vehicle_id" attrs="{'readonly': [('state', '!=', 'draft')]}"
+                                   domain="[('es_bus_pasajeros', '=', True), ('estado_operativo', '=', 'disponible')]"/>
+                            <field name="driver_id" attrs="{'readonly': [('state', '!=', 'draft')]}"
+                                   domain="[('es_conductor', '=', True)]"/>
+                            <field name="fecha_viaje" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                        </group>
+                        <group string="Planificación y Ejecución">
+                            <field name="hora_salida_planificada" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                            <field name="hora_llegada_planificada" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                            <field name="hora_salida_real" attrs="{'invisible': [('state', 'in', ('draft', 'scheduled'))]}"/>
+                            <field name="hora_llegada_real" attrs="{'invisible': [('state', '!=', 'completed')]}"/>
+                            <field name="total_paradas_viaje" invisible="1"/>
+                            <field name="paradas_atendidas" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Control de Paradas del Recorrido" name="paradas_viaje">
+                            <field name="parada_line_ids" readonly="1">
+                                <tree string="Paradas del Viaje" decoration-success="estado_parada == 'atendida'" decoration-danger="estado_parada == 'omitida'" decoration-muted="estado_parada == 'pendiente'">
+                                    <field name="secuencia"/>
+                                    <field name="parada_id"/>
+                                    <field name="parada_codigo" optional="show"/>
+                                    <field name="hora_planificada"/>
+                                    <field name="hora_llegada_real"/>
+                                    <field name="estado_parada" widget="badge"
+                                           decoration-success="estado_parada == 'atendida'"
+                                           decoration-danger="estado_parada == 'omitida'"
+                                           decoration-muted="estado_parada == 'pendiente'"/>
+                                    <field name="metodo_registro" optional="show"/>
+                                    <field name="observaciones" optional="show"/>
+                                    <button name="action_registrar_llegada_manual" string="Marcar Llegada"
+                                            type="object" icon="fa-check-circle"
+                                            class="btn-sm btn-outline-success"
+                                            attrs="{'invisible': ['|', ('estado_parada', '=', 'atendida'), ('parent.state', '!=', 'in_progress')]}"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Observaciones Operativas" name="observaciones">
+                            <field name="notas" placeholder="Anotaciones de despacho, condiciones de tráfico o contingencias..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista Kanban de Viajes -->
+    <record id="view_transporte_viaje_kanban" model="ir.ui.view">
+        <field name="name">transporte.viaje.kanban</field>
+        <field name="model">transporte.viaje</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" class="o_kanban_small_column" records_draggable="false">
+                <field name="name"/>
+                <field name="ruta_id"/>
+                <field name="vehicle_id"/>
+                <field name="driver_id"/>
+                <field name="hora_salida_planificada"/>
+                <field name="hora_llegada_planificada"/>
+                <field name="state"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_global_click p-2">
+                            <div class="o_kanban_record_top mb-1">
+                                <div class="o_kanban_record_headings">
+                                    <strong class="o_kanban_record_title"><field name="name"/></strong>
+                                </div>
+                                <span class="badge rounded-pill"
+                                      t-attf-class="#{record.state.raw_value == 'in_progress' ? 'bg-success' : (record.state.raw_value == 'scheduled' ? 'bg-primary' : (record.state.raw_value == 'completed' ? 'bg-secondary' : 'bg-info'))}">
+                                    <field name="state"/>
+                                </span>
+                            </div>
+                            <div class="text-muted small">
+                                <div><i class="fa fa-map-signs me-1" title="Ruta"/> <field name="ruta_id"/></div>
+                                <div><i class="fa fa-bus me-1" title="Bus"/> <field name="vehicle_id"/></div>
+                                <div><i class="fa fa-user me-1" title="Conductor"/> <field name="driver_id"/></div>
+                                <div><i class="fa fa-clock-o me-1" title="Horario"/> <field name="hora_salida_planificada"/></div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Vista Calendario de Viajes -->
+    <record id="view_transporte_viaje_calendar" model="ir.ui.view">
+        <field name="name">transporte.viaje.calendar</field>
+        <field name="model">transporte.viaje</field>
+        <field name="arch" type="xml">
+            <calendar string="Despachos de Buses" date_start="hora_salida_planificada" date_stop="hora_llegada_planificada" color="state" mode="week">
+                <field name="name"/>
+                <field name="ruta_id"/>
+                <field name="vehicle_id"/>
+                <field name="driver_id"/>
+                <field name="state"/>
+            </calendar>
+        </field>
+    </record>
+
+    <!-- Vista Búsqueda y Filtros de Viajes -->
+    <record id="view_transporte_viaje_search" model="ir.ui.view">
+        <field name="name">transporte.viaje.search</field>
+        <field name="model">transporte.viaje</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Viajes">
+                <field name="name" string="Código"/>
+                <field name="ruta_id"/>
+                <field name="vehicle_id"/>
+                <field name="driver_id"/>
+                <separator/>
+                <filter string="Hoy" name="filter_hoy" domain="[('fecha_viaje', '=', context_today())]"/>
+                <filter string="Programados" name="filter_scheduled" domain="[('state', '=', 'scheduled')]"/>
+                <filter string="En Ruta" name="filter_in_progress" domain="[('state', '=', 'in_progress')]"/>
+                <filter string="Completados" name="filter_completed" domain="[('state', '=', 'completed')]"/>
+                <separator/>
+                <group expand="0" string="Agrupar Por">
+                    <filter string="Ruta" name="group_by_ruta" context="{'group_by': 'ruta_id'}"/>
+                    <filter string="Bus" name="group_by_bus" context="{'group_by': 'vehicle_id'}"/>
+                    <filter string="Conductor" name="group_by_driver" context="{'group_by': 'driver_id'}"/>
+                    <filter string="Estado" name="group_by_state" context="{'group_by': 'state'}"/>
+                    <filter string="Fecha" name="group_by_fecha" context="{'group_by': 'fecha_viaje'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Acción de Ventana para Viajes y Despachos -->
+    <record id="action_transporte_viaje" model="ir.actions.act_window">
+        <field name="name">Viajes y Despachos</field>
+        <field name="res_model">transporte.viaje</field>
+        <field name="view_mode">tree,kanban,calendar,form</field>
+        <field name="search_view_id" ref="view_transporte_viaje_search"/>
+        <field name="context">{'search_default_filter_hoy': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crea y despacha un nuevo viaje de bus.
+            </p>
+            <p>
+                Asigna un bus operativo, un conductor habilitado con licencia vigente y una ruta con paradas para planificar y ejecutar el servicio.
+            </p>
+        </field>
+    </record>
+</odoo>

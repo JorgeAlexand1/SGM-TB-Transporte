@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Secuencia correlativa de viajes de bus -->
+        <record id="seq_transporte_viaje" model="ir.sequence">
+            <field name="name">Secuencia de Viajes de Buses</field>
+            <field name="code">transporte.viaje</field>
+            <field name="prefix">VJ/%(year)s/</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+    </data>
+</odoo>
