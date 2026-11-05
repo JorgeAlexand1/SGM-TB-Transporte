@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Extensión de Vista Formulario de Empleados (Conductores) -->
+    <record id="view_employee_form_transporte" model="ir.ui.view">
+        <field name="name">hr.employee.form.transporte</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Conducción de Transporte" name="transporte_conductores">
+                    <group>
+                        <group string="Asignación Operativa">
+                            <field name="es_conductor"/>
+                            <field name="licencia_habilitada" widget="boolean_toggle" readonly="1"
+                                   attrs="{'invisible': [('es_conductor', '=', False)]}"/>
+                        </group>
+                        <group string="Licencia de Conducir Profesional" attrs="{'invisible': [('es_conductor', '=', False)]}">
+                            <field name="licencia_nro" attrs="{'required': [('es_conductor', '=', True)]}"/>
+                            <field name="licencia_categoria" attrs="{'required': [('es_conductor', '=', True)]}"/>
+                            <field name="licencia_fecha_vencimiento" attrs="{'required': [('es_conductor', '=', True)]}"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Extensión de Vista Árbol de Empleados -->
+    <record id="view_employee_tree_transporte" model="ir.ui.view">
+        <field name="name">hr.employee.tree.transporte</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='work_email']" position="after">
+                <field name="es_conductor" optional="show"/>
+                <field name="licencia_nro" optional="show"/>
+                <field name="licencia_habilitada" widget="boolean_toggle" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Acción de Ventana para Conductores de Bus -->
+    <record id="action_transporte_conductor" model="ir.actions.act_window">
+        <field name="name">Conductores de Buses</field>
+        <field name="res_model">hr.employee</field>
+        <field name="view_mode">tree,kanban,form</field>
+        <field name="domain">[('es_conductor', '=', True)]</field>
+        <field name="context">{'default_es_conductor': True}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Registra un conductor para la operación de buses.
+            </p>
+            <p>
+                Asigna datos de contacto, número de licencia profesional, categoría y fecha de vigencia.
+            </p>
+        </field>
+    </record>
+</odoo>

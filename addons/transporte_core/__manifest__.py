@@ -11,8 +11,8 @@ Este módulo constituye la capa base operativa del sistema de transporte,
 proporcionando los cimientos para:
 - Catálogo maestro de paradas georreferenciadas con radio de detección.
 - Definición de rutas y secuencias ordenadas de paradas con tiempos de viaje.
-- Extensión de unidades de flota (buses) sobre fleet.vehicle (Paso 1.2).
-- Extensión de perfiles de conductores sobre hr.employee (Paso 1.2).
+- Extensión de unidades de flota (buses) sobre fleet.vehicle (capacidades, tipo, estado operativo).
+- Extensión de perfiles de conductores sobre hr.employee (licencias, vigencia, habilitación).
 - Despacho y ejecución operativa manual de viajes (Paso 1.3).
 
 Diseñado con arquitectura desacoplada, sin dependencias hacia telemetría GPS ni calidad.
@@ -30,6 +30,8 @@ Diseñado con arquitectura desacoplada, sin dependencias hacia telemetría GPS n
         'security/ir.model.access.csv',
         'views/transporte_parada_views.xml',
         'views/transporte_ruta_views.xml',
+        'views/fleet_vehicle_views.xml',
+        'views/hr_employee_views.xml',
         'views/transporte_menus.xml',
     ],
     'installable': True,

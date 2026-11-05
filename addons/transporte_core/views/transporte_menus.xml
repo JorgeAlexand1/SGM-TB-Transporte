@@ -26,4 +26,24 @@
               parent="menu_transporte_operaciones"
               action="action_transporte_parada"
               sequence="20"/>
+
+    <!-- Categoría de Menú: Flota y Conductores -->
+    <menuitem id="menu_transporte_recursos"
+              name="Flota y Personal"
+              parent="menu_transporte_root"
+              sequence="20"/>
+
+    <!-- Acceso a Buses de Pasajeros -->
+    <menuitem id="menu_transporte_bus"
+              name="Buses de Pasajeros"
+              parent="menu_transporte_recursos"
+              action="action_transporte_bus"
+              sequence="10"/>
+
+    <!-- Acceso a Conductores -->
+    <menuitem id="menu_transporte_conductor"
+              name="Conductores de Bus"
+              parent="menu_transporte_recursos"
+              action="action_transporte_conductor"
+              sequence="20"/>
 </odoo>
