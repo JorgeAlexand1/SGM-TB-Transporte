@@ -1,6 +1,7 @@
 # Bitácora Individual de Desarrollo
 ## Integrante 4 — Calidad del Servicio y Tableros KPIs
 
+**Integrante:** Colaborador (`@JaimXD`)  
 **Rol:** Integrante 4  
 **Responsabilidades:** Desarrollo del módulo analítico `transporte_calidad`, gestión de incidencias operativas, cálculo de métricas de calidad de servicio (OTP, cumplimiento de ruta, disponibilidad de flota, tasa de incidencias) y diseño de tableros ejecutivos.  
 **Rama Asignada:** `feature/calidad-kpis`.  

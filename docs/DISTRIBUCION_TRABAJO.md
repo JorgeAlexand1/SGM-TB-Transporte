@@ -4,6 +4,14 @@
 **Versión del Documento:** 1.0  
 **Fecha:** Noviembre 2026  
 **Equipo de Proyecto:** 4 Desarrolladores  
+**Repositorio Oficial (Privado):** `git@github.com:JorgeAlexand1/SGM-TB-Transporte.git`
+
+| Rol | Área de Responsabilidad | Cuenta GitHub / Correo |
+| :--- | :--- | :--- |
+| **Integrante 1 (Líder / DevOps)** | DevOps, Docker, Integración Git, Gobernanza de PRs | `@JorgeAlexand1` (`jsailema4049@uta.edu.ec`) |
+| **Integrante 2** | Operaciones de Buses, Conductores y Viajes | `titoma1500@gmail.com` |
+| **Integrante 3** | Telemetría GPS y Servidor Traccar (`transporte_gps_traccar`) | `mfalcon6508@uta.edu.ec` |
+| **Integrante 4** | Gestión de Calidad, KPIs e Incidencias (`transporte_calidad`) | `@JaimXD` |  
 
 ---
 

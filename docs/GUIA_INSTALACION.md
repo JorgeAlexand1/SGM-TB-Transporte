@@ -47,7 +47,7 @@ Una vez que el repositorio privado `SGM-TB-Transporte` esté habilitado en GitHu
 
 ```bash
 # Clonar mediante SSH (recomendado) o HTTPS
-git clone git@github.com:<organizacion>/SGM-TB-Transporte.git odoo16-sgmtb
+git clone git@github.com:JorgeAlexand1/SGM-TB-Transporte.git odoo16-sgmtb
 cd odoo16-sgmtb
 
 # Cambiar inmediatamente a la rama de integración 'develop'

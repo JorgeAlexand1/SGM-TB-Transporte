@@ -1,6 +1,7 @@
 # Bitácora Individual de Desarrollo
 ## Integrante 3 — GPS y Traccar
 
+**Integrante:** Colaborador (`mfalcon6508@uta.edu.ec`)  
 **Rol:** Integrante 3  
 **Responsabilidades:** Desarrollo del módulo telemático `transporte_gps_traccar`, configuración de Traccar Server, ingesta de posiciones vía webhook/API REST, geocercas para detección automática de arribos a paradas y resiliencia ante pérdida de señal GPS.  
 **Rama Asignada:** `feature/gps-traccar`.  

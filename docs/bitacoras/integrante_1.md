@@ -1,9 +1,10 @@
 # Bitácora Individual de Desarrollo
 ## Integrante 1 — Coordinación Técnica, DevOps e Integración
 
-**Rol:** Integrante 1  
+**Integrante:** Jorge Sailema (`@JorgeAlexand1` / `jsailema4049@uta.edu.ec`)  
+**Rol:** Integrante 1 (Líder / DevOps)  
 **Responsabilidades:** Gobernanza del repositorio Git, arquitectura contenerizada, Docker Compose, configuración de Odoo/PostgreSQL, automatización de pruebas, empaquetado de módulos, revisión de Pull Requests y releases.  
-**Rama Asignada:** `feature/integracion-devops` / Gobernanza de `develop` y `main`.  
+**Rama Asignada:** Gobernanza de `develop` y `main`.  
 
 ---
 

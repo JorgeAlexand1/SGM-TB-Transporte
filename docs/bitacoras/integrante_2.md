@@ -1,6 +1,7 @@
 # Bitácora Individual de Desarrollo
 ## Integrante 2 — Operaciones de Buses y Conductores
 
+**Integrante:** Colaborador (`titoma1500@gmail.com`)  
 **Rol:** Integrante 2  
 **Responsabilidades:** Mantenimiento y evolución de la capa funcional operativa en `transporte_core` (rutas, paradas, secuencias, buses, capacidades, licencias de choferes, viajes, prevención de solapamientos y ejecución manual de despachos).  
 **Rama Asignada:** `feature/operaciones-mejoras`.  
