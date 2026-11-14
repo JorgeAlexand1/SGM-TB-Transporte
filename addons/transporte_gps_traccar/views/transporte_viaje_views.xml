@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_transporte_viaje_form_gps" model="ir.ui.view">
+        <field name="name">transporte.viaje.form.gps</field>
+        <field name="model">transporte.viaje</field>
+        <field name="inherit_id" ref="transporte_core.view_transporte_viaje_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_ver_mapa_gps" string="Ver mapa GPS" type="object"
+                        attrs="{'invisible': [('state', 'in', ('draft', 'scheduled'))]}"/>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Telemetría GPS" name="telemetria_gps">
+                    <group>
+                        <group>
+                            <field name="cantidad_posiciones"/>
+                            <field name="distancia_recorrida_km"/>
+                        </group>
+                        <group>
+                            <field name="velocidad_maxima_kmh"/>
+                            <field name="velocidad_media_kmh"/>
+                        </group>
+                    </group>
+                    <button name="action_ver_posiciones" type="object" string="Ver posiciones del viaje" class="btn-link"/>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

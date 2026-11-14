@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_gps_map" model="ir.actions.client">
+        <field name="name">Mapa GPS</field>
+        <field name="tag">transporte_gps_map</field>
+    </record>
+
+    <menuitem id="menu_gps_map" name="Mapa de Buses" parent="menu_gps_root"
+              action="action_gps_map" sequence="10"/>
+</odoo>

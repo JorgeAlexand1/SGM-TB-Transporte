@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_fleet_vehicle_form_gps" model="ir.ui.view">
+        <field name="name">fleet.vehicle.form.gps</field>
+        <field name="model">fleet.vehicle</field>
+        <field name="inherit_id" ref="fleet.fleet_vehicle_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="GPS / Traccar" name="gps_traccar">
+                    <group>
+                        <group string="Dispositivo">
+                            <field name="traccar_device_id"/>
+                            <field name="estado_senal" widget="badge"
+                                   decoration-success="estado_senal == 'con_senal'"
+                                   decoration-danger="estado_senal == 'sin_senal'"
+                                   decoration-muted="estado_senal == 'sin_datos'"/>
+                            <button name="action_sincronizar_traccar" type="object" string="Sincronizar ahora"
+                                    class="btn-primary" attrs="{'invisible': [('traccar_device_id', '=', 0)]}"/>
+                        </group>
+                        <group string="Última posición">
+                            <field name="ultima_posicion_fecha"/>
+                            <field name="ultima_latitud"/>
+                            <field name="ultima_longitud"/>
+                            <field name="ultima_velocidad_kmh"/>
+                            <field name="posicion_count"/>
+                            <button name="action_ver_posiciones" type="object" string="Ver historial de posiciones"
+                                    class="btn-link" attrs="{'invisible': [('posicion_count', '=', 0)]}"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_fleet_vehicle_tree_gps" model="ir.ui.view">
+        <field name="name">fleet.vehicle.tree.gps</field>
+        <field name="model">fleet.vehicle</field>
+        <field name="inherit_id" ref="fleet.fleet_vehicle_view_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='driver_id']" position="after">
+                <field name="estado_senal" widget="badge" optional="show"
+                       decoration-success="estado_senal == 'con_senal'"
+                       decoration-danger="estado_senal == 'sin_senal'"
+                       decoration-muted="estado_senal == 'sin_datos'"/>
+                <field name="ultima_posicion_fecha" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
