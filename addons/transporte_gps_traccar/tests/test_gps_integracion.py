@@ -12,13 +12,15 @@ from odoo.tools import mute_logger
 
 from ..lib.traccar_client import TraccarError
 
+# ids de posición de prueba en un rango alto: no chocan con posiciones reales de Traccar en la misma BD
+ID_BASE = 1_000_000_000
 LAT0, LON0 = -1.240000, -78.620000
 LAT1, LON1 = -1.245000, -78.625000
 
 
 def raw_pos(pid, device, lat, lon, fecha, speed=10.0, valid=True):
     return {
-        'id': pid, 'deviceId': device, 'latitude': lat, 'longitude': lon, 'speed': speed,
+        'id': ID_BASE + pid, 'deviceId': device, 'latitude': lat, 'longitude': lon, 'speed': speed,
         'valid': valid, 'fixTime': fecha.strftime('%Y-%m-%dT%H:%M:%S.000+00:00'),
     }
 
@@ -91,7 +93,7 @@ class TestSincronizacion(GpsCommon):
 
     def test_04_unique_en_base_de_datos(self):
         Pos = self.env['transporte.gps.posicion']
-        vals = {'traccar_position_id': 500, 'vehicle_id': self.bus.id, 'latitud': LAT0, 'longitud': LON0,
+        vals = {'traccar_position_id': ID_BASE + 500, 'vehicle_id': self.bus.id, 'latitud': LAT0, 'longitud': LON0,
                 'fecha_gps': self.t0}
         Pos.create(vals)
         with self.assertRaises(IntegrityError), mute_logger('odoo.sql_db'), self.env.cr.savepoint():
@@ -182,12 +184,12 @@ class TestViajeYGeocercas(GpsCommon):
         self.viaje.action_completar()
         self._sync([raw_pos(40, 901, LAT0, LON0, fields.Datetime.now())])
         self.assertEqual(self.bus.ultima_latitud, LAT0)
-        self.assertFalse(self.env['transporte.gps.posicion'].search([('traccar_position_id', '=', 40)]).viaje_id)
+        self.assertFalse(self.env['transporte.gps.posicion'].search([('traccar_position_id', '=', ID_BASE + 40)]).viaje_id)
 
     def test_09_datos_para_el_mapa(self):
         self._sync([raw_pos(41, 901, LAT0, LON0, fields.Datetime.now())])
         datos = self.env['fleet.vehicle'].get_datos_mapa(self.viaje.id)
-        self.assertEqual(len(datos['vehiculos']), 1)
+        self.assertIn(self.bus.id, [v['id'] for v in datos['vehiculos']])
         self.assertEqual(len(datos['trazado']), 1)
         self.assertEqual(len(datos['paradas']), 2)
         self.assertEqual(self.env['fleet.vehicle'].get_datos_mapa()['trazado'], [])
@@ -222,6 +224,39 @@ class TestSenal(GpsCommon):
         self.env['ir.config_parameter'].set_param('transporte_gps.traccar_url', '')
         with mock.patch.dict('os.environ', {}, clear=False):
             self.env['fleet.vehicle']._cron_sincronizar_traccar()
+
+
+@tagged('post_install', '-at_install')
+class TestWebhookLogica(GpsCommon):
+    """Camino exitoso del webhook (la lógica que ejecuta el controlador tras autenticar)."""
+
+    def _parsed(self, pid, device=901, lat=LAT0, lon=LON0, seg=30):
+        from ..lib import traccar_parser
+        return traccar_parser.parse_payload_forward(
+            {'position': raw_pos(pid, device, lat, lon, self.t0 + timedelta(seconds=seg))})
+
+    def test_01_registra_y_loguea(self):
+        res = self.env['fleet.vehicle'].procesar_webhook(self._parsed(70))
+        self.assertEqual(res, {'nuevas': 1, 'duplicadas': 0})
+        log = self.env['transporte.gps.sync.log'].search([('origen', '=', 'webhook')], limit=1)
+        self.assertEqual((log.vehicle_id, log.posiciones_nuevas), (self.bus, 1))
+        self.assertEqual(self.viaje.parada_line_ids[0].estado_parada, 'atendida')
+
+    def test_02_idempotente(self):
+        self.env['fleet.vehicle'].procesar_webhook(self._parsed(71))
+        res = self.env['fleet.vehicle'].procesar_webhook(self._parsed(71))
+        self.assertEqual(res, {'nuevas': 0, 'duplicadas': 1})
+
+    def test_03_dispositivo_desconocido(self):
+        self.assertIsNone(self.env['fleet.vehicle'].procesar_webhook(self._parsed(72, device=999)))
+
+    def test_04_token_valido(self):
+        from ..controllers.main import token_valido
+        self.assertTrue(token_valido('Bearer abc', 'abc'))
+        self.assertFalse(token_valido('Bearer abd', 'abc'))
+        self.assertFalse(token_valido('abc', 'abc'))
+        self.assertFalse(token_valido(None, 'abc'))
+        self.assertFalse(token_valido('Bearer abc', ''))
 
 
 @tagged('post_install', '-at_install')

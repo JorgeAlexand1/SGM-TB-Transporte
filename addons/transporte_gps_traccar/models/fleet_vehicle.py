@@ -127,6 +127,23 @@ class FleetVehicle(models.Model):
         }
 
     @api.model
+    def procesar_webhook(self, parsed, inicio=None):
+        """Registra una posición recibida por webhook. None si el dispositivo no está asociado a un bus."""
+        inicio = inicio if inicio is not None else time.monotonic()
+        bus = self.search([('traccar_device_id', '=', parsed['traccar_device_id'])], limit=1)
+        if not bus:
+            return None
+        res = self.env['transporte.gps.posicion'].registrar_posiciones(bus, [parsed])
+        bus._procesar_posiciones_nuevas(res['nuevas'])
+        self.env['transporte.gps.sync.log'].sudo().create({
+            'vehicle_id': bus.id, 'origen': 'webhook', 'posiciones_traidas': 1,
+            'posiciones_nuevas': len(res['nuevas']), 'duplicados_descartados': res['duplicadas'],
+            'posiciones_invalidas': res['invalidas'],
+            'duracion_ms': int((time.monotonic() - inicio) * 1000),
+        })
+        return {'nuevas': len(res['nuevas']), 'duplicadas': res['duplicadas']}
+
+    @api.model
     def _cron_sincronizar_traccar(self):
         buses = self.search([('traccar_device_id', '>', 0)])
         if not buses:

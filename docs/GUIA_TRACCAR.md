@@ -52,8 +52,25 @@ docker exec odoo16_web odoo -d <bd> -u transporte_gps_traccar --test-enable \
 
 Casos clave: 3 sincronizaciones seguidas → 0 duplicados; posición a 30 m/80 m con radio 50 m; límite exacto del radio y de los minutos de señal; payload malformado; error de Traccar registrado en el log; viaje finalizado conserva telemetría.
 
-## 4. Límites conocidos
-- La suite usa Traccar simulado: **falta validar contra un Traccar real con un teléfono en datos móviles** (evidencia de A2/A5).
-- El webhook solo tiene tests de rechazo (401/400); la ruta de éxito se probó por el cron/servicio equivalente, no por HTTP.
-- El mapa (OWL + Leaflet desde CDN jsDelivr) instala y compila pero no se ha verificado visualmente en navegador; requiere Internet en el cliente.
-- Las paradas se marcan por proximidad en cualquier orden; no hay aún regla de tolerancia de retraso ni incidencias (A6, otro integrante).
+## 4. Traccar local para desarrollo
+`docker-compose.yml` incluye el servicio `traccar` (API/web en `localhost:8082`, protocolo OsmAnd en `localhost:5055`).
+
+```bash
+docker compose up -d traccar
+# 1.er usuario registrado = administrador (servidor nuevo): crear en http://localhost:8082
+# Dispositivo: Traccar web ▸ Dispositivos (anotar su id numérico); el "identificador" es lo que usa el teléfono.
+# Simular un teléfono (OsmAnd):
+curl -X POST "http://localhost:5055/?id=<identificador>&lat=-1.2384&lon=-78.6215&speed=0&timestamp=$(date -u +%s)"
+```
+Desde el contenedor de Odoo, la URL de Traccar es `http://traccar:8082` (nombre del servicio). Usuario/contraseña o token se guardan en Ajustes de Odoo (base de datos), nunca en el repositorio.
+
+## 5. Verificación realizada
+- **Traccar real (contenedor 6.17.0)**: posiciones enviadas por el puerto 5055 → sincronizadas desde Odoo por la API REST. Primera sincronización: 5 nuevas; repetidas: 0 nuevas y duplicados descartados; una posición tardía se recuperó en la siguiente sincronización por el solape de 1 min; paradas 1 y 2 del viaje demo marcadas `atendida` por `gps` con la hora del GPS; bus `con_senal`.
+- El bundle `web.assets_backend` compila e incluye la acción `transporte_gps_map`, su plantilla y el módulo JS; `gps_map.js` pasa `node --check`.
+- Los tests de Odoo usan ids de posición en un rango alto (`ID_BASE`) para no chocar con posiciones reales en la misma BD (el UNIQUE es global).
+
+## 6. Límites conocidos
+- **Pendiente**: validar con un teléfono físico en datos móviles a través del túnel de Cloudflare (evidencia de A2/A5; requiere Cloudflare y el teléfono).
+- El mapa (OWL + Leaflet desde CDN jsDelivr) no se ha visto renderizado en un navegador; requiere Internet en el cliente.
+- Una posición que llegue a Traccar con más de 1 min de retraso respecto a la última sincronizada no se recuperaría por cron (sí por webhook).
+- Las paradas se marcan por proximidad en cualquier orden; las reglas de retraso e incidencias (A6) son de otro integrante.

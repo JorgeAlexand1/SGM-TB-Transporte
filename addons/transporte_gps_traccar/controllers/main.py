@@ -51,16 +51,8 @@ class TraccarWebhook(http.Controller):
             secreto = param.get_param('transporte_gps.webhook_secret') or os.environ.get('TRACCAR_WEBHOOK_SECRET')
             if not token_valido(request.httprequest.headers.get('Authorization'), secreto):
                 return _json(401, error='No autorizado')
-            bus = env['fleet.vehicle'].search([('traccar_device_id', '=', parsed['traccar_device_id'])], limit=1)
-            if not bus:
+            resultado = env['fleet.vehicle'].procesar_webhook(parsed, inicio)
+            if resultado is None:
                 return _json(404, error='Dispositivo %s no asociado a ningún bus' % parsed['traccar_device_id'])
-            res = env['transporte.gps.posicion'].registrar_posiciones(bus, [parsed])
-            bus._procesar_posiciones_nuevas(res['nuevas'])
-            env['transporte.gps.sync.log'].create({
-                'vehicle_id': bus.id, 'origen': 'webhook', 'posiciones_traidas': 1,
-                'posiciones_nuevas': len(res['nuevas']), 'duplicados_descartados': res['duplicadas'],
-                'posiciones_invalidas': res['invalidas'],
-                'duracion_ms': int((time.monotonic() - inicio) * 1000),
-            })
             cr.commit()
-            return _json(200, nuevas=len(res['nuevas']), duplicadas=res['duplicadas'])
+            return _json(200, **resultado)
