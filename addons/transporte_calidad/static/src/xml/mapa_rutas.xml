@@ -39,9 +39,9 @@
                             </td>
                             <td class="text-end" t-esc="r.evaluados"/>
                             <td t-attf-class="text-end #{claseIndicador(r.cumplimiento, r.evaluados)}"
-                                t-esc="r.evaluados ? r.cumplimiento.toFixed(1) : '—'"/>
+                                t-esc="r.evaluados ? num(r.cumplimiento) : '—'"/>
                             <td t-attf-class="text-end #{claseIndicador(r.puntualidad, r.evaluados)}"
-                                t-esc="r.evaluados ? r.puntualidad.toFixed(1) : '—'"/>
+                                t-esc="r.evaluados ? num(r.puntualidad) : '—'"/>
                         </tr>
                     </tbody>
                 </table>
