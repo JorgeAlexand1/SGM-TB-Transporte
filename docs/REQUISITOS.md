@@ -68,7 +68,7 @@ Prioridad: **A** = imprescindible para la evaluación, **M** = deseable. La colu
 | RNF-07 | Mantenibilidad – modularidad | Dependencias unidireccionales. | `transporte_core` no depende de GPS ni calidad; la lógica de reglas es pura (sin Odoo). | revisión, SonarQube |
 | RNF-08 | Mantenibilidad – capacidad de prueba | Pruebas automatizadas. | Cobertura de la lógica pura ≥ 90 %; suites Odoo con 0 fallos. | `scripts/ejecutar_pruebas.sh` |
 | RNF-09 | Seguridad – secretos | Sin credenciales en el repositorio. | Contraseñas/tokens solo en `.env`/`odoo.conf` locales (ignorados) o en Ajustes de Odoo. | auditoría git |
-| RNF-10 | Portabilidad – instalabilidad | Despliegue reproducible. | `docker compose up -d` + instalación de 3 módulos; túnel con `--profile tunel`. | `docs/GUIA_INSTALACION.md` |
+| RNF-10 | Portabilidad – instalabilidad | Despliegue reproducible. | `docker compose up -d` + `-i transporte_ui` (instala los 4 módulos); túnel con `--profile tunel`. | `docs/GUIA_INSTALACION.md` |
 | RNF-11 | Compatibilidad – interoperabilidad | Protocolo de Traccar Client. | Traccar Client publica por OsmAnd (HTTP) a través de HTTPS del túnel desde datos móviles. | `docs/GUIA_CLOUDFLARE.md` |
 | RNF-12 | Usabilidad – reconocibilidad | Datos simulados nunca se presentan como reales. | Cinta/insignia «SIMULADO», contador real vs simulado en el dashboard. | CP-17 |
 

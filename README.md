@@ -34,4 +34,5 @@ bash scripts/ejecutar_pruebas.sh          # todas las pruebas
 | 10 | Mejora continua (Ishikawa, Pareto, PDCA) | `docs/MEJORA_CONTINUA.md` |
 | — | Trabajo de campo: Traccar, rutas reales, recorridos y capturas | `docs/GUIA_TRABAJO_CAMPO.md` |
 | — | Guion de la defensa | `docs/GUIA_DEMOSTRACION.md` |
+| — | Presentación de la defensa (15 diapositivas, HTML + PDF) | `docs/presentacion/` |
 | — | Instalación y flujo Git | `docs/GUIA_INSTALACION.md`, `docs/GUIA_GIT.md` |
