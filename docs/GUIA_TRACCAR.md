@@ -69,8 +69,14 @@ Desde el contenedor de Odoo, la URL de Traccar es `http://traccar:8082` (nombre 
 - El bundle `web.assets_backend` compila e incluye la acción `transporte_gps_map`, su plantilla y el módulo JS; `gps_map.js` pasa `node --check`.
 - Los tests de Odoo usan ids de posición en un rango alto (`ID_BASE`) para no chocar con posiciones reales en la misma BD (el UNIQUE es global).
 
-## 6. Límites conocidos
-- **Pendiente**: validar con un teléfono físico en datos móviles a través del túnel de Cloudflare (evidencia de A2/A5; requiere Cloudflare y el teléfono).
-- El mapa (OWL + Leaflet desde CDN jsDelivr) no se ha visto renderizado en un navegador; requiere Internet en el cliente.
+## 6. Geocerca por tramo (mejora PDCA)
+Desde la Fase 3 una parada también se marca visitada si el **tramo entre dos posiciones consecutivas** pasa por
+su radio (hora interpolada). Ajustes ▸ Transporte GPS ▸ *Detección de paradas* (`segmento` por defecto, `punto` =
+comportamiento original) y *Tramo máximo interpolable* (360 s). **Configurar Traccar Client a 30 s**: con el valor
+por defecto (300 s) se pierde ~40 % de las paradas incluso con la mejora. Detalle en `docs/MEJORA_CONTINUA.md`.
+
+## 7. Límites conocidos
+- **Pendiente**: validar con un teléfono físico en datos móviles a través del túnel de Cloudflare (evidencia de A2/A5; requiere Cloudflare y el teléfono). Ver `docs/GUIA_CLOUDFLARE.md`.
+- Leaflet se carga desde el CDN jsDelivr (requiere Internet en el navegador). El dashboard de calidad, que usa el mismo mapa, se probó en Chromium headless (`test_ui.py`); la acción *Mapa de Buses* no tiene prueba de interfaz propia.
 - Una posición que llegue a Traccar con más de 1 min de retraso respecto a la última sincronizada no se recuperaría por cron (sí por webhook).
-- Las paradas se marcan por proximidad en cualquier orden; las reglas de retraso e incidencias (A6) son de otro integrante.
+- Las paradas se marcan por proximidad en cualquier orden. Las reglas de retraso e incidencias (A6) están en `transporte_calidad`.

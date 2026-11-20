@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_transporte_ruta_form_calidad" model="ir.ui.view">
+        <field name="name">transporte.ruta.form.calidad</field>
+        <field name="model">transporte.ruta</field>
+        <field name="inherit_id" ref="transporte_core.view_transporte_ruta_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Corredor de referencia" name="corredor">
+                    <group>
+                        <group>
+                            <field name="ancho_corredor_m"/>
+                            <field name="trazado_puntos"/>
+                            <field name="trazado_origen"/>
+                        </group>
+                        <group>
+                            <div class="text-muted" colspan="2">
+                                Las desviaciones se detectan comparando cada posición GPS con este trazado.
+                                Si no hay trazado, se usa la línea que une las paradas en orden. Para fijarlo
+                                desde un recorrido real use el botón <b>Usar como trazado de referencia</b>
+                                de un viaje que cumple.
+                            </div>
+                            <button name="action_limpiar_trazado" type="object" string="Volver a la línea de paradas"
+                                    class="btn-link" attrs="{'invisible': [('trazado_puntos', '=', 0)]}"
+                                    groups="transporte_core.group_transporte_manager"/>
+                        </group>
+                    </group>
+                    <field name="trazado_referencia" groups="transporte_core.group_transporte_manager"
+                           placeholder="[[-1.2384, -78.6215], [-1.2423, -78.6254], ...]"/>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

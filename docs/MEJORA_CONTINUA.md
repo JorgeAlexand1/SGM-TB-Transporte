@@ -1,0 +1,118 @@
+# Informe de Mejora Continua (Actividad 10)
+
+## 1. Problema identificado
+
+**D-01 — Paradas visitadas registradas como «omitidas».** Durante las pruebas del escenario
+*muestreo disperso* (Traccar Client reportando cada 120 s), el sistema marcaba como omitidas paradas por las
+que el bus sí pasó. Esto contamina tres indicadores: % de paradas cumplidas, % de cumplimiento de rutas y
+% de detección correcta de incidencias, y genera incidencias falsas de *Parada omitida* y *Recorrido incompleto*.
+
+Causa raíz técnica: la geocerca original (`transporte_gps_traccar`) solo marcaba la parada si **una muestra GPS**
+caía dentro de su radio (30–50 m). Entre dos reportes el bus avanza `velocidad × intervalo` metros
+(20 km/h × 120 s = 667 m), así que casi nunca hay una muestra dentro de un círculo de 35 m.
+
+## 2. Ishikawa (causa–efecto)
+
+```mermaid
+flowchart LR
+    subgraph Metodo["Método"]
+        M1["Geocerca evalúa solo la muestra, no el tramo recorrido"]
+        M2["Sin interpolación de la hora de paso"]
+    end
+    subgraph Medicion["Medición"]
+        D1["Intervalo por defecto de Traccar Client = 300 s"]
+        D2["Error GPS del teléfono 5-20 m"]
+    end
+    subgraph Maquina["Máquina / dispositivo"]
+        Q1["Teléfono en ahorro de batería retrasa reportes"]
+        Q2["Pérdida de cobertura de datos móviles"]
+    end
+    subgraph Material["Datos de referencia"]
+        T1["Radio de parada pequeño (30-35 m)"]
+        T2["Paradas en giros cerrados"]
+    end
+    subgraph ManoObra["Personas"]
+        P1["Conductor no se detiene si no hay pasajeros"]
+        P2["Configuración del cliente no estandarizada"]
+    end
+    subgraph Entorno["Entorno"]
+        E1["Velocidad > 30 km/h en avenidas"]
+        E2["Edificios: rebote de señal (multipath)"]
+    end
+    M1 & M2 & D1 & D2 & Q1 & Q2 & T1 & T2 & P1 & P2 & E1 & E2 --> EF["EFECTO: paradas visitadas registradas como omitidas"]
+```
+
+Causas priorizadas (verificadas con datos en §4): **M1** (método por muestra), **D1/P2** (intervalo largo sin
+estandarizar), **T2 + E1** (giro cerrado a alta velocidad, causa residual).
+
+## 3. Pareto
+
+### 3.1 Defectos del software encontrados durante el desarrollo y las pruebas
+
+Puntuación = severidad (1–5) × alcance (1–5: proporción de recorridos/usuarios afectados).
+
+| Defecto | Severidad | Alcance | Puntuación | % | % acumulado |
+| :--- | :-: | :-: | :-: | :-: | :-: |
+| D-01 Paradas visitadas marcadas omitidas (intervalo GPS largo) | 5 | 5 | 25 | 37,3 | 37,3 |
+| D-05 Servidor sin ruta de addons (`odoo.conf` vacío) | 5 | 3 | 15 | 22,4 | 59,7 |
+| D-02 Rol *Consulta* sin acceso a buses | 4 | 3 | 12 | 17,9 | 77,6 |
+| D-03 Última posición podía ser simulada | 3 | 2 | 6 | 9,0 | 86,6 |
+| D-06 Pérdida de señal tratada como incumplimiento | 2 | 2 | 4 | 6,0 | 92,5 |
+| D-04 `registrar()` no serializable por RPC | 1 | 1 | 1 | 1,5 | 94,0 |
+| Otros (avisos de formato, imports sin uso) | 1 | 4 | 4 | 6,0 | 100 |
+
+D-01, D-05 y D-02 suman el ~78 % del impacto. Se priorizó **D-01** porque afecta la exactitud de las métricas.
+D-02, D-03, D-04 y D-05 se corrigieron directamente (ver `docs/PLAN_PRUEBAS.md §5`).
+
+### 3.2 Incidencias operativas (desde el sistema)
+El dashboard muestra el Pareto en vivo. Con los 10 recorridos simulados: *Retraso en parada* 50 %,
+*Parada omitida* 18 % (68 % acumulado), *Retraso en llegada* 9 % (77 %). Sirve para priorizar acciones
+operativas: los retrasos en parada son la incidencia más frecuente.
+
+## 4. Ciclo PDCA
+
+### PLAN
+- **Indicador:** % de paradas detectadas en recorridos donde el bus visitó todas las paradas; % de detección
+  correcta de incidencias.
+- **Línea base** (`scripts/medir_deteccion_paradas.py`, 60 recorridos por intervalo, 3 rutas DEMO, 20 km/h,
+  bus que no se detiene = peor caso):
+  - Intervalo por defecto (300 s): **38,9 %** de paradas detectadas, **100 %** de los viajes con falsa omisión.
+  - Intervalo de 30 s: **77,8 %** detectadas, 66,7 % de los viajes con falsa omisión.
+  - Plan de 10 escenarios × 6 días: detección correcta **90 %** (54/60; fallan todos los de muestreo disperso).
+- **Meta:** 100 % de paradas detectadas y 0 % de falsas omisiones con la configuración estándar del sistema.
+- **Acciones:** (1) cambiar el método de la geocerca (causa M1); (2) estandarizar el intervalo de Traccar Client (D1/P2).
+
+### DO
+1. `geo_utils.proyeccion_en_segmento` y `geo_utils.paso_por_radio`: además de la muestra actual, se evalúa la
+   distancia de la parada al **tramo** entre la muestra anterior y la actual; si pasa por el radio se marca
+   visitada con la **hora interpolada** del punto más cercano.
+2. Protección: no se interpola a través de huecos > 360 s (eso es pérdida de señal, no un paso).
+3. Modo configurable (`Ajustes ▸ Transporte GPS ▸ Detección de paradas`): *segmento* por defecto; *punto*
+   reproduce el comportamiento anterior para poder medir.
+4. Pruebas nuevas: 6 pytest de geometría, `test_geocerca_segmento_detecta_paso_entre_muestras`,
+   `test_cp12_geocerca_punto_vs_segmento` (Odoo).
+
+### CHECK (`docs/evidencias/pdca_deteccion_paradas.csv`)
+
+| Intervalo | Antes (punto) | Después (segmento) | Viajes con falsa omisión antes → después |
+| :--- | :-: | :-: | :-: |
+| 10 s | 100 % | 100 % | 0 % → 0 % |
+| 15 s | 91,1 % | **100 %** | 33,3 % → **0 %** |
+| 30 s | 77,8 % | **100 %** | 66,7 % → **0 %** |
+| 60 s | 72,2 % | 94,4 % | 100 % → 33,3 % |
+| 120 s | 50,0 % | 61,1 % | 100 % → 66,7 % |
+| 300 s (por defecto) | 38,9 % | 61,1 % | 100 % → 100 % |
+
+- Detección correcta de incidencias (plan de 10 escenarios × 6 días): **90 % → 100 %** (54/60 → 60/60).
+- Hallazgo: con intervalos ≥ 60 s la mejora **no basta**. En giros cerrados la cuerda entre dos muestras
+  «corta la esquina» y pasa lejos de la parada; a 35 km/h el residuo aparece incluso con 10 s en la parada en giro
+  de la ruta 202. La mejora de software reduce el problema, pero no elimina la causa de medición (D1).
+
+### ACT (estandarización)
+1. Geocerca por tramo como **valor por defecto** del sistema (ya desplegada en `transporte_universitario_gc`).
+2. **Configuración estándar de Traccar Client: frecuencia 30 s** (o 15 s), distancia 0, precisión alta, sin
+   ahorro de batería. Documentada en `docs/GUIA_CLOUDFLARE.md` y `docs/GUIA_TRACCAR.md`.
+3. Paradas en giros cerrados de avenidas rápidas: aumentar su radio a 50 m.
+4. Control: el indicador «Detección correcta de incidencias» y el filtro «Detección incorrecta» de viajes
+   quedan en el dashboard para vigilar regresiones; `test_cp12` impide volver al comportamiento anterior.
+5. Próximo ciclo: validar con recorridos reales (Traccar Client a 30 s) y comparar contra el resultado simulado.

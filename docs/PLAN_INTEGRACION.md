@@ -94,6 +94,10 @@ flowchart TD
   4. **Paso 3.4: Vistas Ejecutivas y Dashboards:**
      - Tableros gráficos en Odoo Community (vistas Graph y Pivot).
 - **Criterio de Fusión:** PR desde `feature/calidad-kpis` hacia `develop` con suite de tests analíticos aprobada.
+- **Estado (20/11/2026): implementada en `feature/calidad-kpis`.** Se reemplazó la «disponibilidad de flota» por las
+  métricas obligatorias del enunciado (8 de transporte + 4 de calidad del software, `docs/METRICAS.md`); se agregaron
+  la detección de desvíos (corredor), pérdida de señal, recorridos simulados, dashboard OWL e informe PDF.
+  Resultado: 128 pytest + 89 pruebas Odoo + rendimiento + 3 de interfaz, todas aprobadas.
 
 ---
 

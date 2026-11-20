@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_medicion_tree" model="ir.ui.view">
+        <field name="name">transporte.calidad.medicion.tree</field>
+        <field name="model">transporte.calidad.medicion</field>
+        <field name="arch" type="xml">
+            <tree string="Mediciones" decoration-danger="not ok" create="false">
+                <field name="fecha"/>
+                <field name="tipo"/>
+                <field name="duracion_ms"/>
+                <field name="registros"/>
+                <field name="valor"/>
+                <field name="ok"/>
+                <field name="detalle" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_medicion_graph" model="ir.ui.view">
+        <field name="name">transporte.calidad.medicion.graph</field>
+        <field name="model">transporte.calidad.medicion</field>
+        <field name="arch" type="xml">
+            <graph string="Tiempo de respuesta" type="line">
+                <field name="fecha" interval="day"/>
+                <field name="tipo"/>
+                <field name="duracion_ms" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_medicion_search" model="ir.ui.view">
+        <field name="name">transporte.calidad.medicion.search</field>
+        <field name="model">transporte.calidad.medicion</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="tipo"/>
+                <filter string="Exactitud de sincronización" name="exactitud" domain="[('tipo', '=', 'exactitud_sync')]"/>
+                <filter string="Tiempos de respuesta" name="tiempos" domain="[('tipo', '!=', 'exactitud_sync')]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Tipo" name="g_tipo" context="{'group_by': 'tipo'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_medicion" model="ir.actions.act_window">
+        <field name="name">Mediciones de calidad del software</field>
+        <field name="res_model">transporte.calidad.medicion</field>
+        <field name="view_mode">tree,graph</field>
+    </record>
+
+    <record id="action_verificar_exactitud" model="ir.actions.server">
+        <field name="name">Verificar exactitud Traccar ↔ Odoo</field>
+        <field name="model_id" ref="model_transporte_calidad_medicion"/>
+        <field name="state">code</field>
+        <field name="code">action = env['transporte.calidad.dashboard'].action_verificar_exactitud()</field>
+    </record>
+</odoo>

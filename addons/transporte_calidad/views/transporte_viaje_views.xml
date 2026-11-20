@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_transporte_viaje_form_calidad" model="ir.ui.view">
+        <field name="name">transporte.viaje.form.calidad</field>
+        <field name="model">transporte.viaje</field>
+        <field name="inherit_id" ref="transporte_core.view_transporte_viaje_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_reevaluar" string="Reevaluar calidad" type="object" icon="fa-refresh"
+                        attrs="{'invisible': [('hora_salida_real', '=', False)]}"
+                        groups="transporte_core.group_transporte_manager"/>
+                <button name="action_usar_como_trazado" string="Usar como trazado de referencia" type="object"
+                        icon="fa-road" attrs="{'invisible': [('resultado', '!=', 'cumple')]}"
+                        groups="transporte_core.group_transporte_manager"
+                        confirm="El recorrido GPS de este viaje se usará como corredor de referencia de la ruta. ¿Continuar?"/>
+                <button name="%(transporte_calidad.action_report_informe_viaje)d" string="Informe PDF" type="action"
+                        icon="fa-file-pdf-o" attrs="{'invisible': [('resultado', 'in', ('sin_evaluar', 'en_curso'))]}"/>
+            </xpath>
+            <xpath expr="//div[hasclass('oe_title')]" position="before">
+                <div class="oe_button_box" name="button_box">
+                    <button name="action_ver_incidencias" type="object" class="oe_stat_button" icon="fa-exclamation-triangle">
+                        <field name="incidencia_count" widget="statinfo" string="Incidencias"/>
+                    </button>
+                </div>
+                <widget name="web_ribbon" title="SIMULADO" bg_color="bg-warning"
+                        attrs="{'invisible': [('simulado', '=', False)]}"/>
+                <field name="simulado" invisible="1"/>
+            </xpath>
+            <xpath expr="//field[@name='parada_line_ids']/tree/field[@name='hora_llegada_real']" position="after">
+                <field name="retraso_min" string="Retraso (min)"/>
+                <field name="puntualidad" widget="badge" decoration-success="puntualidad == 'puntual'"
+                       decoration-danger="puntualidad in ('atrasada', 'omitida')"
+                       decoration-warning="puntualidad == 'adelantada'"/>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Evaluación de calidad" name="evaluacion_calidad"
+                      attrs="{'invisible': [('resultado', '=', 'sin_evaluar')]}">
+                    <div class="mb-2">
+                        <field name="resultado" widget="badge" decoration-success="resultado == 'cumple'"
+                               decoration-danger="resultado == 'incumple'" decoration-info="resultado == 'en_curso'"/>
+                        <span class="text-muted ms-2">Evaluado el <field name="evaluado_en" readonly="1" class="oe_inline"/></span>
+                    </div>
+                    <group>
+                        <group string="¿Cumple la ruta?">
+                            <field name="cumple_ruta"/>
+                            <field name="completo"/>
+                            <field name="paradas_atendidas" string="Paradas visitadas"/>
+                            <field name="total_paradas_viaje" string="Paradas programadas"/>
+                            <field name="paradas_omitidas"/>
+                            <field name="porcentaje_paradas"/>
+                        </group>
+                        <group string="¿Cumple el horario?">
+                            <field name="puntual"/>
+                            <field name="retraso_inicio_min"/>
+                            <field name="retraso_llegada_min"/>
+                            <field name="retraso_acumulado_min"/>
+                            <field name="retraso_promedio_min"/>
+                            <field name="retraso_maximo_min"/>
+                            <field name="paradas_puntuales"/>
+                            <field name="paradas_atrasadas"/>
+                            <field name="porcentaje_puntualidad"/>
+                        </group>
+                        <group string="Tiempo y distancia">
+                            <field name="duracion_estimada_min"/>
+                            <field name="duracion_real_min"/>
+                            <field name="diferencia_duracion_min"/>
+                            <field name="diferencia_duracion_pct"/>
+                            <field name="distancia_estimada_km"/>
+                            <field name="distancia_recorrida_km"/>
+                            <field name="diferencia_distancia_km"/>
+                            <field name="diferencia_distancia_pct"/>
+                        </group>
+                        <group string="¿Se desvió? · Señal GPS" attrs="{'invisible': [('tiene_gps', '=', False)]}">
+                            <field name="tiene_gps" invisible="1"/>
+                            <field name="desviado"/>
+                            <field name="max_desviacion_m"/>
+                            <field name="porcentaje_fuera_corredor"/>
+                            <field name="huecos_senal"/>
+                            <field name="max_hueco_senal_min"/>
+                        </group>
+                    </group>
+                    <group string="Escenario de prueba" attrs="{'invisible': [('incidencias_esperadas', '=', False)]}">
+                        <field name="escenario_simulado" attrs="{'invisible': [('escenario_simulado', '=', False)]}"/>
+                        <field name="incidencias_esperadas"/>
+                        <field name="deteccion_correcta" widget="badge" decoration-success="deteccion_correcta == 'correcta'"
+                               decoration-danger="deteccion_correcta == 'incorrecta'"/>
+                        <field name="deteccion_detalle" attrs="{'invisible': [('deteccion_detalle', '=', False)]}"/>
+                    </group>
+                    <field name="incidencia_ids" readonly="1">
+                        <tree decoration-danger="severidad in ('alta', 'critica')">
+                            <field name="name"/>
+                            <field name="fecha"/>
+                            <field name="tipo"/>
+                            <field name="severidad"/>
+                            <field name="parada_id"/>
+                            <field name="valor"/>
+                            <field name="unidad"/>
+                            <field name="descripcion"/>
+                            <field name="estado"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_transporte_viaje_tree_calidad" model="ir.ui.view">
+        <field name="name">transporte.viaje.tree.calidad</field>
+        <field name="model">transporte.viaje</field>
+        <field name="inherit_id" ref="transporte_core.view_transporte_viaje_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='state']" position="before">
+                <field name="retraso_llegada_min" optional="show"/>
+                <field name="distancia_recorrida_km" optional="hide"/>
+                <field name="incidencia_count" string="Incid." optional="show"/>
+                <field name="simulado" optional="show"/>
+                <field name="resultado" widget="badge" decoration-success="resultado == 'cumple'"
+                       decoration-danger="resultado == 'incumple'" decoration-info="resultado == 'en_curso'"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_transporte_viaje_search_calidad" model="ir.ui.view">
+        <field name="name">transporte.viaje.search.calidad</field>
+        <field name="model">transporte.viaje</field>
+        <field name="inherit_id" ref="transporte_core.view_transporte_viaje_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='filter_completed']" position="after">
+                <separator/>
+                <filter string="Cumplen" name="f_cumple" domain="[('resultado', '=', 'cumple')]"/>
+                <filter string="Incumplen" name="f_incumple" domain="[('resultado', '=', 'incumple')]"/>
+                <filter string="Con desvío" name="f_desviado" domain="[('desviado', '=', True)]"/>
+                <separator/>
+                <filter string="Datos reales" name="f_reales" domain="[('simulado', '=', False)]"/>
+                <filter string="Datos simulados" name="f_simulados" domain="[('simulado', '=', True)]"/>
+                <filter string="Detección incorrecta" name="f_det_mal" domain="[('deteccion_correcta', '=', 'incorrecta')]"/>
+            </xpath>
+            <xpath expr="//filter[@name='group_by_state']" position="after">
+                <filter string="Resultado" name="group_by_resultado" context="{'group_by': 'resultado'}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_transporte_viaje_pivot_calidad" model="ir.ui.view">
+        <field name="name">transporte.viaje.pivot.calidad</field>
+        <field name="model">transporte.viaje</field>
+        <field name="arch" type="xml">
+            <pivot string="Análisis de recorridos">
+                <field name="ruta_id" type="row"/>
+                <field name="resultado" type="col"/>
+                <field name="retraso_promedio_min" type="measure"/>
+                <field name="porcentaje_paradas" type="measure"/>
+                <field name="distancia_recorrida_km" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_transporte_viaje_graph_calidad" model="ir.ui.view">
+        <field name="name">transporte.viaje.graph.calidad</field>
+        <field name="model">transporte.viaje</field>
+        <field name="arch" type="xml">
+            <graph string="Retraso promedio por ruta" type="bar">
+                <field name="ruta_id"/>
+                <field name="retraso_promedio_min" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_analisis_viajes" model="ir.actions.act_window">
+        <field name="name">Análisis de recorridos</field>
+        <field name="res_model">transporte.viaje</field>
+        <field name="view_mode">pivot,graph,tree,form</field>
+        <field name="domain">[('resultado', 'in', ('cumple', 'incumple'))]</field>
+        <field name="context">{'search_default_filter_hoy': 0}</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('view_transporte_viaje_pivot_calidad')}),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('view_transporte_viaje_graph_calidad')})]"/>
+    </record>
+</odoo>

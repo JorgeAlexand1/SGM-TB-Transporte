@@ -9,3 +9,7 @@ access_transporte_viaje_user,transporte.viaje.user,model_transporte_viaje,group_
 access_transporte_viaje_manager,transporte.viaje.manager,model_transporte_viaje,group_transporte_manager,1,1,1,1
 access_transporte_viaje_parada_user,transporte.viaje.parada.user,model_transporte_viaje_parada,group_transporte_user,1,0,0,0
 access_transporte_viaje_parada_manager,transporte.viaje.parada.manager,model_transporte_viaje_parada,group_transporte_manager,1,1,1,1
+access_transporte_fleet_vehicle_user,fleet.vehicle.transporte.user,fleet.model_fleet_vehicle,group_transporte_user,1,0,0,0
+access_transporte_fleet_vehicle_manager,fleet.vehicle.transporte.manager,fleet.model_fleet_vehicle,group_transporte_manager,1,1,1,0
+access_transporte_fleet_model_user,fleet.vehicle.model.transporte.user,fleet.model_fleet_vehicle_model,group_transporte_user,1,0,0,0
+access_transporte_fleet_brand_user,fleet.vehicle.model.brand.transporte.user,fleet.model_fleet_vehicle_model_brand,group_transporte_user,1,0,0,0

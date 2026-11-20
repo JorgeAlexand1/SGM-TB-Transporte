@@ -134,6 +134,13 @@ def cargar_datos_demo(env):
 
     _logger.info("Rutas: %d creadas, %d existentes en catálogo.", rutas_creadas, len(rutas_map))
 
+    # 2.1 Distancia estimada por calles (solo si falta): tramos rectos entre paradas × 1.25
+    #     (factor de tortuosidad urbana; ajústese con la distancia real medida en el primer recorrido)
+    for ruta in rutas_map.values():
+        if 'distancia_estimada_km' in ruta._fields and not ruta.distancia_estimada_km:
+            ruta.distancia_estimada_km = round(ruta._distancia_lineal_paradas_km() * 1.25, 2)
+            _logger.info("Distancia estimada de [%s]: %.2f km", ruta.codigo, ruta.distancia_estimada_km)
+
     # 3. Flota de Buses (Modelos y Vehículos)
     FleetBrand = env['fleet.vehicle.model.brand']
     FleetModel = env['fleet.vehicle.model']

@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_incidencia_user,transporte.incidencia.user,model_transporte_incidencia,transporte_core.group_transporte_user,1,0,0,0
+access_incidencia_manager,transporte.incidencia.manager,model_transporte_incidencia,transporte_core.group_transporte_manager,1,1,1,1
+access_medicion_user,transporte.calidad.medicion.user,model_transporte_calidad_medicion,transporte_core.group_transporte_user,1,0,0,0
+access_medicion_manager,transporte.calidad.medicion.manager,model_transporte_calidad_medicion,transporte_core.group_transporte_manager,1,1,1,1
+access_simulacion_manager,transporte.calidad.simulacion.manager,model_transporte_calidad_simulacion,transporte_core.group_transporte_manager,1,1,1,1
