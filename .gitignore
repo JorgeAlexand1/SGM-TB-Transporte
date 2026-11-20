@@ -73,3 +73,11 @@ pgdata/
 Thumbs.db
 ehthumbs.db
 .scannerwork/
+
+# Módulos y tareas de OTRAS asignaturas/talleres: viven en la misma carpeta addons/
+# (montada por Odoo) pero no pertenecen al proyecto SGM-TB
+addons/*
+!addons/transporte_core/
+!addons/transporte_gps_traccar/
+!addons/transporte_calidad/
+tarea1/

@@ -8,7 +8,8 @@ Odoo 16 Community + Traccar + Cloudflare Tunnel · Proyecto final de Gestión de
 | `addons/transporte_gps_traccar` | Integración Traccar: posiciones sin duplicados, webhook, geocercas por tramo, señal, mapa |
 | `addons/transporte_calidad` | Detección automática de incumplimientos, incidencias, KPIs, dashboard, informe PDF, simulación |
 
-Los demás directorios de `addons/` y `tarea1/` pertenecen a otros trabajos de la asignatura.
+El repositorio solo versiona estos tres módulos. Otros addons que existan en la carpeta local `addons/`
+(talleres de otras asignaturas) están excluidos en `.gitignore`.
 
 ## Inicio rápido
 ```bash
