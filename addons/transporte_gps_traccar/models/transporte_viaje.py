@@ -27,24 +27,58 @@ class TransporteViaje(models.Model):
             rec.velocidad_maxima_kmh = max(velocidades) if velocidades else 0.0
             rec.velocidad_media_kmh = round(sum(velocidades) / len(velocidades), 2) if velocidades else 0.0
 
+    @api.model
+    def _parametros_geocerca(self):
+        """Modo de detección ('segmento' por defecto, 'punto' = comportamiento original) y tramo máximo (s)."""
+        param = self.env['ir.config_parameter'].sudo()
+        modo = param.get_param('transporte_gps.geocerca_modo', 'segmento')
+        try:
+            max_s = int(param.get_param('transporte_gps.geocerca_segmento_max_s', 360))
+        except (TypeError, ValueError):
+            max_s = 360
+        return (modo if modo in ('punto', 'segmento') else 'segmento'), max_s
+
     def _procesar_geocercas(self, posiciones):
-        """Marca como atendidas las paradas pendientes cuando una posición cae dentro de su radio.
+        """Marca como atendidas las paradas pendientes por las que pasó el bus.
+
+        - Modo 'punto': una muestra GPS debe caer dentro del radio de la parada.
+        - Modo 'segmento' (mejora PDCA): además se evalúa el tramo entre la muestra anterior y la
+          actual; si el tramo cruza el radio se interpola la hora de paso. Evita falsas "paradas
+          omitidas" cuando Traccar Client reporta con intervalos largos. No se interpola a través
+          de huecos mayores que `geocerca_segmento_max_s` (pérdida de señal).
 
         La hora de llegada es la del GPS (no la del procesamiento) para que el retraso sea fiel.
         """
         self.ensure_one()
+        if not posiciones:
+            return
+        modo, max_s = self._parametros_geocerca()
+        previa = self.env['transporte.gps.posicion'].sudo().search([
+            ('viaje_id', '=', self.id), ('valida', '=', True),
+            ('fecha_gps', '<', posiciones[0].fecha_gps)], order='fecha_gps desc, id desc', limit=1)
         for pos in posiciones:
+            usar_previa = bool(previa) and (pos.fecha_gps - previa.fecha_gps).total_seconds() <= max_s
             for linea in self.parada_line_ids.filtered(lambda l: l.estado_parada == 'pendiente'):
                 parada = linea.parada_id
-                dist = geo_utils.haversine_m(pos.latitud, pos.longitud, parada.latitude, parada.longitude)
-                if dist <= parada.radio_deteccion:
-                    linea.write({
-                        'estado_parada': 'atendida',
-                        'hora_llegada_real': pos.fecha_gps,
-                        'metodo_registro': 'gps',
-                        'observaciones': _("Detectada por GPS a %.1f m del punto (radio %.0f m).")
-                                         % (dist, parada.radio_deteccion),
-                    })
+                detectada, dist, t = geo_utils.paso_por_radio(
+                    parada.latitude, parada.longitude, parada.radio_deteccion,
+                    (previa.latitud, previa.longitud) if usar_previa else None,
+                    (pos.latitud, pos.longitud), modo)
+                if not detectada:
+                    continue
+                if t < 1.0:
+                    hora = previa.fecha_gps + (pos.fecha_gps - previa.fecha_gps) * t
+                    obs = _("Detectada por GPS (tramo interpolado) a %.1f m del punto (radio %.0f m).")
+                else:
+                    hora = pos.fecha_gps
+                    obs = _("Detectada por GPS a %.1f m del punto (radio %.0f m).")
+                linea.write({
+                    'estado_parada': 'atendida',
+                    'hora_llegada_real': hora.replace(microsecond=0),
+                    'metodo_registro': 'gps',
+                    'observaciones': obs % (dist, parada.radio_deteccion),
+                })
+            previa = pos
 
     def action_ver_mapa_gps(self):
         self.ensure_one()

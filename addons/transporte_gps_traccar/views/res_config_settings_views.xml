@@ -29,6 +29,10 @@
                                 <field name="gps_minutos_sin_senal"/>
                                 <label for="gps_webhook_secret"/>
                                 <field name="gps_webhook_secret" password="True"/>
+                                <label for="gps_geocerca_modo"/>
+                                <field name="gps_geocerca_modo"/>
+                                <label for="gps_geocerca_segmento_max_s"/>
+                                <field name="gps_geocerca_segmento_max_s"/>
                             </div>
                         </div>
                     </div>

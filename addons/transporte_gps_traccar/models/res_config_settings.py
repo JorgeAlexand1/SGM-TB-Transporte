@@ -18,3 +18,11 @@ class ResConfigSettings(models.TransientModel):
     gps_webhook_secret = fields.Char(
         string='Secreto del webhook', config_parameter='transporte_gps.webhook_secret',
         help='Token Bearer que debe enviar Traccar al endpoint /api/v1/traccar/webhook.')
+    gps_geocerca_modo = fields.Selection(
+        [('segmento', 'Tramo entre muestras (recomendado)'), ('punto', 'Solo muestra dentro del radio')],
+        string='Detección de paradas', config_parameter='transporte_gps.geocerca_modo', default='segmento',
+        help="'Tramo' también detecta la parada si el bus pasó por ella entre dos reportes GPS "
+             "(intervalos largos de Traccar Client).")
+    gps_geocerca_segmento_max_s = fields.Integer(
+        string='Tramo máximo interpolable (s)', config_parameter='transporte_gps.geocerca_segmento_max_s',
+        default=360, help='No se interpola a través de huecos mayores (pérdida de señal).')

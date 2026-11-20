@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_dashboard_calidad" model="ir.actions.client">
+        <field name="name">Dashboard de calidad del servicio</field>
+        <field name="tag">transporte_calidad_dashboard</field>
+    </record>
+</odoo>

@@ -69,23 +69,42 @@ graph TD
 ### 3.2. `transporte_gps_traccar` (Telemetría y Monitoreo — Fase 2)
 - **Propósito:** Ingesta telemática desde el servidor Traccar, geocercas dinámicas y automatización de arribos.
 - **Modelos y Extensiones:**
-  - `fleet.vehicle` (Extensión `_inherit`): Incorpora `traccar_device_id`, fecha de última posición telemática y velocidad actual.
-  - `transporte.gps.log`: Registro cronológico de tramas telemáticas (timestamp, lat, lon, speed, attributes).
-  - Controlador Web / Webhook: Endpoint `/api/v1/traccar/webhook` protegido con validación de Token Bearer y descarte de posiciones duplicadas o ruido GPS.
-  - Servicio de Geocercas: Evaluación Haversine contra el radio de `transporte.parada` para mutar automáticamente `transporte.viaje.parada.hora_llegada_real` y conmutar `metodo_registro = 'gps'`.
+  - `fleet.vehicle` (Extensión `_inherit`): `traccar_device_id` (único), última posición válida y real, estado de señal.
+  - `transporte.gps.posicion`: historial de posiciones (UNIQUE `traccar_position_id`, `valida`, `simulado`, viaje).
+  - `transporte.gps.sync.log`: cada sincronización (traídas, nuevas, duplicadas, inválidas, ms, error).
+  - Controlador Web / Webhook: `/api/v1/traccar/webhook` con Token Bearer; cron de sincronización incremental cada minuto.
+  - Geocercas: una parada se marca visitada si una muestra cae en su radio **o el tramo entre dos muestras lo cruza**
+    (hora interpolada; mejora PDCA, ver `MEJORA_CONTINUA.md`). Modo configurable (`segmento`/`punto`).
+  - `transporte.viaje` (Extensión): distancia recorrida, velocidad máxima/media; mapa Leaflet.
 
 ---
 
-### 3.3. `transporte_calidad` (Calidad de Servicio y Tableros — Fase 3)
-- **Propósito:** Medición objetiva de estándares de servicio, registro de incidencias y tableros de control directivo.
-- **Modelos y Métricas:**
-  - `transporte.incidencia`: Reportes de eventos anómalos clasificados por tipo (falla mecánica, bloqueo de vía, retraso severo, queja de usuario) y severidad.
-  - Motor de KPIs:
-    - **OTP (On-Time Performance):** Porcentaje de arribos dentro de una ventana de tolerancia $[-2, +5]$ minutos frente al horario estimado.
-    - **Cumplimiento de Rutas:** Relación porcentual entre paradas atendidas vs. paradas totales programadas.
-    - **Disponibilidad de Flota:** Porcentaje de buses aptos frente al parque total de vehículos de pasajeros.
-    - **Tasa de Incidencias:** Cantidad de incidentes reportados por cada 100 viajes despachados.
-  - Vistas Dashboard: Gráficos de barras, líneas temporales y tablas pivot sin requerir el módulo Enterprise.
+### 3.3. `transporte_calidad` (Calidad de Servicio, Incidencias y Dashboard — Fase 3)
+- **Depende de:** `transporte_core` y `transporte_gps_traccar`.
+- **Lógica pura (sin Odoo, probada con pytest):** `lib/reglas.py` (9 reglas de detección, fórmulas de KPIs,
+  corredor, huecos de señal, Pareto) y `lib/simulador.py` (escenarios de prueba simulados).
+- **Modelos y extensiones:**
+  - `transporte.viaje` (Extensión): resultado (*cumple/incumple/en curso*), retrasos de salida/llegada/promedio/acumulado,
+    duración y distancia estimada vs real, % paradas y puntualidad, desvío máximo y % fuera de corredor, huecos de señal,
+    marca `simulado`, incidencias esperadas y detección correcta.
+  - `transporte.viaje.parada` (Extensión): `retraso_min` y `puntualidad` (puntual/atrasada/adelantada/omitida).
+  - `transporte.ruta` (Extensión): corredor permitido (m) y trazado de referencia JSON.
+  - `transporte.incidencia`: automáticas (idempotentes) y manuales; tipo, severidad, estado, valor medido, regla.
+  - `transporte.calidad.medicion`: tiempos de respuesta y exactitud Traccar ↔ Odoo.
+  - `transporte.calidad.dashboard` (abstracto): 8 KPIs de transporte y 4 de calidad del software calculados en vivo.
+  - `transporte.calidad.simulacion` (asistente): genera el plan de 10 recorridos simulados.
+- **Interfaz:** dashboard OWL (Chart.js + Leaflet), vistas pivot/gráfico, informe PDF por viaje, ajustes de tolerancias.
+- **Cron:** evaluación de viajes en curso cada 5 min (además de evaluar al finalizar/cancelar y al llegar posiciones).
+
+```mermaid
+flowchart LR
+    TC["Traccar Client (teléfono)"] -->|HTTPS OsmAnd| CF["Cloudflare Tunnel"] --> TS["Traccar Server :5055/:8082"]
+    TS -->|API REST cron 1 min / webhook| GPS["transporte_gps_traccar<br/>posiciones, geocercas"]
+    GPS --> CORE["transporte_core<br/>viajes, paradas"]
+    GPS --> CAL["transporte_calidad<br/>reglas -> incidencias -> KPIs"]
+    CORE --> CAL
+    CAL --> UI["Dashboard / pivot / PDF"]
+```
 
 ---
 
@@ -117,6 +136,11 @@ erDiagram
         string name
         string tipo_ruta
         int tiempo_estimado_min
+        int origen_parada_id FK
+        int destino_parada_id FK
+        float distancia_estimada_km
+        float ancho_corredor_m
+        text trazado_referencia
         text descripcion
         boolean active
     }
@@ -174,7 +198,50 @@ erDiagram
         datetime hora_llegada_real
         string estado_parada
         string metodo_registro
+        float retraso_min
+        string puntualidad
     }
+
+    transporte_gps_posicion {
+        int id PK
+        int traccar_position_id UK
+        int vehicle_id FK
+        int viaje_id FK
+        float latitud
+        float longitud
+        float velocidad_kmh
+        datetime fecha_gps
+        boolean valida
+        boolean simulado
+    }
+
+    transporte_incidencia {
+        int id PK
+        string name UK
+        string tipo
+        string severidad
+        string estado
+        string origen
+        int viaje_id FK
+        int viaje_parada_id FK
+        int vehicle_id FK
+        int ruta_id FK
+        float valor
+        string regla
+    }
+
+    transporte_calidad_medicion {
+        int id PK
+        string tipo
+        int duracion_ms
+        int registros
+        float valor
+    }
+
+    fleet_vehicle ||--o{ transporte_gps_posicion : "reporta"
+    transporte_viaje ||--o{ transporte_gps_posicion : "trazado"
+    transporte_viaje ||--o{ transporte_incidencia : "genera"
+    transporte_viaje_parada ||--o{ transporte_incidencia : "origina"
 ```
 
 ---

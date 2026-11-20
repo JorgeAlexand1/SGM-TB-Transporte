@@ -9,7 +9,10 @@
                 <field name="codigo"/>
                 <field name="name"/>
                 <field name="tipo_ruta" widget="badge" decoration-info="tipo_ruta == 'urbana'" decoration-primary="tipo_ruta == 'troncal'" decoration-success="tipo_ruta == 'alimentadora'" decoration-warning="tipo_ruta == 'interurbana'"/>
+                <field name="origen_parada_id"/>
+                <field name="destino_parada_id"/>
                 <field name="total_paradas"/>
+                <field name="distancia_estimada_km"/>
                 <field name="tiempo_estimado_min"/>
                 <field name="active" widget="boolean_toggle"/>
             </tree>
@@ -37,7 +40,16 @@
                             <field name="active"/>
                         </group>
                         <group string="Tiempos y Métricas">
+                            <field name="origen_parada_id"/>
+                            <field name="destino_parada_id"/>
                             <field name="tiempo_estimado_min"/>
+                            <label for="distancia_estimada_km"/>
+                            <div class="o_row">
+                                <field name="distancia_estimada_km"/>
+                                <button name="action_sugerir_distancia" type="object" string="Sugerir por paradas"
+                                        class="btn-link" icon="fa-calculator"
+                                        help="Suma de tramos rectos entre paradas consecutivas (ajústela a la distancia real por calles)."/>
+                            </div>
                             <field name="total_paradas" readonly="1"/>
                         </group>
                     </group>

@@ -170,8 +170,10 @@ class FleetVehicle(models.Model):
             del_viaje = posiciones.filtered(lambda p: p.fecha_gps >= viaje.hora_salida_real)
             del_viaje.write({'viaje_id': viaje.id})
             viaje._procesar_geocercas(del_viaje.filtered('valida').sorted('fecha_gps'))
+        # la ubicación "actual" del bus nunca debe salir de una posición simulada
         validas = self.env['transporte.gps.posicion'].sudo().search(
-            [('vehicle_id', '=', self.id), ('valida', '=', True)], order='fecha_gps desc, id desc', limit=1)
+            [('vehicle_id', '=', self.id), ('valida', '=', True), ('simulado', '=', False)],
+            order='fecha_gps desc, id desc', limit=1)
         if validas:
             self.sudo().write({'ultima_posicion_id': validas.id})
         self._actualizar_estado_senal()
