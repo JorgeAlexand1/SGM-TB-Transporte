@@ -5,6 +5,19 @@
         <field name="model">transporte.ruta</field>
         <field name="inherit_id" ref="transporte_core.view_transporte_ruta_form"/>
         <field name="arch" type="xml">
+            <xpath expr="//notebook" position="before">
+                <group string="Indicadores de calidad (histórico)" name="indicadores_calidad">
+                    <group>
+                        <field name="viajes_evaluados"/>
+                    </group>
+                    <group>
+                        <field name="cumplimiento_pct" widget="progressbar"
+                               attrs="{'invisible': [('viajes_evaluados', '=', 0)]}"/>
+                        <field name="puntualidad_pct" widget="progressbar"
+                               attrs="{'invisible': [('viajes_evaluados', '=', 0)]}"/>
+                    </group>
+                </group>
+            </xpath>
             <xpath expr="//notebook" position="inside">
                 <page string="Corredor de referencia" name="corredor">
                     <group>
@@ -29,6 +42,23 @@
                            placeholder="[[-1.2384, -78.6215], [-1.2423, -78.6254], ...]"/>
                 </page>
             </xpath>
+        </field>
+    </record>
+
+    <record id="view_transporte_ruta_tree_calidad" model="ir.ui.view">
+        <field name="name">transporte.ruta.tree.calidad</field>
+        <field name="model">transporte.ruta</field>
+        <field name="inherit_id" ref="transporte_core.view_transporte_ruta_tree"/>
+        <field name="arch" type="xml">
+            <field name="tiempo_estimado_min" position="after">
+                <field name="viajes_evaluados" optional="show"/>
+                <field name="cumplimiento_pct" optional="show"
+                       decoration-success="viajes_evaluados and cumplimiento_pct &gt;= 90"
+                       decoration-danger="viajes_evaluados and cumplimiento_pct &lt; 70"/>
+                <field name="puntualidad_pct" optional="show"
+                       decoration-success="viajes_evaluados and puntualidad_pct &gt;= 90"
+                       decoration-danger="viajes_evaluados and puntualidad_pct &lt; 70"/>
+            </field>
         </field>
     </record>
 </odoo>
