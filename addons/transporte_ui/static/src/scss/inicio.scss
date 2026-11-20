@@ -76,8 +76,8 @@ $sgm-tonos: (
         margin-left: 6px;
         padding: 1px 8px;
         border-radius: 999px;
-        background: rgba(245, 166, 35, 0.25);
-        color: #FFE2AE;
+        background: $sgm-ambar;
+        color: $sgm-azul-oscuro;
         font-weight: 600;
         font-size: 0.8rem;
     }
@@ -227,9 +227,10 @@ $sgm-tonos: (
         font-size: 0.78rem;
         font-weight: 700;
     }
-    .o_sgm_tag_bien { background: rgba(30, 158, 106, 0.12); color: #17845A; }
-    .o_sgm_tag_regular { background: rgba(245, 166, 35, 0.18); color: #A66A00; }
-    .o_sgm_tag_mal { background: rgba(214, 69, 69, 0.12); color: #B33636; }
+    // Fondos sólidos: contraste de texto ≥ 4.5:1 (WCAG AA)
+    .o_sgm_tag_bien { background: #E3F5EC; color: #11683F; }
+    .o_sgm_tag_regular { background: #FDF0D9; color: #7A4E00; }
+    .o_sgm_tag_mal { background: #FBE6E6; color: #9E2A2A; }
     .o_sgm_progreso {
         height: 6px;
         margin: 8px 0 4px;
