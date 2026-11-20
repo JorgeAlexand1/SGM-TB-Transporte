@@ -100,4 +100,4 @@ del dashboard trabajan sobre campos almacenados y escalan con el número de viaj
 ## 6. Pendiente de ejecutar por el equipo (requiere hardware / servicios externos)
 - Recorridos reales con Traccar Client en datos móviles a través del túnel (evidencia de A2/A5).
 - Verificación de exactitud contra Traccar con esas posiciones reales (menú **Verificar exactitud Traccar**).
-- Análisis SonarQube (`docs/CALIDAD_SOFTWARE.md`) y captura del informe.
+- Captura de pantalla del informe SonarQube para la presentación (el análisis ya se ejecutó: `docs/CALIDAD_SOFTWARE.md §2`).

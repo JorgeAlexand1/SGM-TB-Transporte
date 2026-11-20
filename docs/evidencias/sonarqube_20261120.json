@@ -1,0 +1,134 @@
+{
+  "fecha": "2026-11-20",
+  "servidor": "SonarQube Community 26.8.0.126808",
+  "proyecto": "sgm-tb-transporte",
+  "quality_gate": {
+    "status": "OK",
+    "conditions": [
+      {
+        "status": "OK",
+        "metricKey": "new_coverage",
+        "comparator": "LT",
+        "errorThreshold": "80",
+        "actualValue": "100.0"
+      },
+      {
+        "status": "OK",
+        "metricKey": "new_duplicated_lines_density",
+        "comparator": "GT",
+        "errorThreshold": "3",
+        "actualValue": "0.0"
+      },
+      {
+        "status": "OK",
+        "metricKey": "new_violations",
+        "comparator": "GT",
+        "errorThreshold": "0",
+        "actualValue": "0"
+      }
+    ],
+    "ignoredConditions": false,
+    "period": {
+      "mode": "PREVIOUS_VERSION",
+      "date": "2026-11-20T19:59:06+0000"
+    },
+    "caycStatus": "compliant"
+  },
+  "medidas": {
+    "coverage": "97.2",
+    "complexity": "824",
+    "reliability_rating": "1.0",
+    "code_smells": "66",
+    "duplicated_lines_density": "0.3",
+    "security_rating": "1.0",
+    "software_quality_security_issues": "1",
+    "sqale_debt_ratio": "0.2",
+    "security_hotspots": "0",
+    "security_review_rating": "1.0",
+    "sqale_index": "369",
+    "sqale_rating": "1.0",
+    "bugs": "0",
+    "software_quality_reliability_issues": "2",
+    "cognitive_complexity": "780",
+    "ncloc": "6699",
+    "software_quality_maintainability_issues": "66",
+    "files": "89",
+    "vulnerabilities": "0"
+  },
+  "issues_por_regla": [
+    {
+      "regla": "python:S9073",
+      "severidad": "MAJOR",
+      "tipo": "CODE_SMELL",
+      "n": 21
+    },
+    {
+      "regla": "python:S117",
+      "severidad": "MINOR",
+      "tipo": "CODE_SMELL",
+      "n": 18
+    },
+    {
+      "regla": "python:S1192",
+      "severidad": "CRITICAL",
+      "tipo": "CODE_SMELL",
+      "n": 11
+    },
+    {
+      "regla": "python:S3776",
+      "severidad": "CRITICAL",
+      "tipo": "CODE_SMELL",
+      "n": 6
+    },
+    {
+      "regla": "javascript:S3358",
+      "severidad": "MAJOR",
+      "tipo": "CODE_SMELL",
+      "n": 3
+    },
+    {
+      "regla": "javascript:S6661",
+      "severidad": "MAJOR",
+      "tipo": "CODE_SMELL",
+      "n": 2
+    },
+    {
+      "regla": "javascript:S1128",
+      "severidad": "MINOR",
+      "tipo": "CODE_SMELL",
+      "n": 1
+    },
+    {
+      "regla": "javascript:S7773",
+      "severidad": "MINOR",
+      "tipo": "CODE_SMELL",
+      "n": 1
+    },
+    {
+      "regla": "python:S6890",
+      "severidad": "CRITICAL",
+      "tipo": "CODE_SMELL",
+      "n": 1
+    },
+    {
+      "regla": "javascript:S6582",
+      "severidad": "MINOR",
+      "tipo": "CODE_SMELL",
+      "n": 1
+    },
+    {
+      "regla": "python:S5778",
+      "severidad": "MAJOR",
+      "tipo": "CODE_SMELL",
+      "n": 1
+    }
+  ],
+  "falsos_positivos": [
+    {
+      "regla": "xml:S2068",
+      "archivo": "addons/transporte_gps_traccar/views/res_config_settings_views.xml",
+      "n": 3,
+      "motivo": "password=\"True\" enmascara el campo; sin credenciales en el código"
+    }
+  ]
+}
