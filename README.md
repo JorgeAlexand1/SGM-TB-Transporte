@@ -31,5 +31,6 @@ bash scripts/ejecutar_pruebas.sh          # todas las pruebas
 | 8 | Matriz y evidencias de pruebas | `docs/PLAN_PRUEBAS.md`, `docs/evidencias/` |
 | 9 | ISO/IEC 25010 y SonarQube | `docs/CALIDAD_SOFTWARE.md`, `sonar-project.properties` |
 | 10 | Mejora continua (Ishikawa, Pareto, PDCA) | `docs/MEJORA_CONTINUA.md` |
+| — | Trabajo de campo: Traccar, rutas reales, recorridos y capturas | `docs/GUIA_TRABAJO_CAMPO.md` |
 | — | Guion de la defensa | `docs/GUIA_DEMOSTRACION.md` |
 | — | Instalación y flujo Git | `docs/GUIA_INSTALACION.md`, `docs/GUIA_GIT.md` |
