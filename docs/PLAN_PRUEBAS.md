@@ -8,14 +8,16 @@
 | Funcional / caja negra | Runner de Odoo (`TransactionCase`) | Entradas válidas, inválidas y valores límite sobre modelos reales | `addons/*/tests/test_*.py` |
 | Integración Traccar ↔ Odoo | Odoo + mocks de la API + Traccar real (contenedor) | Sincronización, duplicados, webhook, exactitud | `transporte_gps_traccar/tests`, `test_calidad.py` |
 | Rendimiento | Odoo (tag `rendimiento`) + `scripts/prueba_rendimiento.py` (JSON-RPC) | Tiempos con 10/30/60 recorridos y 1 400–8 700 posiciones | `test_rendimiento.py` |
-| Interfaz | `HttpCase` + Chromium headless (tag `ui`) | Dashboard, formulario e informe sin errores JS | `test_ui.py` |
+| Interfaz | `HttpCase` + Chromium headless (tag `ui`) | Inicio, dashboard, mapa de rutas, formulario e informe sin errores JS | `test_ui.py`, `transporte_ui/tests` |
 | Calidad de código | SonarQube | Defectos, duplicación, mantenibilidad, seguridad | `sonar-project.properties` |
 
 **Ejecutar todo:** `bash scripts/ejecutar_pruebas.sh` (crea la BD desechable `sgmtb_test`; nunca toca la BD de transporte).
 
-Para las pruebas de interfaz se necesita Chromium en el contenedor (Debian 11 está archivado):
+Para las pruebas de interfaz se necesitan Chromium **y** `python3-websocket` en el contenedor (Debian 11 está
+archivado). Sin `python3-websocket` Odoo marca las pruebas de navegador como *saltadas* —no como fallidas—, por lo
+que `ejecutar_pruebas.sh` trata cualquier prueba de interfaz saltada como fallo (defecto D-07):
 ```bash
-docker exec -u root odoo16_web bash -c 'printf "deb http://archive.debian.org/debian bullseye main\ndeb http://archive.debian.org/debian-security bullseye-security main\n" > /etc/apt/sources.list && apt-get -o Acquire::Check-Valid-Until=false update && apt-get install -y --no-install-recommends chromium fonts-liberation'
+docker exec -u root odoo16_web bash -c 'printf "deb http://archive.debian.org/debian bullseye main\ndeb http://archive.debian.org/debian-security bullseye-security main\n" > /etc/apt/sources.list && apt-get -o Acquire::Check-Valid-Until=false update && apt-get install -y --no-install-recommends chromium fonts-liberation python3-websocket'
 ```
 
 ## 2. Matriz de casos de prueba
@@ -44,6 +46,10 @@ Ejecutados el **20/11/2026**. *Evidencia* = prueba automatizada que lo comprueba
 | CP-17 | Interfaz | RF-18/20, RNF-12 | Abrir dashboard, formulario de viaje simulado e informe | 12 KPIs + 3 gráficos sin errores JS; cinta SIMULADO y pestaña Evaluación; informe con incidencias | Igual | `test_ui.py` (3 pruebas) | ✅ |
 | CP-18 | Seguridad | RNF-01 | Usuario *Consulta* crea una incidencia / abre el dashboard | AccessError al crear; dashboard visible | Igual (antes: AccessError al leer buses → **defecto D-02 corregido**) | `TestSeguridad` | ✅ |
 | CP-19 | Integración – exactitud | RNF-06 | 4 posiciones en Odoo; Traccar devuelve 1 alterada y le falta 1 | Exactitud 50 %, medición registrada con ok = False | Igual | `test_exactitud_sync_con_traccar_simulado` | ✅ |
+| CP-20 | Caja negra – KPIs por ruta | RF-17, RF-19 | Ruta con 1 recorrido que cumple y 1 con parada atrasada y omitidas | 2 evaluados, cumplimiento 50 %, puntualidad = Σ puntuales / Σ atendidas | Igual | `test_indicadores_por_ruta`, `test_mapa_rutas` | ✅ |
+| CP-21 | Seguridad – mapa de rutas | RNF-01 | Usuario *Consulta* abre el mapa de rutas e intenta cambiar el trazado | Ve rutas e indicadores; AccessError al escribir | Igual | `TestSeguridad` | ✅ |
+| CP-22 | Caja negra – Inicio | RF-17, RF-18 | 10 recorridos simulados + 1 bus en ruta | Inicio = mismos valores que el dashboard en 7 días; el bus aparece en «En ruta ahora»; aviso de SIMULADOS | Igual | `test_inicio_coincide_con_registros` | ✅ |
+| CP-23 | Seguridad – Inicio | RNF-01 | Usuario *Consulta* vs. *Responsable* | El acceso «Recorridos simulados» solo aparece al responsable | Igual | `test_accesos_segun_rol` | ✅ |
 
 ## 3. Resultados de ejecución
 
@@ -51,9 +57,9 @@ Ejecutados el **20/11/2026**. *Evidencia* = prueba automatizada que lo comprueba
 | :--- | :---: | :--- |
 | pytest `transporte_gps_traccar` | 54 | 54 aprobadas · cobertura de `lib/` **99 %** (ramas) |
 | pytest `transporte_calidad` | 74 | 74 aprobadas · cobertura de `lib/` **97 %** (ramas) |
-| Odoo `transporte_core` + `transporte_gps_traccar` + `transporte_calidad` | 89 | **0 fallos, 0 errores** |
+| Odoo `transporte_core` + `transporte_gps_traccar` + `transporte_calidad` + `transporte_ui` | 95 | **0 fallos, 0 errores** |
 | Odoo rendimiento (`rendimiento`) | 1 (12 mediciones) | 0 fallos |
-| Odoo interfaz (`ui`, Chromium headless) | 3 | 0 fallos |
+| Odoo interfaz (`ui`, Chromium headless) | 5 | 0 fallos, 0 saltadas (Inicio, dashboard, mapa de rutas, formulario, informe) |
 
 ## 4. Rendimiento
 
@@ -86,6 +92,10 @@ del dashboard trabajan sobre campos almacenados y escalan con el número de viaj
 | D-04 | `registrar()` devolvía un recordset: falla por XML/JSON-RPC | `prueba_rendimiento.py` | Devuelve el id |
 | D-05 | `config/odoo.conf` local vacío: el servidor arrancaba sin `/mnt/extra-addons` | Inspección de logs | Reconstruido desde `odoo.conf.example` |
 | D-06 | Expectativa errónea: la pérdida de señal hacía «incumplir» el viaje | CP-13 | Se definió como incidencia de calidad de datos (no incumple) |
+| D-07 | Las pruebas de navegador se **saltaban** en silencio (faltaba `python3-websocket`) y el resumen decía «0 fallos» | Revisión del log (`skipped … websocket-client`) | Dependencia instalada; `ejecutar_pruebas.sh` falla si hay pruebas de interfaz saltadas |
+| D-08 | Los 3 mapas dependían del CDN jsDelivr: sin Internet (o en pruebas) quedaban en blanco | Capturas de pantalla automatizadas | Leaflet 1.9.4 incluido en `transporte_gps_traccar/static/lib/leaflet` (checksum npm verificado) |
+| D-09 | Mapa de rutas: panel lateral de 380 px de alto y mapa invisible (`.o_action` de Odoo es columna flex) | Capturas + medición de cajas en el navegador | Contenedor propio `.o_cmr_cuerpo` en fila; prueba `test_mapa_rutas_renderiza…` |
+| D-10 | `_compute_trazado_puntos` perdió `@api.depends` (edición interrumpida): el nº de puntos no se recalculaba | Revisión del `git diff` al retomar | Decorador restaurado; `test_trazado_referencia` |
 
 ## 6. Pendiente de ejecutar por el equipo (requiere hardware / servicios externos)
 - Recorridos reales con Traccar Client en datos móviles a través del túnel (evidencia de A2/A5).

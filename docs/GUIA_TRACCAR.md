@@ -77,6 +77,6 @@ por defecto (300 s) se pierde ~40 % de las paradas incluso con la mejora. Detall
 
 ## 7. Límites conocidos
 - **Pendiente**: validar con un teléfono físico en datos móviles a través del túnel de Cloudflare (evidencia de A2/A5; requiere Cloudflare y el teléfono). Ver `docs/GUIA_CLOUDFLARE.md`.
-- Leaflet se carga desde el CDN jsDelivr (requiere Internet en el navegador). El dashboard de calidad, que usa el mismo mapa, se probó en Chromium headless (`test_ui.py`); la acción *Mapa de Buses* no tiene prueba de interfaz propia.
+- Leaflet 1.9.4 va incluido en el módulo (`static/lib/leaflet`, licencia BSD-2): los mapas cargan sin CDN. Los mosaicos de OpenStreetMap sí requieren Internet; sin conexión se ven trazados, paradas y buses sobre fondo gris. La acción *Mapa de Buses* no tiene prueba de interfaz propia.
 - Una posición que llegue a Traccar con más de 1 min de retraso respecto a la última sincronizada no se recuperaría por cron (sí por webhook).
 - Las paradas se marcan por proximidad en cualquier orden. Las reglas de retraso e incidencias (A6) están en `transporte_calidad`.
