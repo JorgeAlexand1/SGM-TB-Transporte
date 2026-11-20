@@ -1,0 +1,199 @@
+// Página de inicio de sesión SGM-TB (bundle frontend).
+.o_sgm_login_body {
+    background: $sgm-fondo;
+}
+
+.o_sgm_login {
+    display: flex;
+    min-height: 100vh;
+    font-size: 15px;
+}
+
+// ---------------------------------------------------------------- panel de marca
+.o_sgm_login_hero {
+    position: relative;
+    flex: 1 1 55%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 32px;
+    padding: 48px 56px;
+    color: #FFFFFF;
+    background:
+        radial-gradient(circle at 85% 15%, rgba(245, 166, 35, 0.22) 0, transparent 40%),
+        linear-gradient(140deg, $sgm-azul-oscuro 0%, $sgm-azul 55%, $sgm-azul-claro 100%);
+    overflow: hidden;
+}
+.o_sgm_login_brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+
+    img {
+        border-radius: 10px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    }
+}
+.o_sgm_login_pitch {
+    max-width: 520px;
+
+    h1 {
+        font-size: 40px;
+        line-height: 1.15;
+        font-weight: 800;
+        margin-bottom: 14px;
+        color: #FFFFFF;
+    }
+    p {
+        font-size: 18px;
+        opacity: 0.9;
+        margin-bottom: 28px;
+    }
+    ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        gap: 12px;
+    }
+    li {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 16px;
+    }
+    li .fa {
+        width: 34px;
+        height: 34px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 9px;
+        background: rgba(255, 255, 255, 0.14);
+        color: $sgm-ambar;
+    }
+}
+.o_sgm_login_ruta {
+    width: 100%;
+    max-width: 520px;
+    color: rgba(255, 255, 255, 0.55);
+
+    circle {
+        fill: #FFFFFF;
+    }
+    .o_sgm_login_destino {
+        fill: $sgm-ambar;
+    }
+}
+.o_sgm_login_pie {
+    opacity: 0.7;
+}
+
+// ---------------------------------------------------------------- formulario
+.o_sgm_login_panel {
+    flex: 1 1 45%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px;
+}
+.o_sgm_login_card {
+    width: 100%;
+    max-width: 400px;
+    background: #FFFFFF;
+    border-radius: 16px;
+    padding: 36px 32px 28px;
+    box-shadow: 0 10px 40px rgba(11, 42, 74, 0.12);
+
+    .form-control {
+        padding: 10px 12px;
+        border-radius: 10px;
+        font-size: 15px;
+    }
+    .form-label,
+    .col-form-label {
+        font-weight: 600;
+        color: #2B3A4A;
+    }
+    .form-control:focus {
+        border-color: $sgm-azul-claro;
+        box-shadow: 0 0 0 3px rgba($sgm-azul-claro, 0.2);
+    }
+    .oe_login_buttons .btn-primary {
+        padding: 11px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 15px;
+        color: #FFFFFF;
+        background-color: $sgm-azul;
+        border-color: $sgm-azul;
+
+        &:hover,
+        &:focus {
+            background-color: $sgm-azul-oscuro;
+            border-color: $sgm-azul-oscuro;
+        }
+    }
+    a {
+        color: $sgm-azul-claro;
+    }
+}
+.o_sgm_login_card_head {
+    text-align: center;
+    margin-bottom: 24px;
+
+    h2 {
+        font-size: 24px;
+        font-weight: 800;
+        color: $sgm-azul-oscuro;
+        margin: 0 0 4px;
+    }
+    p {
+        color: #6B7A8C;
+        margin: 0;
+    }
+}
+.o_sgm_login_links {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #E3E9F1;
+    text-align: center;
+    font-size: 13px;
+}
+
+// ---------------------------------------------------------------- móvil
+@include media-breakpoint-down(lg) {
+    .o_sgm_login {
+        flex-direction: column;
+    }
+    .o_sgm_login_hero {
+        flex: 0 0 auto;
+        padding: 24px 20px;
+        gap: 12px;
+    }
+    .o_sgm_login_pitch {
+        h1 {
+            font-size: 24px;
+        }
+        p {
+            font-size: 15px;
+            margin-bottom: 0;
+        }
+        ul {
+            display: none;
+        }
+    }
+    .o_sgm_login_ruta,
+    .o_sgm_login_pie {
+        display: none;
+    }
+    .o_sgm_login_panel {
+        padding: 20px 16px 32px;
+    }
+    .o_sgm_login_card {
+        padding: 28px 20px 20px;
+    }
+}

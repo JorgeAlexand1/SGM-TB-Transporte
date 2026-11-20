@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="transporte_ui.Inicio" owl="1">
+        <div class="o_action o_sgm_inicio">
+            <t t-if="state.datos">
+            <t t-set="d" t-value="state.datos"/>
+            <t t-set="k" t-value="d.kpis"/>
+            <div class="o_sgm_scroll">
+
+                <!-- Encabezado -->
+                <header class="o_sgm_hero">
+                    <div>
+                        <h1><t t-esc="d.saludo"/>, <t t-esc="d.usuario"/></h1>
+                        <p class="o_sgm_fecha" t-esc="fechaLarga(d.hoy)"/>
+                        <p class="o_sgm_periodo">
+                            Indicadores de los últimos <t t-esc="d.periodo.dias"/> días ·
+                            <t t-esc="d.evaluados"/> recorridos evaluados
+                            <span t-if="d.simulados" class="o_sgm_chip_sim"
+                                  title="El dashboard permite separar datos reales y simulados">
+                                <i class="fa fa-flask"/> incluye <t t-esc="d.simulados"/> SIMULADOS
+                            </span>
+                        </p>
+                    </div>
+                    <div class="o_sgm_hero_acciones">
+                        <button class="btn btn-light" t-on-click="() => this.cargar()" title="Actualizar">
+                            <i t-attf-class="fa fa-refresh #{state.cargando ? 'fa-spin' : ''}"/>
+                        </button>
+                        <button t-if="tieneAcceso('dashboard')" class="btn o_sgm_btn_ambar"
+                                t-on-click="() => this.abrir('dashboard')">
+                            <i class="fa fa-tachometer"/> Abrir dashboard
+                        </button>
+                    </div>
+                </header>
+
+                <!-- Indicadores -->
+                <section class="o_sgm_kpis">
+                    <div class="o_sgm_kpi o_sgm_clic" t-on-click="() => this.abrir('mapa_buses')">
+                        <i class="fa fa-bus o_sgm_kpi_icono o_sgm_t_azul"/>
+                        <div class="o_sgm_kpi_valor"><t t-esc="k.en_ruta"/><small>/ <t t-esc="k.buses"/></small></div>
+                        <div class="o_sgm_kpi_titulo">Buses en ruta ahora</div>
+                        <div class="o_sgm_kpi_pie"><t t-esc="k.con_senal"/> con señal GPS</div>
+                    </div>
+                    <div class="o_sgm_kpi o_sgm_clic" t-on-click="() => this.abrir('viajes')">
+                        <i class="fa fa-road o_sgm_kpi_icono o_sgm_t_ambar"/>
+                        <div class="o_sgm_kpi_valor" t-esc="k.viajes_hoy"/>
+                        <div class="o_sgm_kpi_titulo">Viajes de hoy</div>
+                        <div class="o_sgm_kpi_pie"><t t-esc="k.completados_hoy"/> completados · <t t-esc="k.programados_hoy"/> programados</div>
+                    </div>
+                    <div t-attf-class="o_sgm_kpi #{tono(k.cumplimiento)}">
+                        <i class="fa fa-check-circle o_sgm_kpi_icono o_sgm_t_verde"/>
+                        <div class="o_sgm_kpi_valor" t-esc="pct(k.cumplimiento)"/>
+                        <div class="o_sgm_kpi_titulo">Cumplimiento de rutas</div>
+                        <div class="o_sgm_kpi_pie">recorridos que cumplen</div>
+                    </div>
+                    <div t-attf-class="o_sgm_kpi #{tono(k.puntualidad)}">
+                        <i class="fa fa-clock-o o_sgm_kpi_icono o_sgm_t_turquesa"/>
+                        <div class="o_sgm_kpi_valor" t-esc="pct(k.puntualidad)"/>
+                        <div class="o_sgm_kpi_titulo">Puntualidad</div>
+                        <div class="o_sgm_kpi_pie">paradas atendidas a tiempo</div>
+                    </div>
+                    <div class="o_sgm_kpi">
+                        <i class="fa fa-hourglass-half o_sgm_kpi_icono o_sgm_t_violeta"/>
+                        <div class="o_sgm_kpi_valor" t-esc="min(k.retraso_promedio)"/>
+                        <div class="o_sgm_kpi_titulo">Retraso promedio</div>
+                        <div class="o_sgm_kpi_pie">por parada</div>
+                    </div>
+                    <div t-attf-class="o_sgm_kpi o_sgm_clic #{k.incidencias_abiertas ? 'o_sgm_mal' : 'o_sgm_bien'}"
+                         t-on-click="() => this.abrir('incidencias')">
+                        <i class="fa fa-exclamation-triangle o_sgm_kpi_icono o_sgm_t_rojo"/>
+                        <div class="o_sgm_kpi_valor" t-esc="k.incidencias_abiertas"/>
+                        <div class="o_sgm_kpi_titulo">Incidencias abiertas</div>
+                        <div class="o_sgm_kpi_pie"><t t-esc="k.incidencias_periodo"/> detectadas en el período</div>
+                    </div>
+                    <div t-attf-class="o_sgm_kpi #{tono(k.integridad_gps, 95, 80)}">
+                        <i class="fa fa-signal o_sgm_kpi_icono o_sgm_t_azul"/>
+                        <div class="o_sgm_kpi_valor" t-esc="pct(k.integridad_gps)"/>
+                        <div class="o_sgm_kpi_titulo">Integridad GPS</div>
+                        <div class="o_sgm_kpi_pie">posiciones válidas</div>
+                    </div>
+                    <div t-attf-class="o_sgm_kpi #{tono(k.deteccion_correcta)}">
+                        <i class="fa fa-crosshairs o_sgm_kpi_icono o_sgm_t_ambar"/>
+                        <div class="o_sgm_kpi_valor" t-esc="pct(k.deteccion_correcta)"/>
+                        <div class="o_sgm_kpi_titulo">Detección correcta</div>
+                        <div class="o_sgm_kpi_pie">incidencias detectadas vs. esperadas</div>
+                    </div>
+                </section>
+
+                <div class="o_sgm_columnas">
+                    <!-- En ruta ahora -->
+                    <section class="o_sgm_panel">
+                        <h2><i class="fa fa-location-arrow"/> En ruta ahora</h2>
+                        <div t-if="!d.en_ruta.length" class="o_sgm_vacio">
+                            <i class="fa fa-moon-o"/> No hay buses en ruta en este momento.
+                        </div>
+                        <div t-foreach="d.en_ruta" t-as="v" t-key="v.viaje_id" class="o_sgm_bus o_sgm_clic"
+                             t-on-click="() => this.abrirViaje(v.viaje_id)">
+                            <div class="o_sgm_bus_cab">
+                                <span t-attf-class="o_sgm_punto #{v.senal === 'con_senal' ? 'o_sgm_punto_ok' : 'o_sgm_punto_ko'}"
+                                      t-att-title="v.senal === 'con_senal' ? 'Con señal GPS' : 'Sin señal GPS'"/>
+                                <b t-esc="v.bus"/>
+                                <span class="o_sgm_ruta_tag" t-esc="v.ruta"/>
+                                <span t-if="v.desviado" class="o_sgm_tag o_sgm_tag_mal">Desviado</span>
+                                <span t-elif="v.cumple_horario" class="o_sgm_tag o_sgm_tag_bien">A tiempo</span>
+                                <span t-else="" class="o_sgm_tag o_sgm_tag_regular">Con retraso</span>
+                            </div>
+                            <div class="o_sgm_progreso" t-att-title="v.visitadas + ' de ' + v.total + ' paradas'">
+                                <div t-attf-style="width: #{v.total ? 100 * v.visitadas / v.total : 0}%"/>
+                            </div>
+                            <div class="o_sgm_bus_pie">
+                                Paradas <t t-esc="v.visitadas"/>/<t t-esc="v.total"/> ·
+                                retraso acumulado <t t-esc="min(v.retraso)"/>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Incidencias frecuentes -->
+                    <section class="o_sgm_panel">
+                        <h2><i class="fa fa-bar-chart"/> Incidencias más frecuentes</h2>
+                        <div t-if="!d.top_incidencias.length" class="o_sgm_vacio">
+                            <i class="fa fa-smile-o"/> Sin incidencias en el período.
+                        </div>
+                        <div t-foreach="d.top_incidencias" t-as="f" t-key="f.categoria" class="o_sgm_barra">
+                            <div class="o_sgm_barra_txt">
+                                <span t-esc="f.categoria"/>
+                                <b><t t-esc="f.n"/> <small>(<t t-esc="f.pct"/> %)</small></b>
+                            </div>
+                            <div class="o_sgm_barra_fondo">
+                                <div t-attf-style="width: #{100 * f.n / maxIncidencias}%"/>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Accesos -->
+                <h2 class="o_sgm_titulo_seccion">¿Qué quieres hacer?</h2>
+                <section class="o_sgm_accesos">
+                    <button t-foreach="d.accesos" t-as="a" t-key="a.clave" type="button"
+                            t-attf-class="o_sgm_acceso o_sgm_acceso_#{a.clave}" t-on-click="() => this.abrir(a.clave)">
+                        <i t-attf-class="fa #{a.icono} o_sgm_acceso_icono o_sgm_t_#{a.tono}"/>
+                        <span class="o_sgm_acceso_titulo" t-esc="a.titulo"/>
+                        <span class="o_sgm_acceso_desc" t-esc="a.descripcion"/>
+                    </button>
+                </section>
+            </div>
+            </t>
+            <div t-else="" class="o_sgm_cargando"><i class="fa fa-circle-o-notch fa-spin"/> Cargando…</div>
+        </div>
+    </t>
+</templates>

@@ -1,0 +1,18 @@
+// Paleta SGM-TB. Se carga ANTES de las variables de Odoo, que usan !default.
+$sgm-azul: #0F4C81;
+$sgm-azul-oscuro: #0B2A4A;
+$sgm-azul-claro: #1663A6;
+$sgm-ambar: #F5A623;
+$sgm-fondo: #F3F6FA;
+
+$o-community-color: $sgm-azul;
+$o-brand-odoo: $sgm-azul;
+$o-brand-primary: $sgm-azul;
+
+$o-success: #1E9E6A;
+$o-info: #1B8FC2;
+$o-warning: $sgm-ambar;
+$o-danger: #D64545;
+
+$o-main-text-color: #2B3A4A;
+$o-webclient-background-color: $sgm-fondo;

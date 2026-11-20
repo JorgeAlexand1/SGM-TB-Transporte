@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Título y favicon propios en todas las páginas -->
+    <template id="layout_sgmtb" inherit_id="web.layout" name="SGM-TB: título y favicon">
+        <xpath expr="//head/title" position="attributes">
+            <attribute name="t-esc">title or 'SGM-TB · Transporte universitario'</attribute>
+        </xpath>
+        <xpath expr="//head/link[@rel='shortcut icon']" position="attributes">
+            <attribute name="t-att-href">x_icon or '/transporte_ui/static/img/favicon.svg'</attribute>
+            <attribute name="type">image/svg+xml</attribute>
+        </xpath>
+    </template>
+
+    <!-- Inicio de sesión: panel de marca + tarjeta del formulario, sin «Powered by Odoo» -->
+    <template id="login_layout_sgmtb" inherit_id="web.login_layout" name="SGM-TB: inicio de sesión">
+        <xpath expr="//t[@t-set='body_classname']" position="attributes">
+            <attribute name="t-value">'o_sgm_login_body'</attribute>
+        </xpath>
+        <xpath expr="//div[hasclass('container')]" position="replace">
+            <div class="o_sgm_login">
+                <section class="o_sgm_login_hero" aria-label="SGM-TB">
+                    <div class="o_sgm_login_brand">
+                        <img src="/transporte_ui/static/description/icon.svg" alt="" width="44" height="44"/>
+                        <span>SGM-TB</span>
+                    </div>
+                    <div class="o_sgm_login_pitch">
+                        <h1>Cada bus, cada parada, cada minuto.</h1>
+                        <p>Monitoreo GPS y evaluación objetiva del transporte universitario.</p>
+                        <ul>
+                            <li><i class="fa fa-map-marker" role="img" aria-label="GPS"/> Buses en vivo con Traccar</li>
+                            <li><i class="fa fa-clock-o" role="img" aria-label="Horario"/> Puntualidad por parada y por ruta</li>
+                            <li><i class="fa fa-exclamation-triangle" role="img" aria-label="Incidencias"/> Retrasos y desvíos detectados solos</li>
+                            <li><i class="fa fa-line-chart" role="img" aria-label="Indicadores"/> Indicadores verificables, sin datos estáticos</li>
+                        </ul>
+                    </div>
+                    <svg class="o_sgm_login_ruta" viewBox="0 0 400 120" aria-hidden="true" focusable="false">
+                        <path d="M10 95 C 80 95, 90 30, 160 35 S 250 100, 310 70 S 370 20, 390 25"
+                              fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"
+                              stroke-dasharray="2 12"/>
+                        <circle cx="10" cy="95" r="7"/>
+                        <circle cx="160" cy="35" r="7"/>
+                        <circle cx="310" cy="70" r="7"/>
+                        <circle cx="390" cy="25" r="9" class="o_sgm_login_destino"/>
+                    </svg>
+                    <small class="o_sgm_login_pie">Proyecto integrador · Gestión de Calidad del Software</small>
+                </section>
+                <section class="o_sgm_login_panel">
+                    <div t-attf-class="o_sgm_login_card {{login_card_classes}} o_database_list">
+                        <div class="o_sgm_login_card_head">
+                            <h2>Iniciar sesión</h2>
+                            <p>Ingresa con tu usuario de SGM-TB</p>
+                        </div>
+                        <t t-out="0"/>
+                        <div class="o_sgm_login_links" t-if="not disable_footer and not disable_database_manager">
+                            <a href="/web/database/manager">Gestionar bases de datos</a>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="login_sgmtb" inherit_id="web.login" name="SGM-TB: textos del formulario">
+        <xpath expr="//label[@for='login']" position="replace">
+            <label for="login" class="form-label">Usuario</label>
+        </xpath>
+        <xpath expr="//input[@id='login']" position="attributes">
+            <attribute name="placeholder">usuario o correo</attribute>
+        </xpath>
+        <xpath expr="//label[@for='password']" position="replace">
+            <label for="password" class="form-label">Contraseña</label>
+        </xpath>
+        <xpath expr="//input[@id='password']" position="attributes">
+            <attribute name="placeholder">••••••••</attribute>
+        </xpath>
+        <xpath expr="//button[@type='submit'][hasclass('btn-primary')]" position="replace">
+            <button type="submit" class="btn btn-primary">Entrar <i class="fa fa-arrow-right ms-1"/></button>
+        </xpath>
+    </template>
+</odoo>
