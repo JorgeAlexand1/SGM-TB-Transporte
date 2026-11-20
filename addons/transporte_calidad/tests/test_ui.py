@@ -28,6 +28,13 @@ class TestUiCalidad(CalidadCommon, HttpCase):
         self.browser_js('/web#action=transporte_calidad.action_dashboard_calidad',
                         "console.log('test successful')", ready=listo, login='admin', timeout=90)
 
+    def test_mapa_rutas_renderiza_rutas_e_indicadores(self):
+        """El mapa lista las rutas con sus indicadores (el teselado de OSM puede faltar sin Internet)."""
+        listo = ("[...document.querySelectorAll('.o_calidad_mapa_rutas .o_cmr_ruta')]"
+                 ".filter(e => e.textContent.includes('TCAL-R')).length === 3")
+        self.browser_js('/web#action=transporte_calidad.action_mapa_rutas',
+                        "console.log('test successful')", ready=listo, login='admin', timeout=90)
+
     def test_formulario_viaje_muestra_evaluacion(self):
         viaje = self.viajes.filtered(lambda v: v.escenario_simulado == 'atrasado')
         listo = ("!!document.querySelector('.o_form_view .ribbon')"
