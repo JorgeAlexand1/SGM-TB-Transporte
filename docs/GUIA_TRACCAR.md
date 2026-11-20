@@ -75,6 +75,13 @@ su radio (hora interpolada). Ajustes ▸ Transporte GPS ▸ *Detección de parad
 comportamiento original) y *Tramo máximo interpolable* (360 s). **Configurar Traccar Client a 30 s**: con el valor
 por defecto (300 s) se pierde ~40 % de las paradas incluso con la mejora. Detalle en `docs/MEJORA_CONTINUA.md`.
 
+## 6.b Prueba de integración en vivo (sin teléfono)
+`bash scripts/prueba_integracion_traccar.sh` levanta un Traccar **efímero** (no toca `traccar_server`), crea un
+administrador de prueba con contraseña aleatoria, envía posiciones por el protocolo OsmAnd de Traccar Client y
+comprueba en Odoo la sincronización, la ausencia de duplicados, las paradas marcadas por geocerca y la exactitud
+(100 %). Es el paso 5 de `scripts/ejecutar_pruebas.sh`. No reemplaza la evidencia con el teléfono en datos
+móviles (A2), que sigue pendiente.
+
 ## 7. Límites conocidos
 - **Pendiente**: validar con un teléfono físico en datos móviles a través del túnel de Cloudflare (evidencia de A2/A5; requiere Cloudflare y el teléfono). Ver `docs/GUIA_CLOUDFLARE.md`.
 - Leaflet 1.9.4 va incluido en el módulo (`static/lib/leaflet`, licencia BSD-2): los mapas cargan sin CDN. Los mosaicos de OpenStreetMap sí requieren Internet; sin conexión se ven trazados, paradas y buses sobre fondo gris. La acción *Mapa de Buses* no tiene prueba de interfaz propia.

@@ -122,3 +122,26 @@ operativas: los retrasos en parada son la incidencia más frecuente.
 4. Control: el indicador «Detección correcta de incidencias» y el filtro «Detección incorrecta» de viajes
    quedan en el dashboard para vigilar regresiones; `test_cp12` impide volver al comportamiento anterior.
 5. Próximo ciclo: validar con recorridos reales (Traccar Client a 30 s) y comparar contra el resultado simulado.
+
+## 5. Segundo ciclo PDCA — confiabilidad de las pruebas y mantenibilidad (20/11/2026)
+
+Problema: los resultados de calidad **parecían** mejores de lo que eran. Las 4 pruebas de navegador se saltaban sin
+avisar (D-07), los mapas fallaban sin Internet (D-08) y no se veía que el mapa de rutas estaba roto (D-09), porque
+nadie miraba la interfaz renderizada. Además, la regla central `reglas.evaluar_viaje` tenía complejidad cognitiva 46
+(máximo recomendado 15), lo que hacía arriesgado tocar las reglas de detección.
+
+| Fase | Acción |
+| :--- | :--- |
+| **PLAN** | Causas: dependencia no verificada (`python3-websocket`), Odoo informa «0 failed» aunque salte pruebas, recursos de un CDN y una función que acumula 9 reglas. Meta: 0 pruebas de interfaz saltadas, mapas sin dependencias externas y ninguna regla de detección con complejidad > 15, sin cambiar resultados. |
+| **DO** | Dependencia instalada; `ejecutar_pruebas.sh` trata una prueba saltada como fallo; capturas automatizadas de escritorio y móvil; Leaflet incluido en el módulo; `evaluar_viaje` dividida en una función por regla (`_regla_retraso_inicio`, `_regla_retraso_llegada`, `_regla_diferencia_tiempo`, `_regla_recorrido_incompleto`, `_reglas_gps`, `_veredicto`). Se añadió una prueba de integración **en vivo** contra un Traccar real. |
+| **CHECK** | Ver tabla. Mismos resultados de detección (74 pytest, 95 Odoo y 10/10 escenarios simulados correctos) antes y después del refactor. |
+| **ACT** | El script falla si una prueba de interfaz se salta; el paso 5 (Traccar en vivo) forma parte de la suite; SonarQube se ejecuta con `docs/CALIDAD_SOFTWARE.md §2`. Siguiente candidato: `simulador.generar_recorrido` (complejidad 31). |
+
+| Indicador | Antes | Después |
+| :--- | :-: | :-: |
+| Pruebas de interfaz realmente ejecutadas | 1 de 5 (4 saltadas) | **5 de 5** |
+| Pruebas de integración contra Traccar real | 0 (solo mocks) | **2** (OsmAnd → Traccar → Odoo → exactitud 100 %) |
+| Mapas que funcionan sin Internet | 0 de 3 | **3 de 3** (sin fondo de calles) |
+| Complejidad cognitiva de `evaluar_viaje` | 46 | **≤ 15** (ya no la señala SonarQube) |
+| Deuda técnica SonarQube | 399 min (1.ª pasada) | **333 min** |
+| Bugs / vulnerabilidades SonarQube | 3 / 3 | **0 / 0** |
