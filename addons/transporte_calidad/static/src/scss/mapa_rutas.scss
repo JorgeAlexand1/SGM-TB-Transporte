@@ -1,7 +1,14 @@
 .o_calidad_mapa_rutas {
     height: 100%;
-    display: flex;
     background: $o-view-background-color;
+
+    // .o_action (Odoo) es una columna flex: el reparto lateral/mapa va en un contenedor propio.
+    .o_cmr_cuerpo {
+        display: flex;
+        flex-direction: row;
+        height: 100%;
+        min-height: 0;
+    }
 
     .o_cmr_lateral {
         width: 380px;
@@ -30,13 +37,18 @@
     }
 
     @include media-breakpoint-down(md) {
-        flex-direction: column;
+        .o_cmr_cuerpo {
+            flex-direction: column;
+        }
         .o_cmr_lateral {
             width: 100%;
             flex: 0 0 auto;
             max-height: 40%;
             border-right: 0;
             border-bottom: 1px solid $border-color;
+        }
+        .o_cmr_mapa {
+            min-height: 300px;
         }
     }
 }

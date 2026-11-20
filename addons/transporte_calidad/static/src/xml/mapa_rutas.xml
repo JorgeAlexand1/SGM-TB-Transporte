@@ -2,13 +2,14 @@
 <templates xml:space="preserve">
     <t t-name="transporte_calidad.MapaRutas" owl="1">
         <div class="o_action o_calidad_mapa_rutas">
+          <div class="o_cmr_cuerpo">
             <div class="o_cmr_lateral">
                 <div class="o_cmr_ayuda text-muted">
                     Trazado contra el que se detectan desvíos. Línea continua: trazado de referencia;
                     discontinua: línea entre paradas (ruta sin trazado). Círculos: radio de detección de cada parada.
                 </div>
                 <div t-if="state.sinMapa" class="alert alert-warning m-2">
-                    No se pudo cargar el mapa (sin conexión a Internet). Los indicadores siguen disponibles.
+                    No se pudo cargar el mapa. Los indicadores siguen disponibles.
                 </div>
                 <div t-if="!state.rutas.length" class="text-muted p-3">No hay rutas activas.</div>
                 <table t-else="" class="table table-sm table-hover o_cmr_tabla mb-0">
@@ -46,6 +47,7 @@
                 </table>
             </div>
             <div class="o_cmr_mapa" t-ref="mapa"/>
+          </div>
         </div>
     </t>
 </templates>
