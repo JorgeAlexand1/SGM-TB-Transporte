@@ -8,6 +8,7 @@ Base de datos objetivo: transporte_universitario_gc
 Uso: Ejecutado dentro del contenedor odoo16_web o vía docker exec con odoo shell.
 """
 
+import os
 import sys
 import logging
 from datetime import datetime, timedelta, time

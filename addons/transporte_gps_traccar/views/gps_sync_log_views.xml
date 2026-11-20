@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_gps_sync_log_tree" model="ir.ui.view">
+        <field name="name">transporte.gps.sync.log.tree</field>
+        <field name="model">transporte.gps.sync.log</field>
+        <field name="arch" type="xml">
+            <tree string="Sincronizaciones Traccar" create="0" edit="0" decoration-danger="not ok">
+                <field name="fecha"/>
+                <field name="vehicle_id"/>
+                <field name="origen"/>
+                <field name="posiciones_traidas" sum="Total"/>
+                <field name="posiciones_nuevas" sum="Total"/>
+                <field name="duplicados_descartados" sum="Total"/>
+                <field name="posiciones_invalidas" sum="Total"/>
+                <field name="duracion_ms" avg="Promedio"/>
+                <field name="ok"/>
+                <field name="error" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_gps_sync_log_graph" model="ir.ui.view">
+        <field name="name">transporte.gps.sync.log.graph</field>
+        <field name="model">transporte.gps.sync.log</field>
+        <field name="arch" type="xml">
+            <graph string="Duración de sincronización" type="line">
+                <field name="fecha" interval="hour"/>
+                <field name="duracion_ms" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_gps_sync_log" model="ir.actions.act_window">
+        <field name="name">Log de sincronización</field>
+        <field name="res_model">transporte.gps.sync.log</field>
+        <field name="view_mode">tree,graph</field>
+    </record>
+
+    <menuitem id="menu_gps_sync_log" name="Log de sincronización" parent="menu_gps_root"
+              action="action_gps_sync_log" sequence="30"/>
+</odoo>

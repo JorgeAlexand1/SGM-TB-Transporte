@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_gps_posicion_tree" model="ir.ui.view">
+        <field name="name">transporte.gps.posicion.tree</field>
+        <field name="model">transporte.gps.posicion</field>
+        <field name="arch" type="xml">
+            <tree string="Posiciones GPS" create="0" decoration-danger="not valida" decoration-warning="simulado">
+                <field name="fecha_gps"/>
+                <field name="vehicle_id"/>
+                <field name="viaje_id"/>
+                <field name="latitud"/>
+                <field name="longitud"/>
+                <field name="velocidad_kmh"/>
+                <field name="valida"/>
+                <field name="simulado"/>
+                <field name="traccar_position_id" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_gps_posicion_form" model="ir.ui.view">
+        <field name="name">transporte.gps.posicion.form</field>
+        <field name="model">transporte.gps.posicion</field>
+        <field name="arch" type="xml">
+            <form string="Posición GPS" create="0">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="vehicle_id"/>
+                            <field name="viaje_id"/>
+                            <field name="fecha_gps"/>
+                            <field name="traccar_position_id"/>
+                        </group>
+                        <group>
+                            <field name="latitud"/>
+                            <field name="longitud"/>
+                            <field name="velocidad_kmh"/>
+                            <field name="valida"/>
+                            <field name="simulado"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_gps_posicion_search" model="ir.ui.view">
+        <field name="name">transporte.gps.posicion.search</field>
+        <field name="model">transporte.gps.posicion</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="vehicle_id"/>
+                <field name="viaje_id"/>
+                <filter name="invalidas" string="Inválidas" domain="[('valida', '=', False)]"/>
+                <filter name="simuladas" string="Simuladas" domain="[('simulado', '=', True)]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter name="g_bus" string="Bus" context="{'group_by': 'vehicle_id'}"/>
+                    <filter name="g_viaje" string="Viaje" context="{'group_by': 'viaje_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_gps_posicion" model="ir.actions.act_window">
+        <field name="name">Posiciones GPS</field>
+        <field name="res_model">transporte.gps.posicion</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_gps_root" name="Telemetría GPS" parent="transporte_core.menu_transporte_root" sequence="30"/>
+    <menuitem id="menu_gps_posicion" name="Posiciones GPS" parent="menu_gps_root"
+              action="action_gps_posicion" sequence="20"/>
+</odoo>

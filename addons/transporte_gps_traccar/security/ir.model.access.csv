@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_gps_posicion_user,transporte.gps.posicion.user,model_transporte_gps_posicion,transporte_core.group_transporte_user,1,0,0,0
+access_gps_posicion_manager,transporte.gps.posicion.manager,model_transporte_gps_posicion,transporte_core.group_transporte_manager,1,1,1,1
+access_gps_sync_log_user,transporte.gps.sync.log.user,model_transporte_gps_sync_log,transporte_core.group_transporte_user,1,0,0,0
+access_gps_sync_log_manager,transporte.gps.sync.log.manager,model_transporte_gps_sync_log,transporte_core.group_transporte_manager,1,1,1,1

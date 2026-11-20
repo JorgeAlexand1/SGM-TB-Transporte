@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="transporte_gps_traccar.GpsMap" owl="1">
+        <div class="o_action" style="height:100%; display:flex; flex-direction:column;">
+            <div class="p-2 text-muted">
+                Posiciones reales recibidas de Traccar (se actualiza cada 15 s). Verde: con señal · Rojo: sin señal.
+            </div>
+            <div t-ref="map" style="flex:1; min-height:500px;"/>
+        </div>
+    </t>
+</templates>
