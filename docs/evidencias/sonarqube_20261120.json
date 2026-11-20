@@ -130,5 +130,58 @@
       "n": 3,
       "motivo": "password=\"True\" enmascara el campo; sin credenciales en el código"
     }
-  ]
+  ],
+  "medidas_tras_refactor": {
+    "coverage": "97.2",
+    "complexity": "832",
+    "reliability_rating": "1.0",
+    "code_smells": "65",
+    "duplicated_lines_density": "0.3",
+    "security_rating": "1.0",
+    "software_quality_security_issues": "1",
+    "sqale_debt_ratio": "0.2",
+    "security_hotspots": "0",
+    "security_review_rating": "1.0",
+    "sqale_index": "333",
+    "sqale_rating": "1.0",
+    "bugs": "0",
+    "software_quality_reliability_issues": "2",
+    "cognitive_complexity": "772",
+    "ncloc": "6722",
+    "software_quality_maintainability_issues": "65",
+    "files": "89",
+    "vulnerabilities": "0"
+  },
+  "quality_gate_tras_refactor": {
+    "status": "OK",
+    "conditions": [
+      {
+        "status": "OK",
+        "metricKey": "new_coverage",
+        "comparator": "LT",
+        "errorThreshold": "80",
+        "actualValue": "96.8"
+      },
+      {
+        "status": "OK",
+        "metricKey": "new_duplicated_lines_density",
+        "comparator": "GT",
+        "errorThreshold": "3",
+        "actualValue": "0.0"
+      },
+      {
+        "status": "OK",
+        "metricKey": "new_violations",
+        "comparator": "GT",
+        "errorThreshold": "0",
+        "actualValue": "0"
+      }
+    ],
+    "ignoredConditions": false,
+    "period": {
+      "mode": "PREVIOUS_VERSION",
+      "date": "2026-11-20T19:59:06+0000"
+    },
+    "caycStatus": "compliant"
+  }
 }
