@@ -5,6 +5,7 @@ from datetime import timedelta
 
 RADIO_TIERRA_M = 6371008.8
 KNOTS_A_KMH = 1.852
+CERO_GPS = 1e-7  # ~1 cm: tolerancia para reconocer el punto nulo (0, 0) sin comparar floats con ==
 
 
 def haversine_m(lat1, lon1, lat2, lon2):
@@ -27,7 +28,7 @@ def coordenadas_validas(lat, lon):
         return False
     if not (-90.0 <= lat <= 90.0 and -180.0 <= lon <= 180.0):
         return False
-    return not (lat == 0.0 and lon == 0.0)
+    return not (abs(lat) < CERO_GPS and abs(lon) < CERO_GPS)
 
 
 def nudos_a_kmh(nudos):

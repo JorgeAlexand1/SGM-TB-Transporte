@@ -43,7 +43,10 @@ export class InicioSgm extends Component {
         if (valor === null || valor === undefined) {
             return "o_sgm_neutro";
         }
-        return valor >= bueno ? "o_sgm_bien" : valor >= regular ? "o_sgm_regular" : "o_sgm_mal";
+        if (valor >= bueno) {
+            return "o_sgm_bien";
+        }
+        return valor >= regular ? "o_sgm_regular" : "o_sgm_mal";
     }
 
     fechaLarga(iso) {

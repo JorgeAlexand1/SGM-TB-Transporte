@@ -129,7 +129,10 @@ export class MapaRutas extends Component {
         if (!evaluados) {
             return "text-muted";
         }
-        return valor >= 90 ? "text-success" : valor >= 70 ? "text-warning" : "text-danger";
+        if (valor >= 90) {
+            return "text-success";
+        }
+        return valor >= 70 ? "text-warning" : "text-danger";
     }
 }
 
