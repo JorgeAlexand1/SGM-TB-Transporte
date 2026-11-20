@@ -615,3 +615,26 @@ Fase 1.6 completada exitosamente. Repositorio privado publicado en `git@github.c
 - Trabajo de campo (aplazado por decisión del equipo): recorridos reales con Traccar Client en datos móviles por el
   túnel y verificación de exactitud Traccar ↔ Odoo con datos reales (`docs/GUIA_TRABAJO_CAMPO.md`).
 - Deuda técnica priorizada: dividir `reglas.evaluar_viaje` (complejidad cognitiva 46).
+
+---
+
+## [2026-11-20] - Fase 5: Cierre del proyecto (`feature/cierre-proyecto`)
+
+### Actividades Realizadas
+1. PR #4 (`feature/mapa-rutas`) y #5 (`feature/interfaz-sgmtb`, apilado) abiertos hacia `develop`; pendientes de
+   revisión e integración por el equipo.
+2. **Prueba de integración en vivo** Traccar ↔ Odoo (`scripts/prueba_integracion_traccar.sh`): Traccar 6.17 efímero,
+   posiciones por OsmAnd, sincronización sin duplicados, paradas por geocerca y exactitud 100 % (CP-24). Paso 5 de
+   `ejecutar_pruebas.sh`.
+3. BD de transporte en **español (es_EC)**; números formateados según el idioma del usuario.
+4. **Refactor** de `reglas.evaluar_viaje` (complejidad cognitiva 46 → ≤ 15) sin cambios de comportamiento: segundo
+   ciclo PDCA documentado en `docs/MEJORA_CONTINUA.md §5`.
+5. Presentación de la defensa (`docs/presentacion/`, HTML + PDF de 15 diapositivas) y guía de demostración actualizada.
+
+### Resultados
+- pytest 128/128, Odoo 95/95, rendimiento OK, interfaz 5/5, integración en vivo 2/2.
+- SonarQube: Quality Gate aprobado, 0 bugs, 0 vulnerabilidades, deuda 333 min (0,2 %).
+
+### Pendiente
+- Integrar los PR #4, #5 y el de esta rama en `develop` (requiere aprobación del equipo).
+- Trabajo de campo con Traccar Client en datos móviles; reemplazar las capturas simuladas de la presentación.
