@@ -122,7 +122,7 @@
                         <div t-foreach="d.top_incidencias" t-as="f" t-key="f.categoria" class="o_sgm_barra">
                             <div class="o_sgm_barra_txt">
                                 <span t-esc="f.categoria"/>
-                                <b><t t-esc="f.n"/> <small>(<t t-esc="f.pct"/> %)</small></b>
+                                <b><t t-esc="f.n"/> <small>(<t t-esc="num(f.pct)"/> %)</small></b>
                             </div>
                             <div class="o_sgm_barra_fondo">
                                 <div t-attf-style="width: #{100 * f.n / maxIncidencias}%"/>
