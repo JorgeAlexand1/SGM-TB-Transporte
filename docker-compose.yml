@@ -30,6 +30,19 @@ services:
       - odoo-db-data:/var/lib/postgresql/data/pgdata
     restart: unless-stopped
 
+  traccar:
+    image: traccar/traccar:latest
+    container_name: traccar_server
+    ports:
+      - "${TRACCAR_API_PORT:-8082}:8082"   # API REST / web
+      - "${TRACCAR_GPS_PORT:-5055}:5055"   # protocolo OsmAnd (Traccar Client)
+    volumes:
+      - traccar-data:/opt/traccar/data
+      - traccar-logs:/opt/traccar/logs
+    restart: unless-stopped
+
 volumes:
+  traccar-data:
+  traccar-logs:
   odoo-web-data:
   odoo-db-data:

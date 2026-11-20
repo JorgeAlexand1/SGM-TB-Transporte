@@ -81,3 +81,14 @@
 - [ ] Optimizar la actualización de contadores de paradas atendidas mediante SQL directo si aumenta el volumen.
 - [ ] Coordinar con el Integrante 3 los campos telemáticos adicionales que se requieran en `transporte.viaje.parada`.
 
+
+---
+
+### 2026-11-14 | Fase 2 (A3/A5): Módulo `transporte_gps_traccar` — integración Odoo ↔ Traccar
+- **Actividad:** Entorno local levantado (BD `transporte_dev`, datos demo cargados). Nuevo addon independiente que sincroniza posiciones de Traccar (cron + webhook), sin duplicados, las asocia al viaje en curso, registra llegadas a paradas por geocerca, calcula distancia/velocidad, detecta "sin señal", guarda log de sincronización y muestra mapa Leaflet.
+- **Archivos:** `addons/transporte_gps_traccar/**` (lib pura: `geo_utils`, `traccar_parser`, `traccar_client`; modelos `transporte.gps.posicion`, `transporte.gps.sync.log`, extensiones de `fleet.vehicle` y `transporte.viaje`; controlador webhook; vistas; widget de mapa), `docs/GUIA_TRACCAR.md`, `scripts/cargar_datos_demo.py` (fix: faltaba `import os`).
+- **Pruebas:** pytest 48/48 (100 % cobertura de `lib/`); Odoo 32/32 nuevos + 35/35 de `transporte_core` (`0 failed, 0 error(s)`). Verificado además contra un Traccar real en Docker (ver `docs/GUIA_TRACCAR.md` §5).
+- **Errores y soluciones:** `scripts/cargar_datos_demo.py` fallaba por `import os` ausente (corregido). La guía de instalación indica ejecutarlo en `/mnt/extra-addons/scripts/`, pero `docker-compose.yml` solo monta `addons/`: se copió al contenedor con `docker cp` (pendiente de coordinar con Integrante 1).
+- **Cambios posteriores:** servicio `traccar` añadido a `docker-compose.yml`; lógica del webhook movida a `fleet.vehicle.procesar_webhook` (probada); tests aislados de datos reales.
+- **Pendiente:** probar con teléfono físico en datos móviles vía Cloudflare Tunnel; ver el mapa renderizado en navegador; avisar a Integrante 1 del cambio en `docker-compose.yml`.
+- **Rama:** `feature/gps-traccar`.
