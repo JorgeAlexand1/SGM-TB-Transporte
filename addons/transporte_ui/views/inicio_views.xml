@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_inicio" model="ir.actions.client">
+        <field name="name">Inicio</field>
+        <field name="tag">transporte_ui_inicio</field>
+    </record>
+
+    <menuitem id="menu_inicio" name="Inicio" parent="transporte_core.menu_transporte_root"
+              action="action_inicio" sequence="0"/>
+
+    <!-- La aplicación abre en Inicio, aparece primero y usa el icono propio de SGM-TB -->
+    <record id="transporte_core.menu_transporte_root" model="ir.ui.menu">
+        <field name="name">SGM-TB Transporte</field>
+        <field name="sequence">1</field>
+        <field name="action" eval="'ir.actions.client,%d' % ref('action_inicio')"/>
+        <field name="web_icon">transporte_ui,static/description/icon.svg</field>
+    </record>
+</odoo>

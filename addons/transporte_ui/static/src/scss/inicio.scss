@@ -1,0 +1,358 @@
+// Pantalla de Inicio SGM-TB.
+$sgm-tonos: (
+    azul: $sgm-azul-claro,
+    verde: #1E9E6A,
+    turquesa: #13A3A0,
+    ambar: #D98A00,
+    rojo: #D64545,
+    violeta: #6E56CF,
+    gris: #6B7A8C,
+);
+
+.o_sgm_inicio {
+    height: 100%;
+    background: $sgm-fondo;
+    color: #2B3A4A;
+
+    .o_sgm_scroll {
+        height: 100%;
+        overflow-y: auto;
+        width: 100%;
+        padding: 20px 24px 40px;
+    }
+    .o_sgm_cargando {
+        padding: 48px;
+        text-align: center;
+        color: #6B7A8C;
+        font-size: 1.1rem;
+    }
+    .o_sgm_clic {
+        cursor: pointer;
+    }
+
+    @each $nombre, $color in $sgm-tonos {
+        .o_sgm_t_#{$nombre} {
+            color: $color;
+            background: rgba($color, 0.12);
+        }
+    }
+
+    // ------------------------------------------------------------ encabezado
+    .o_sgm_hero {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 16px;
+        padding: 24px 28px;
+        margin-bottom: 20px;
+        border-radius: 16px;
+        color: #FFFFFF;
+        background:
+            radial-gradient(circle at 90% 10%, rgba(245, 166, 35, 0.25) 0, transparent 45%),
+            linear-gradient(120deg, $sgm-azul-oscuro 0%, $sgm-azul 60%, $sgm-azul-claro 100%);
+        box-shadow: 0 8px 24px rgba(11, 42, 74, 0.2);
+
+        h1 {
+            color: #FFFFFF;
+            font-size: 1.9rem;
+            font-weight: 800;
+            margin: 0 0 4px;
+        }
+        p {
+            margin: 0;
+        }
+        .o_sgm_fecha {
+            opacity: 0.9;
+        }
+        .o_sgm_periodo {
+            margin-top: 10px;
+            opacity: 0.85;
+            font-size: 0.9rem;
+        }
+    }
+    .o_sgm_chip_sim {
+        display: inline-block;
+        margin-left: 6px;
+        padding: 1px 8px;
+        border-radius: 999px;
+        background: rgba(245, 166, 35, 0.25);
+        color: #FFE2AE;
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+    .o_sgm_hero_acciones {
+        display: flex;
+        gap: 8px;
+    }
+    .o_sgm_btn_ambar {
+        background: $sgm-ambar;
+        border-color: $sgm-ambar;
+        color: $sgm-azul-oscuro;
+        font-weight: 700;
+
+        &:hover {
+            background: darken($sgm-ambar, 6%);
+            color: $sgm-azul-oscuro;
+        }
+    }
+
+    // ------------------------------------------------------------ indicadores
+    .o_sgm_kpis {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+        gap: 14px;
+        margin-bottom: 20px;
+    }
+    .o_sgm_kpi {
+        position: relative;
+        padding: 16px 18px;
+        background: #FFFFFF;
+        border: 1px solid #E3E9F1;
+        border-radius: 14px;
+        border-top: 4px solid #D5DDE8;
+        box-shadow: 0 1px 3px rgba(11, 42, 74, 0.05);
+        transition: box-shadow 0.15s ease, transform 0.15s ease;
+
+        &.o_sgm_clic:hover {
+            box-shadow: 0 6px 18px rgba(11, 42, 74, 0.1);
+            transform: translateY(-2px);
+        }
+        &.o_sgm_bien { border-top-color: #1E9E6A; }
+        &.o_sgm_regular { border-top-color: $sgm-ambar; }
+        &.o_sgm_mal { border-top-color: #D64545; }
+    }
+    .o_sgm_kpi_icono {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.05rem;
+    }
+    .o_sgm_kpi_valor {
+        font-size: 1.9rem;
+        font-weight: 800;
+        color: $sgm-azul-oscuro;
+        line-height: 1.1;
+
+        small {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #8A97A8;
+            margin-left: 4px;
+        }
+    }
+    .o_sgm_kpi_titulo {
+        margin-top: 6px;
+        font-weight: 700;
+    }
+    .o_sgm_kpi_pie {
+        font-size: 0.82rem;
+        color: #6B7A8C;
+    }
+
+    // ------------------------------------------------------------ paneles
+    .o_sgm_columnas {
+        display: grid;
+        grid-template-columns: 3fr 2fr;
+        gap: 14px;
+        margin-bottom: 24px;
+    }
+    .o_sgm_panel {
+        padding: 18px 20px;
+        background: #FFFFFF;
+        border: 1px solid #E3E9F1;
+        border-radius: 14px;
+
+        h2 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: $sgm-azul-oscuro;
+            margin: 0 0 12px;
+
+            .fa {
+                color: $sgm-azul-claro;
+                margin-right: 4px;
+            }
+        }
+    }
+    .o_sgm_vacio {
+        padding: 18px 4px;
+        color: #8A97A8;
+    }
+    .o_sgm_bus {
+        padding: 10px 12px;
+        margin: 0 -12px;
+        border-radius: 10px;
+
+        &:hover {
+            background: rgba($sgm-azul, 0.05);
+        }
+        & + .o_sgm_bus {
+            border-top: 1px solid #EEF2F7;
+        }
+    }
+    .o_sgm_bus_cab {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+    }
+    .o_sgm_punto {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+    }
+    .o_sgm_punto_ok {
+        background: #1E9E6A;
+        box-shadow: 0 0 0 3px rgba(30, 158, 106, 0.2);
+    }
+    .o_sgm_punto_ko {
+        background: #D64545;
+        box-shadow: 0 0 0 3px rgba(214, 69, 69, 0.2);
+    }
+    .o_sgm_ruta_tag {
+        color: #6B7A8C;
+        font-size: 0.85rem;
+    }
+    .o_sgm_tag {
+        margin-left: auto;
+        padding: 1px 8px;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 700;
+    }
+    .o_sgm_tag_bien { background: rgba(30, 158, 106, 0.12); color: #17845A; }
+    .o_sgm_tag_regular { background: rgba(245, 166, 35, 0.18); color: #A66A00; }
+    .o_sgm_tag_mal { background: rgba(214, 69, 69, 0.12); color: #B33636; }
+    .o_sgm_progreso {
+        height: 6px;
+        margin: 8px 0 4px;
+        border-radius: 999px;
+        background: #EEF2F7;
+        overflow: hidden;
+
+        > div {
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, $sgm-azul-claro, #13A3A0);
+        }
+    }
+    .o_sgm_bus_pie {
+        font-size: 0.82rem;
+        color: #6B7A8C;
+    }
+    .o_sgm_barra + .o_sgm_barra {
+        margin-top: 12px;
+    }
+    .o_sgm_barra_txt {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        font-size: 0.9rem;
+
+        small {
+            color: #8A97A8;
+            font-weight: 500;
+        }
+    }
+    .o_sgm_barra_fondo {
+        height: 8px;
+        margin-top: 4px;
+        border-radius: 999px;
+        background: #EEF2F7;
+
+        > div {
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, $sgm-ambar, #D64545);
+        }
+    }
+
+    // ------------------------------------------------------------ accesos
+    .o_sgm_titulo_seccion {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: $sgm-azul-oscuro;
+        margin: 0 0 12px;
+    }
+    .o_sgm_accesos {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 14px;
+    }
+    .o_sgm_acceso {
+        display: grid;
+        grid-template-columns: 44px 1fr;
+        grid-template-rows: auto auto;
+        column-gap: 12px;
+        align-items: center;
+        padding: 14px 16px;
+        text-align: left;
+        background: #FFFFFF;
+        border: 1px solid #E3E9F1;
+        border-radius: 14px;
+        transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+
+        &:hover,
+        &:focus-visible {
+            border-color: rgba($sgm-azul, 0.35);
+            box-shadow: 0 6px 18px rgba(11, 42, 74, 0.1);
+            transform: translateY(-2px);
+            outline: none;
+        }
+    }
+    .o_sgm_acceso_icono {
+        grid-row: span 2;
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+    .o_sgm_acceso_titulo {
+        font-weight: 700;
+        color: $sgm-azul-oscuro;
+    }
+    .o_sgm_acceso_desc {
+        font-size: 0.8rem;
+        color: #6B7A8C;
+        line-height: 1.3;
+    }
+
+    // ------------------------------------------------------------ móvil
+    @include media-breakpoint-down(lg) {
+        .o_sgm_columnas {
+            grid-template-columns: 1fr;
+        }
+    }
+    @include media-breakpoint-down(md) {
+        .o_sgm_scroll {
+            padding: 12px 12px 32px;
+        }
+        .o_sgm_hero {
+            padding: 18px;
+
+            h1 {
+                font-size: 1.4rem;
+            }
+        }
+        .o_sgm_kpis {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .o_sgm_kpi_valor {
+            font-size: 1.5rem;
+        }
+        .o_sgm_kpi_icono {
+            display: none;
+        }
+    }
+}
