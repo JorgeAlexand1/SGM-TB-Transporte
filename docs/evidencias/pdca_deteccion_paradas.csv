@@ -1,0 +1,17 @@
+intervalo_s,modo,viajes,paradas,paradas_no_detectadas,deteccion_paradas_pct,viajes_con_falsa_omision_pct
+10,punto,60,360,0,100.0,0.0
+10,segmento,60,360,0,100.0,0.0
+15,punto,60,360,32,91.11,33.33
+15,segmento,60,360,0,100.0,0.0
+30,punto,60,360,80,77.78,66.67
+30,segmento,60,360,0,100.0,0.0
+60,punto,60,360,100,72.22,100.0
+60,segmento,60,360,20,94.44,33.33
+90,punto,60,360,220,38.89,100.0
+90,segmento,60,360,80,77.78,66.67
+120,punto,60,360,180,50.0,100.0
+120,segmento,60,360,140,61.11,66.67
+180,punto,60,360,220,38.89,100.0
+180,segmento,60,360,105,70.83,100.0
+300,punto,60,360,220,38.89,100.0
+300,segmento,60,360,140,61.11,100.0

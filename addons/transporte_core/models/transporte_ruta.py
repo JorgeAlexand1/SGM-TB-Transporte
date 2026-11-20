@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import math
+
 from odoo import models, fields, api
 from odoo.exceptions import ValidationError
 
@@ -61,6 +63,27 @@ class TransporteRuta(models.Model):
         store=True,
         help='Número de paradas registradas en el trazado de la ruta.'
     )
+    origen_parada_id = fields.Many2one(
+        comodel_name='transporte.parada',
+        string='Origen',
+        compute='_compute_origen_destino',
+        store=True,
+        help='Primera parada de la secuencia (menor número de secuencia).'
+    )
+    destino_parada_id = fields.Many2one(
+        comodel_name='transporte.parada',
+        string='Destino',
+        compute='_compute_origen_destino',
+        store=True,
+        help='Última parada de la secuencia (mayor número de secuencia).'
+    )
+    distancia_estimada_km = fields.Float(
+        string='Distancia Estimada (km)',
+        digits=(10, 3),
+        default=0.0,
+        help='Longitud prevista del recorrido completo por calles, en kilómetros. '
+             'Se compara contra la distancia recorrida por GPS.'
+    )
 
     _sql_constraints = [
         ('codigo_unique', 'unique(codigo)', 'El código de la ruta debe ser único.')
@@ -70,6 +93,38 @@ class TransporteRuta(models.Model):
     def _compute_total_paradas(self):
         for record in self:
             record.total_paradas = len(record.parada_ids)
+
+    @api.depends('parada_ids', 'parada_ids.secuencia', 'parada_ids.parada_id')
+    def _compute_origen_destino(self):
+        for record in self:
+            ordenadas = record.parada_ids.sorted('secuencia')
+            record.origen_parada_id = ordenadas[:1].parada_id
+            record.destino_parada_id = ordenadas[-1:].parada_id
+
+    def _distancia_lineal_paradas_km(self):
+        """Suma Haversine de los tramos rectos entre paradas consecutivas (cota inferior de la distancia real)."""
+        self.ensure_one()
+        total_m = 0.0
+        puntos = [(p.parada_id.latitude, p.parada_id.longitude) for p in self.parada_ids.sorted('secuencia')]
+        for (la1, lo1), (la2, lo2) in zip(puntos, puntos[1:]):
+            p1, p2 = math.radians(la1), math.radians(la2)
+            dphi, dlmb = p2 - p1, math.radians(lo2 - lo1)
+            a = math.sin(dphi / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dlmb / 2) ** 2
+            total_m += 2 * 6371008.8 * math.asin(min(1.0, math.sqrt(a)))
+        return round(total_m / 1000.0, 3)
+
+    def action_sugerir_distancia(self):
+        """Propone la distancia estimada como la suma de tramos entre paradas (el usuario puede ajustarla)."""
+        for record in self:
+            record.distancia_estimada_km = record._distancia_lineal_paradas_km()
+
+    @api.constrains('distancia_estimada_km')
+    def _check_distancia_estimada(self):
+        for record in self:
+            if record.distancia_estimada_km < 0:
+                raise ValidationError(
+                    f"La distancia estimada ({record.distancia_estimada_km} km) no puede ser negativa."
+                )
 
     @api.constrains('codigo')
     def _check_codigo_unique(self):

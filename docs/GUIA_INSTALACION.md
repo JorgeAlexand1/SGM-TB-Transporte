@@ -152,9 +152,28 @@ El script reportará la creación o verificación de:
 - 4 Conductores con licencias vigentes (`LIC-DEMO-001` a `LIC-DEMO-003`).
 - 2 Viajes de prueba (uno programado y uno en borrador).
 
+### Paso 3.6b: Telemetría y calidad (Fases 2 y 3)
+
+```bash
+# Instala transporte_gps_traccar y transporte_calidad (y actualiza el core)
+docker exec odoo16_web /entrypoint.sh odoo -d sgmtb_dev_tu_nombre \
+  -u transporte_core -i transporte_gps_traccar,transporte_calidad --no-http --stop-after-init
+docker restart odoo16_web
+```
+Luego, en **Calidad del Servicio ▸ Generar recorridos simulados**, generar el plan de 10 escenarios de prueba
+(quedan marcados como SIMULADOS) y abrir **Calidad del Servicio ▸ Dashboard**.
+
+> `config/odoo.conf` (local, no versionado) debe incluir `addons_path = /usr/lib/python3/dist-packages/odoo/addons,/mnt/extra-addons`;
+> si está vacío el servidor arranca sin los módulos del proyecto (defecto D-05).
+
 ---
 
 ### Paso 3.7: Ejecución de la Suite de Pruebas Automatizadas
+
+Para ejecutar **todas** las pruebas (pytest con cobertura, suites Odoo de los 3 módulos en una BD desechable,
+rendimiento e interfaz): `bash scripts/ejecutar_pruebas.sh`. Detalle en `docs/PLAN_PRUEBAS.md`.
+
+Solo el núcleo:
 
 Antes de iniciar cualquier desarrollo, valida que todo el entorno funcione al 100%:
 

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_calidad_root" name="Calidad del Servicio" parent="transporte_core.menu_transporte_root" sequence="1"/>
+    <menuitem id="menu_calidad_dashboard" name="Dashboard" parent="menu_calidad_root"
+              action="action_dashboard_calidad" sequence="1"/>
+    <menuitem id="menu_calidad_incidencias" name="Incidencias" parent="menu_calidad_root"
+              action="action_incidencia" sequence="10"/>
+    <menuitem id="menu_calidad_analisis" name="Análisis de recorridos" parent="menu_calidad_root"
+              action="action_analisis_viajes" sequence="20"/>
+    <menuitem id="menu_calidad_mediciones" name="Calidad del software" parent="menu_calidad_root"
+              action="action_medicion" sequence="30"/>
+    <menuitem id="menu_calidad_verificar" name="Verificar exactitud Traccar" parent="menu_calidad_root"
+              action="action_verificar_exactitud" sequence="35" groups="transporte_core.group_transporte_manager"/>
+    <menuitem id="menu_calidad_simulacion" name="Generar recorridos simulados" parent="menu_calidad_root"
+              action="action_simulacion" sequence="40" groups="transporte_core.group_transporte_manager"/>
+    <menuitem id="menu_calidad_settings" name="Ajustes de calidad" parent="menu_calidad_root"
+              action="action_calidad_settings" sequence="50" groups="transporte_core.group_transporte_manager"/>
+</odoo>

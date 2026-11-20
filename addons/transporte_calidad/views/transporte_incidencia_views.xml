@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_incidencia_tree" model="ir.ui.view">
+        <field name="name">transporte.incidencia.tree</field>
+        <field name="model">transporte.incidencia</field>
+        <field name="arch" type="xml">
+            <tree string="Incidencias" decoration-danger="severidad in ('alta', 'critica') and estado == 'abierta'"
+                  decoration-muted="estado in ('resuelta', 'descartada')">
+                <field name="name"/>
+                <field name="fecha"/>
+                <field name="tipo"/>
+                <field name="severidad" widget="badge" decoration-info="severidad == 'baja'"
+                       decoration-warning="severidad == 'media'" decoration-danger="severidad in ('alta', 'critica')"/>
+                <field name="viaje_id"/>
+                <field name="ruta_id"/>
+                <field name="vehicle_id"/>
+                <field name="parada_id" optional="show"/>
+                <field name="valor"/>
+                <field name="unidad"/>
+                <field name="origen" optional="show"/>
+                <field name="simulado" optional="show"/>
+                <field name="estado" widget="badge" decoration-danger="estado == 'abierta'"
+                       decoration-warning="estado == 'en_atencion'" decoration-success="estado == 'resuelta'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_incidencia_form" model="ir.ui.view">
+        <field name="name">transporte.incidencia.form</field>
+        <field name="model">transporte.incidencia</field>
+        <field name="arch" type="xml">
+            <form string="Incidencia">
+                <header>
+                    <button name="action_atender" string="Atender" type="object" class="oe_highlight"
+                            states="abierta" groups="transporte_core.group_transporte_manager"/>
+                    <button name="action_resolver" string="Resolver" type="object" class="btn-success"
+                            states="abierta,en_atencion" groups="transporte_core.group_transporte_manager"/>
+                    <button name="action_descartar" string="Descartar" type="object"
+                            states="abierta,en_atencion" groups="transporte_core.group_transporte_manager"/>
+                    <field name="estado" widget="statusbar" statusbar_visible="abierta,en_atencion,resuelta"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="SIMULADO" bg_color="bg-warning"
+                            attrs="{'invisible': [('simulado', '=', False)]}"/>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="Clasificación">
+                            <field name="tipo" attrs="{'readonly': [('origen', '=', 'automatica')]}"/>
+                            <field name="severidad"/>
+                            <field name="origen"/>
+                            <field name="fecha" attrs="{'readonly': [('origen', '=', 'automatica')]}"/>
+                            <field name="simulado" invisible="1"/>
+                        </group>
+                        <group string="Contexto">
+                            <field name="viaje_id" attrs="{'readonly': [('origen', '=', 'automatica')]}"/>
+                            <field name="ruta_id"/>
+                            <field name="vehicle_id"/>
+                            <field name="parada_id"/>
+                            <label for="valor"/>
+                            <div class="o_row">
+                                <field name="valor" attrs="{'readonly': [('origen', '=', 'automatica')]}"/>
+                                <field name="unidad" attrs="{'readonly': [('origen', '=', 'automatica')]}"/>
+                            </div>
+                        </group>
+                    </group>
+                    <group string="Detalle">
+                        <field name="descripcion" nolabel="1" colspan="2"/>
+                        <field name="regla" attrs="{'invisible': [('regla', '=', False)]}"/>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_incidencia_search" model="ir.ui.view">
+        <field name="name">transporte.incidencia.search</field>
+        <field name="model">transporte.incidencia</field>
+        <field name="arch" type="xml">
+            <search string="Buscar incidencias">
+                <field name="name"/>
+                <field name="viaje_id"/>
+                <field name="ruta_id"/>
+                <field name="vehicle_id"/>
+                <field name="tipo"/>
+                <filter string="Abiertas" name="abiertas" domain="[('estado', '=', 'abierta')]"/>
+                <filter string="Alta / crítica" name="graves" domain="[('severidad', 'in', ('alta', 'critica'))]"/>
+                <separator/>
+                <filter string="Automáticas" name="automaticas" domain="[('origen', '=', 'automatica')]"/>
+                <filter string="Manuales" name="manuales" domain="[('origen', '=', 'manual')]"/>
+                <separator/>
+                <filter string="Datos reales" name="reales" domain="[('simulado', '=', False)]"/>
+                <filter string="Datos simulados" name="simulados" domain="[('simulado', '=', True)]"/>
+                <separator/>
+                <filter string="Fecha" name="fecha" date="fecha"/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Tipo" name="g_tipo" context="{'group_by': 'tipo'}"/>
+                    <filter string="Ruta" name="g_ruta" context="{'group_by': 'ruta_id'}"/>
+                    <filter string="Bus" name="g_bus" context="{'group_by': 'vehicle_id'}"/>
+                    <filter string="Severidad" name="g_sev" context="{'group_by': 'severidad'}"/>
+                    <filter string="Día" name="g_dia" context="{'group_by': 'fecha_dia'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_incidencia_graph" model="ir.ui.view">
+        <field name="name">transporte.incidencia.graph</field>
+        <field name="model">transporte.incidencia</field>
+        <field name="arch" type="xml">
+            <graph string="Incidencias por tipo" type="bar" order="desc">
+                <field name="tipo"/>
+                <field name="ruta_id"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_incidencia_pivot" model="ir.ui.view">
+        <field name="name">transporte.incidencia.pivot</field>
+        <field name="model">transporte.incidencia</field>
+        <field name="arch" type="xml">
+            <pivot string="Incidencias">
+                <field name="tipo" type="row"/>
+                <field name="ruta_id" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="action_incidencia" model="ir.actions.act_window">
+        <field name="name">Incidencias</field>
+        <field name="res_model">transporte.incidencia</field>
+        <field name="view_mode">tree,form,graph,pivot</field>
+        <field name="search_view_id" ref="view_incidencia_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Sin incidencias registradas.</p>
+            <p>Las incidencias automáticas se generan al evaluar cada recorrido; también puede registrar
+               incidencias manuales (fallas mecánicas, quejas, accidentes).</p>
+        </field>
+    </record>
+</odoo>

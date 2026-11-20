@@ -41,6 +41,42 @@ services:
       - traccar-logs:/opt/traccar/logs
     restart: unless-stopped
 
+  # --- Conectividad externa (A2): Cloudflare Tunnel, sin IP pública ni puertos abiertos en el router ---
+  # Túnel rápido (URL https://<aleatorio>.trycloudflare.com, cambia en cada arranque):
+  #   docker compose --profile tunel up -d
+  #   docker compose logs cloudflared-gps | grep trycloudflare
+  # Traccar Client (teléfono, datos móviles): Dirección del servidor = esa URL HTTPS (puerto 443).
+  cloudflared-gps:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared_gps
+    command: tunnel --no-autoupdate --url http://traccar:5055   # protocolo OsmAnd (HTTP) de Traccar Client
+    depends_on:
+      - traccar
+    profiles: ["tunel"]
+    restart: unless-stopped
+
+  cloudflared-odoo:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared_odoo
+    command: tunnel --no-autoupdate --url http://web:8069        # Odoo accesible desde fuera (demo/defensa)
+    depends_on:
+      - web
+    profiles: ["tunel"]
+    restart: unless-stopped
+
+  # Túnel con nombre (URL fija en un dominio propio de Cloudflare): definir CLOUDFLARE_TUNNEL_TOKEN en .env
+  # y las rutas públicas en el panel Zero Trust (gps.dominio -> http://traccar:5055, odoo.dominio -> http://web:8069).
+  #   docker compose --profile tunel-fijo up -d
+  cloudflared-fijo:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared_fijo
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN:-sin_token}
+    depends_on:
+      - traccar
+      - web
+    profiles: ["tunel-fijo"]
+    restart: unless-stopped
+
 volumes:
   traccar-data:
   traccar-logs:

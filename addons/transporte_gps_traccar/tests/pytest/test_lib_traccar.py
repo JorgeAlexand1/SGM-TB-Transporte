@@ -200,3 +200,42 @@ class TestClient:
         c = traccar_client.TraccarClient('http://x', token='t')
         with mock.patch('requests.get', return_value=_resp(data=[])):
             assert c.get_ultima_posicion(3) is None
+
+
+class TestGeocercaPorSegmento:
+    """Mejora PDCA: detección de paso por la parada entre dos muestras GPS."""
+
+    def _este(self, metros):
+        return LON + metros / 111195.0
+
+    def test_proyeccion_en_el_medio_del_tramo(self):
+        # parada en (LAT, LON); tramo de 100 m al oeste a 100 m al este, desplazado 20 m al norte
+        d, t = geo_utils.proyeccion_en_segmento(LAT, LON, _punto_a_metros_norte(20), self._este(-100),
+                                                _punto_a_metros_norte(20), self._este(100))
+        assert 19.5 < d < 20.5
+        assert t == pytest.approx(0.5, abs=0.01)
+
+    def test_proyeccion_fuera_del_tramo_usa_el_extremo(self):
+        d, t = geo_utils.proyeccion_en_segmento(LAT, LON, LAT, self._este(50), LAT, self._este(150))
+        assert t == 0.0 and 49 < d < 51
+
+    def test_tramo_degenerado(self):
+        d, t = geo_utils.proyeccion_en_segmento(LAT, LON, _punto_a_metros_norte(10), LON,
+                                                _punto_a_metros_norte(10), LON)
+        assert t == 0.0 and 9.9 < d < 10.1
+        assert geo_utils.distancia_punto_segmento_m(LAT, LON, LAT, LON, LAT, LON) == 0
+
+    def test_paso_por_radio_muestra_dentro(self):
+        ok, d, t = geo_utils.paso_por_radio(LAT, LON, 30, None, (_punto_a_metros_norte(10), LON))
+        assert ok and t == 1.0 and d < 11
+
+    def test_paso_por_radio_segmento_vs_punto(self):
+        previa, actual = (LAT, self._este(-80)), (LAT, self._este(80))
+        assert geo_utils.paso_por_radio(LAT, LON, 30, previa, actual, 'punto')[0] is False
+        ok, d, t = geo_utils.paso_por_radio(LAT, LON, 30, previa, actual, 'segmento')
+        assert ok and d < 1 and t == pytest.approx(0.5, abs=0.01)
+
+    def test_paso_por_radio_sin_previa_o_lejos(self):
+        lejos = (LAT, self._este(500))
+        assert geo_utils.paso_por_radio(LAT, LON, 30, None, lejos)[0] is False
+        assert geo_utils.paso_por_radio(LAT, LON, 30, (_punto_a_metros_norte(200), self._este(400)), lejos)[0] is False

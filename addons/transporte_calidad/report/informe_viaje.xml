@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_informe_viaje" model="ir.actions.report">
+        <field name="name">Informe de recorrido</field>
+        <field name="model">transporte.viaje</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">transporte_calidad.informe_viaje</field>
+        <field name="report_file">transporte_calidad.informe_viaje</field>
+        <field name="print_report_name">'Informe recorrido %s' % object.name</field>
+        <field name="binding_model_id" ref="transporte_core.model_transporte_viaje"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="informe_viaje">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="v">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h3>Informe de recorrido <span t-field="v.name"/>
+                            <span t-if="v.simulado" class="badge bg-warning text-dark">DATOS SIMULADOS</span>
+                        </h3>
+                        <p>
+                            <b>Ruta:</b> <span t-field="v.ruta_id"/> ·
+                            <b>Bus:</b> <span t-field="v.vehicle_id"/> ·
+                            <b>Conductor:</b> <span t-field="v.driver_id"/> ·
+                            <b>Fecha:</b> <span t-field="v.fecha_viaje"/>
+                        </p>
+                        <p>
+                            <b>Resultado:</b>
+                            <strong t-attf-class="text-#{'success' if v.resultado == 'cumple' else 'danger'}">
+                                <span t-field="v.resultado"/>
+                            </strong>
+                            (cumple la ruta: <span t-esc="'sí' if v.cumple_ruta else 'no'"/>,
+                            puntual: <span t-esc="'sí' if v.puntual else 'no'"/>,
+                            desviado: <span t-esc="'sí' if v.desviado else 'no'"/>)
+                        </p>
+                        <table class="table table-sm">
+                            <thead><tr><th>Indicador</th><th>Programado</th><th>Real</th><th>Diferencia</th></tr></thead>
+                            <tbody>
+                                <tr><td>Salida</td><td><span t-field="v.hora_salida_planificada"/></td>
+                                    <td><span t-field="v.hora_salida_real"/></td><td><span t-field="v.retraso_inicio_min"/> min</td></tr>
+                                <tr><td>Llegada</td><td><span t-field="v.hora_llegada_planificada"/></td>
+                                    <td><span t-field="v.hora_llegada_real"/></td><td><span t-field="v.retraso_llegada_min"/> min</td></tr>
+                                <tr><td>Duración</td><td><span t-field="v.duracion_estimada_min"/> min</td>
+                                    <td><span t-field="v.duracion_real_min"/> min</td><td><span t-field="v.diferencia_duracion_pct"/> %</td></tr>
+                                <tr><td>Distancia</td><td><span t-field="v.distancia_estimada_km"/> km</td>
+                                    <td><span t-field="v.distancia_recorrida_km"/> km</td><td><span t-field="v.diferencia_distancia_pct"/> %</td></tr>
+                                <tr><td>Paradas</td><td><span t-field="v.total_paradas_viaje"/></td>
+                                    <td><span t-field="v.paradas_atendidas"/></td><td><span t-field="v.porcentaje_paradas"/> % cumplidas</td></tr>
+                                <tr><td>Desvío máximo</td><td colspan="2"><span t-field="v.max_desviacion_m"/> m
+                                    (<span t-field="v.porcentaje_fuera_corredor"/> % de posiciones fuera del corredor)</td><td/></tr>
+                            </tbody>
+                        </table>
+                        <h5>Paradas</h5>
+                        <table class="table table-sm">
+                            <thead><tr><th>#</th><th>Parada</th><th>Programada</th><th>Real</th><th>Retraso (min)</th><th>Estado</th><th>Registro</th></tr></thead>
+                            <tbody>
+                                <tr t-foreach="v.parada_line_ids" t-as="l">
+                                    <td t-esc="l.secuencia"/><td t-esc="l.parada_id.name"/>
+                                    <td><span t-field="l.hora_planificada"/></td><td><span t-field="l.hora_llegada_real"/></td>
+                                    <td t-esc="l.retraso_min if l.hora_llegada_real else '-'"/>
+                                    <td><span t-field="l.puntualidad"/></td><td><span t-field="l.metodo_registro"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <h5>Incidencias detectadas</h5>
+                        <p t-if="not v.incidencia_ids">Ninguna.</p>
+                        <table t-if="v.incidencia_ids" class="table table-sm">
+                            <thead><tr><th>Código</th><th>Tipo</th><th>Severidad</th><th>Descripción</th><th>Regla</th></tr></thead>
+                            <tbody>
+                                <tr t-foreach="v.incidencia_ids" t-as="i">
+                                    <td t-esc="i.name"/><td><span t-field="i.tipo"/></td><td><span t-field="i.severidad"/></td>
+                                    <td t-esc="i.descripcion"/><td t-esc="i.regla"/>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p class="text-muted small">
+                            Telemetría: <span t-field="v.cantidad_posiciones"/> posiciones GPS,
+                            <span t-field="v.huecos_senal"/> interrupción(es) de señal. Evaluado el <span t-field="v.evaluado_en"/>.
+                        </p>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
