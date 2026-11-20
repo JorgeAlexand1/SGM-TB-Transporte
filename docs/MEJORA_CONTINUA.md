@@ -53,16 +53,22 @@ Puntuación = severidad (1–5) × alcance (1–5: proporción de recorridos/usu
 
 | Defecto | Severidad | Alcance | Puntuación | % | % acumulado |
 | :--- | :-: | :-: | :-: | :-: | :-: |
-| D-01 Paradas visitadas marcadas omitidas (intervalo GPS largo) | 5 | 5 | 25 | 37,3 | 37,3 |
-| D-05 Servidor sin ruta de addons (`odoo.conf` vacío) | 5 | 3 | 15 | 22,4 | 59,7 |
-| D-02 Rol *Consulta* sin acceso a buses | 4 | 3 | 12 | 17,9 | 77,6 |
-| D-03 Última posición podía ser simulada | 3 | 2 | 6 | 9,0 | 86,6 |
-| D-06 Pérdida de señal tratada como incumplimiento | 2 | 2 | 4 | 6,0 | 92,5 |
-| D-04 `registrar()` no serializable por RPC | 1 | 1 | 1 | 1,5 | 94,0 |
-| Otros (avisos de formato, imports sin uso) | 1 | 4 | 4 | 6,0 | 100 |
+| D-01 Paradas visitadas marcadas omitidas (intervalo GPS largo) | 5 | 5 | 25 | 22,9 | 22,9 |
+| D-07 Pruebas de navegador saltadas en silencio | 4 | 5 | 20 | 18,3 | 41,3 |
+| D-05 Servidor sin ruta de addons (`odoo.conf` vacío) | 5 | 3 | 15 | 13,8 | 55,0 |
+| D-02 Rol *Consulta* sin acceso a buses | 4 | 3 | 12 | 11,0 | 66,1 |
+| D-08 Mapas dependientes del CDN (en blanco sin Internet) | 4 | 3 | 12 | 11,0 | 77,1 |
+| D-03 Última posición podía ser simulada | 3 | 2 | 6 | 5,5 | 82,6 |
+| D-09 Mapa de rutas con diseño roto | 3 | 2 | 6 | 5,5 | 88,1 |
+| D-06 Pérdida de señal tratada como incumplimiento | 2 | 2 | 4 | 3,7 | 91,7 |
+| D-10 `@api.depends` perdido en el nº de puntos del trazado | 2 | 2 | 4 | 3,7 | 95,4 |
+| D-04 `registrar()` no serializable por RPC | 1 | 1 | 1 | 0,9 | 96,3 |
+| Otros (avisos de formato, imports sin uso) | 1 | 4 | 4 | 3,7 | 100 |
 
-D-01, D-05 y D-02 suman el ~78 % del impacto. Se priorizó **D-01** porque afecta la exactitud de las métricas.
-D-02, D-03, D-04 y D-05 se corrigieron directamente (ver `docs/PLAN_PRUEBAS.md §5`).
+D-01, D-07 y D-05 suman el ~55 % del impacto y, con D-02 y D-08, el ~77 %. Se priorizó **D-01** porque afecta
+la exactitud de las métricas (PDCA, §4). D-07 —segundo en impacto— es un defecto del *proceso de pruebas*: daba
+confianza falsa en la interfaz, por eso el script ahora falla si una prueba de navegador se salta.
+D-02 a D-10 se corrigieron directamente (ver `docs/PLAN_PRUEBAS.md §5`).
 
 ### 3.2 Incidencias operativas (desde el sistema)
 El dashboard muestra el Pareto en vivo. Con los 10 recorridos simulados: *Retraso en parada* 50 %,
