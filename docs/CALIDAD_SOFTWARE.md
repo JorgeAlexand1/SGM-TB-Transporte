@@ -4,22 +4,22 @@
 
 | Característica | Subcaracterística | Evidencia en SGM-TB | Resultado |
 | :--- | :--- | :--- | :--- |
-| **Adecuación funcional** | Completitud | 22 RF trazados a pruebas (`REQUISITOS.md`) | 19 casos de la matriz aprobados |
+| **Adecuación funcional** | Completitud | 22 RF trazados a pruebas (`REQUISITOS.md`) | 25 casos de la matriz aprobados (CP-01 a CP-24) |
 | | Corrección | Fórmulas de KPIs verificadas contra registros (CP-11) y ejemplo del enunciado 08:15→08:23 (CP-05) | Correcto |
-| | Pertinencia | Dashboard responde las 10 preguntas del enunciado (`GUIA_DEMOSTRACION.md`) | Sí |
-| **Eficiencia de desempeño** | Comportamiento temporal | Dashboard ≤ 48 ms extremo a extremo; reevaluar 60 viajes 347 ms (CP-16) | Cumple RNF-03 (< 3 s) |
+| | Pertinencia | Inicio y dashboard responden las 11 preguntas del enunciado (`GUIA_DEMOSTRACION.md`) | Sí |
+| **Eficiencia de desempeño** | Comportamiento temporal | Dashboard 31 ms con 60 recorridos; reevaluar 60 viajes / 8 664 posiciones 437 ms (CP-16, 20/11/2026) | Cumple RNF-03 (< 3 s) |
 | | Utilización de recursos | Campos almacenados para agregaciones; consultas indexadas por fecha/bus/viaje | — |
-| **Compatibilidad** | Interoperabilidad | Traccar API REST + forward JSON; Traccar Client por OsmAnd sobre HTTPS (túnel) | Verificado con Traccar real (contenedor) |
-| **Usabilidad** | Reconocibilidad / protección frente a errores | Datos simulados con cinta e insignia; filtros reales/simulados; validaciones con mensajes en español | CP-17 |
-| **Fiabilidad** | Madurez | 0 fallos en 89 pruebas Odoo + 128 pytest | — |
+| **Compatibilidad** | Interoperabilidad | Traccar API REST + forward JSON; Traccar Client por OsmAnd sobre HTTPS (túnel) | Verificado de extremo a extremo con Traccar 6.17 real (CP-24) |
+| **Usabilidad** | Reconocibilidad / protección frente a errores | Datos simulados con cinta e insignia y aviso en Inicio; filtros reales/simulados; interfaz en español (es_EC); validaciones con mensajes en español | CP-17, CP-22 |
+| **Fiabilidad** | Madurez | 0 fallos en 95 pruebas Odoo + 128 pytest + 5 de interfaz + 2 en vivo; 0 bugs SonarQube | — |
 | | Tolerancia a fallos | Traccar caído → log con error; carrera cron/webhook con savepoint | tests GPS |
 | | Integridad de datos (*exactitud*) | UNIQUE de posiciones, integridad GPS 100 %, verificación de exactitud contra Traccar | CP-14, CP-19 |
 | **Seguridad** | Confidencialidad | RBAC (Consulta / Administrador); defecto D-02 corregido | CP-18 |
 | | Autenticidad | Webhook con Bearer en tiempo constante; 401 sin token | tests GPS |
 | | Responsabilidad | Chatter con seguimiento en viajes e incidencias; incidencias automáticas no borrables | CP-15 |
-| **Mantenibilidad** | Modularidad | 3 módulos con dependencias unidireccionales; lógica pura en `lib/` | — |
+| **Mantenibilidad** | Modularidad | 4 módulos con dependencias unidireccionales; lógica pura en `lib/`; una función por regla de detección | — |
 | | Capacidad de prueba | Cobertura `lib/` 97–99 % (ramas); `scripts/ejecutar_pruebas.sh` | — |
-| | Analizabilidad / modificabilidad | SonarQube (§2); tolerancias parametrizadas sin tocar código | — |
+| | Analizabilidad / modificabilidad | SonarQube (§2): mantenibilidad A, deuda 0,2 %, duplicación 0,3 %; tolerancias parametrizadas sin tocar código | — |
 | **Portabilidad** | Instalabilidad | Docker Compose; perfiles `tunel` y `tunel-fijo` | `GUIA_INSTALACION.md` |
 
 ## 2. SonarQube
