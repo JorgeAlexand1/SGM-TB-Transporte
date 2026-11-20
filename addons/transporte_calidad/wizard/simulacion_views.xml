@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_simulacion_form" model="ir.ui.view">
+        <field name="name">transporte.calidad.simulacion.form</field>
+        <field name="model">transporte.calidad.simulacion</field>
+        <field name="arch" type="xml">
+            <form string="Generar recorridos simulados">
+                <div class="alert alert-warning" role="alert">
+                    Se crearán recorridos con posiciones GPS <b>SIMULADAS</b> (marcadas como tales en viajes,
+                    posiciones e incidencias) para evaluar la lógica en escenarios de incumplimiento que no se
+                    pueden reproducir físicamente. Los recorridos reales deben provenir de Traccar Client.
+                </div>
+                <group>
+                    <group>
+                        <field name="fecha_inicio"/>
+                        <field name="dias"/>
+                        <field name="driver_id"/>
+                    </group>
+                    <group>
+                        <field name="ruta_ids" widget="many2many_tags"/>
+                        <field name="vehicle_ids" widget="many2many_tags"/>
+                    </group>
+                </group>
+                <label for="plan" string="Plan por día (escenario · ruta · bus · hora local · intervalo GPS)"/>
+                <field name="plan" class="font-monospace" nolabel="1"/>
+                <footer>
+                    <button name="action_generar" type="object" string="Generar" class="btn-primary"/>
+                    <button special="cancel" string="Cancelar"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_simulacion" model="ir.actions.act_window">
+        <field name="name">Generar recorridos simulados</field>
+        <field name="res_model">transporte.calidad.simulacion</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

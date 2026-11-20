@@ -10,6 +10,19 @@
 
 ## Registro de Actividades
 
+### 2026-11-20 | Fase 3: Módulo `transporte_calidad` (A5–A10)
+- **Actividad:** Implementación completa del módulo de calidad: 9 reglas de detección (retrasos, omisiones,
+  incompletos, diferencia de tiempos, desvío por corredor, pérdida de señal), incidencias idempotentes, 8 KPIs de
+  transporte y 4 de calidad del software, dashboard OWL, informe PDF, asistente de 10 recorridos simulados.
+  Mejora PDCA en `transporte_gps_traccar` (geocerca por tramo). Origen/destino/distancia estimada en rutas (core).
+- **Archivos:** `addons/transporte_calidad/**`, `transporte_gps_traccar/lib/geo_utils.py`,
+  `transporte_gps_traccar/models/{transporte_viaje,fleet_vehicle,res_config_settings}.py`,
+  `transporte_core/models/transporte_ruta.py`, `transporte_core/security/ir.model.access.csv`, `scripts/*`, `docs/*`.
+- **Pruebas:** 128 pytest (cobertura `lib/` 97–99 %), 89 Odoo (0 fallos), rendimiento (máx. 347 ms), 3 de interfaz.
+- **Errores y soluciones:** D-01 a D-06 (ver `docs/PLAN_PRUEBAS.md §5`).
+- **Rama:** `feature/calidad-kpis`.
+- **Estado:** Listo para PR hacia `develop`. Pendiente: recorridos reales con teléfono y análisis SonarQube.
+
 ### 2026-11-04 | Fase 1.5: Planificación de Indicadores de Calidad y Modelo de Incidencias
 - **Actividad:** Análisis de los modelos de viajes y paradas de `transporte_core` para definir las fórmulas matemáticas de los KPIs de calidad del transporte.
 - **Objetivo:** Garantizar que los indicadores puedan calcularse sobre los registros manuales de viajes de la Fase 1, sin requerir que la telemetría GPS esté finalizada.

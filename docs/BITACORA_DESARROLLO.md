@@ -566,3 +566,23 @@ docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 Fase 1.6 completada exitosamente. Repositorio privado publicado en `git@github.com:JorgeAlexand1/SGM-TB-Transporte.git`. Ramas `main` y `develop` sincronizadas con `origin`. Procedimiento de invitación de colaboradores preparado para `@JaimXD`, `titoma1500@gmail.com` y `mfalcon6508@uta.edu.ec`. Entorno local en puerto 8075 plenamente operativo. Listo para iniciar Fase 2 y Fase 3.
 
 
+
+---
+
+## [2026-11-20] - Fase 3: Calidad del Servicio, Incidencias, KPIs y Dashboard (`feature/calidad-kpis`)
+
+### Actividades Realizadas
+1. Sincronización de `develop` (merge del PR #1 `feature/gps-traccar`) en la copia local de WSL y respaldo de `transporte_universitario_gc`.
+2. Nuevo módulo `transporte_calidad`: reglas de detección (A6), incidencias idempotentes, 8 KPIs de transporte + 4 de calidad del software (A7), dashboard OWL + Chart.js + Leaflet, pivot/gráficos e informe PDF (A8), asistente de recorridos simulados (A5).
+3. `transporte_core`: origen/destino calculados y distancia estimada en rutas; ACL de lectura de buses para el rol Consulta (defecto D-02).
+4. `transporte_gps_traccar`: geocerca por tramo con hora interpolada (mejora PDCA, D-01) y última posición solo con datos reales (D-03).
+5. Infraestructura: servicios `cloudflared` (perfiles `tunel` / `tunel-fijo`), `sonar-project.properties`, `scripts/ejecutar_pruebas.sh`, `scripts/prueba_rendimiento.py`, `scripts/medir_deteccion_paradas.py`.
+6. Documentación: `REQUISITOS`, `METRICAS`, `PLAN_PRUEBAS`, `MEJORA_CONTINUA`, `CALIDAD_SOFTWARE`, `GUIA_CLOUDFLARE`, `GUIA_DEMOSTRACION`; actualización de `ARQUITECTURA` y `GUIA_TRACCAR`.
+7. Módulos instalados en `transporte_universitario_gc`; 10 recorridos SIMULADOS generados (detección correcta 10/10).
+
+### Resultados
+- pytest 128/128 (cobertura `lib/` 97–99 %), Odoo 89 pruebas 0 fallos, rendimiento máx. 347 ms, interfaz 3/3 (Chromium headless).
+- `config/odoo.conf` local estaba vacío (servidor sin `/mnt/extra-addons`): reconstruido desde la plantilla (D-05).
+
+### Pendiente
+- Recorridos reales con Traccar Client en datos móviles por el túnel, verificación de exactitud y SonarQube.
