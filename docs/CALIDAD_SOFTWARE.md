@@ -49,19 +49,19 @@ docker run --rm --network sgmtb_sonar -e SONAR_HOST_URL=http://$IP:9000 -e SONAR
 | Bugs / Reliability rating | **0 / A** | 1.ª pasada: 3 (`python:S1244`, igualdad de floats). Corregidos: exactitud Traccar ↔ Odoo compara conteos enteros (`iguales == verificadas`) y el punto nulo GPS (0, 0) usa tolerancia `CERO_GPS`. |
 | Vulnerabilities / Security rating | **0 / A** | 1.ª pasada: 3 `xml:S2068` en la vista de ajustes Traccar. **Falsos positivos**: `password="True"` solo enmascara el campo; los valores se guardan en `ir.config_parameter`. Excluidos de forma explícita y justificada en `sonar-project.properties`. |
 | Security Hotspots | **0** (rating A) | SonarQube no marcó el webhook (`auth='none'`, `csrf=False`), los `sudo()` ni el SQL fijo; se justifican igualmente abajo. |
-| Code Smells / Maintainability rating | **65 / A** · deuda 333 min (**0,2 %**) | Ver desglose. Tras el refactor de `evaluar_viaje` (PDCA 2): 66 → 65 smells, 369 → 333 min. |
+| Code Smells / Maintainability rating | **64 / A** · deuda 312 min (**0,2 %**) | Ver desglose. Tras los refactors del PDCA 2 (`evaluar_viaje` y `generar_recorrido`): 66 → 64 smells, 369 → 312 min. |
 | Cobertura (`lib/`, lógica pura) | **97,2 %** | pytest-cov con ramas; modelos/vistas se validan con el runner de Odoo (95 pruebas + 5 de interfaz). |
 | Duplicaciones | **0,3 %** de líneas | — |
 | Tamaño | 6 699 líneas de código, 89 archivos, complejidad ciclomática 824 | — |
 
-**Desglose de los 66 code smells y decisión:**
+**Desglose de los code smells y decisión:**
 
 | Regla | N | Decisión |
 | :--- | :-: | :--- |
 | `python:S9073` aserciones compuestas en tests pytest | 21 | Se mantienen: comparan tuplas de resultado en una sola aserción, con mensaje de diferencia completo de pytest. |
 | `python:S117` nombres de variables locales | 18 | Se mantienen: convención de Odoo (`Viaje = self.env['transporte.viaje']` para modelos). |
 | `python:S1192` literal repetido (nombres de modelo) | 11 | Se mantienen: `self.env['modelo']` es el idioma de Odoo; una constante por modelo reduciría la legibilidad. |
-| `python:S3776` complejidad cognitiva > 15 | 5 | `reglas.evaluar_viaje` (46) **se refactorizó** en una función por regla y salió de la lista (`docs/MEJORA_CONTINUA.md §5`). Quedan `simulador.generar_recorrido` (31), `cargar_datos_demo` (29) y tres de 17–21; cubiertos por pruebas. |
+| `python:S3776` complejidad cognitiva > 15 | 4 | `reglas.evaluar_viaje` (46) y `simulador.generar_recorrido` (31) **se refactorizaron** y salieron de la lista (`docs/MEJORA_CONTINUA.md §5`). Quedan el script auxiliar `cargar_datos_demo` (29, no forma parte del sistema) y tres de 17–21, cubiertos por pruebas. |
 | `javascript:S3358` / `S6661` (ternarios anidados, `Object.assign`) | 5 | Corregidos en el código nuevo (Inicio, mapa de rutas); quedan en `dashboard.js` (estilo, sin impacto). |
 | Otros (`pytz`, import, `parseInt`, encadenamiento opcional, test de excepción) | 5 | `pytz` lo usa Odoo 16 para zonas horarias. El import «sin uso» de `branding.js` es intencional: obliga a registrar el menú de usuario antes de quitarle los enlaces a odoo.com. Resto menor. |
 

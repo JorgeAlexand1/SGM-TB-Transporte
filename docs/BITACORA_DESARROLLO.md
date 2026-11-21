@@ -638,3 +638,8 @@ Fase 1.6 completada exitosamente. Repositorio privado publicado en `git@github.c
 ### Pendiente
 - Integrar los PR #4, #5 y el de esta rama en `develop` (requiere aprobación del equipo).
 - Trabajo de campo con Traccar Client en datos móviles; reemplazar las capturas simuladas de la presentación.
+
+### Adenda (`feature/refactor-simulador`)
+- `simulador.generar_recorrido` (complejidad cognitiva 31) dividida en funciones pequeñas; trazas idénticas
+  (huella SHA-256 de 72 combinaciones antes = después). Suite completa OK; SonarQube: gate aprobado, 64 smells,
+  deuda 312 min.
