@@ -586,3 +586,60 @@ Fase 1.6 completada exitosamente. Repositorio privado publicado en `git@github.c
 
 ### Pendiente
 - Recorridos reales con Traccar Client en datos móviles por el túnel, verificación de exactitud y SonarQube.
+
+---
+
+## [2026-11-20] - Fase 4: Mapa de rutas, interfaz SGM-TB y SonarQube (`feature/mapa-rutas`, `feature/interfaz-sgmtb`)
+
+### Actividades Realizadas
+1. Retoma tras sesión interrumpida (revisión de `git diff`): KPIs históricos por ruta y **Mapa de rutas** (trazado de
+   referencia o línea de paradas, radio de detección, % cumplimiento/puntualidad por ruta). Se restauró un
+   `@api.depends` perdido (D-10). `CLAUDE.md` + `.claude_progreso.md` para retomar sesiones sin repetir pasos.
+2. Nuevo módulo `transporte_ui`: pantalla **Inicio** (8 indicadores en vivo de 7 días, buses en ruta, incidencias
+   frecuentes, accesos por rol), login propio, paleta y tema del backend, título/favicon/icono propios.
+3. Capturas automatizadas (escritorio 1440×900 y móvil 390×844) para revisar la interfaz: detectaron el mapa de
+   rutas roto (D-09) y los mapas en blanco sin CDN (D-08). Leaflet 1.9.4 incluido en el módulo (checksum npm verificado).
+4. Se descubrió que las pruebas de navegador se **saltaban** por falta de `python3-websocket` (D-07); instalado y
+   `ejecutar_pruebas.sh` ahora falla si alguna prueba de interfaz se salta.
+5. **SonarQube** Community 26.8 (contenedor efímero): 1.ª pasada 3 bugs y 3 vulnerabilidades; los bugs se corrigieron
+   (comparaciones de floats) y las vulnerabilidades resultaron falsos positivos (`password="True"`), documentados.
+6. BD real respaldada (`pre_mapa_rutas`, `pre_interfaz`, `pre_interfaz_v2`) y actualizada sin avisos.
+
+### Resultados
+- pytest 128/128 (cobertura `lib/` 97,2 %), Odoo **95** pruebas 0 fallos, rendimiento 0 fallos, interfaz **5/5
+  ejecutadas** (0 saltadas).
+- SonarQube: Quality Gate aprobado; 0 bugs, 0 vulnerabilidades, 0 hotspots; ratings A/A/A; duplicación 0,3 %;
+  deuda 0,2 %. Evidencia: `docs/evidencias/sonarqube_20261120.json`.
+
+### Pendiente
+- Trabajo de campo (aplazado por decisión del equipo): recorridos reales con Traccar Client en datos móviles por el
+  túnel y verificación de exactitud Traccar ↔ Odoo con datos reales (`docs/GUIA_TRABAJO_CAMPO.md`).
+- Deuda técnica priorizada: dividir `reglas.evaluar_viaje` (complejidad cognitiva 46).
+
+---
+
+## [2026-11-20] - Fase 5: Cierre del proyecto (`feature/cierre-proyecto`)
+
+### Actividades Realizadas
+1. PR #4 (`feature/mapa-rutas`) y #5 (`feature/interfaz-sgmtb`, apilado) abiertos hacia `develop`; pendientes de
+   revisión e integración por el equipo.
+2. **Prueba de integración en vivo** Traccar ↔ Odoo (`scripts/prueba_integracion_traccar.sh`): Traccar 6.17 efímero,
+   posiciones por OsmAnd, sincronización sin duplicados, paradas por geocerca y exactitud 100 % (CP-24). Paso 5 de
+   `ejecutar_pruebas.sh`.
+3. BD de transporte en **español (es_EC)**; números formateados según el idioma del usuario.
+4. **Refactor** de `reglas.evaluar_viaje` (complejidad cognitiva 46 → ≤ 15) sin cambios de comportamiento: segundo
+   ciclo PDCA documentado en `docs/MEJORA_CONTINUA.md §5`.
+5. Presentación de la defensa (`docs/presentacion/`, HTML + PDF de 15 diapositivas) y guía de demostración actualizada.
+
+### Resultados
+- pytest 128/128, Odoo 95/95, rendimiento OK, interfaz 5/5, integración en vivo 2/2.
+- SonarQube: Quality Gate aprobado, 0 bugs, 0 vulnerabilidades, deuda 333 min (0,2 %).
+
+### Pendiente
+- Integrar los PR #4, #5 y el de esta rama en `develop` (requiere aprobación del equipo).
+- Trabajo de campo con Traccar Client en datos móviles; reemplazar las capturas simuladas de la presentación.
+
+### Adenda (`feature/refactor-simulador`)
+- `simulador.generar_recorrido` (complejidad cognitiva 31) dividida en funciones pequeñas; trazas idénticas
+  (huella SHA-256 de 72 combinaciones antes = después). Suite completa OK; SonarQube: gate aprobado, 64 smells,
+  deuda 312 min.

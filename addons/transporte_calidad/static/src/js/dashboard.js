@@ -2,10 +2,12 @@
 import { registry } from "@web/core/registry";
 import { loadCSS, loadJS } from "@web/core/assets";
 import { useService } from "@web/core/utils/hooks";
+import { formatFloat } from "@web/views/fields/formatters";
 import { deserializeDateTime, formatDateTime } from "@web/core/l10n/dates";
 import { Component, onMounted, onWillStart, onWillUnmount, useRef, useState } from "@odoo/owl";
 
-const LEAFLET = "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist";
+// Leaflet 1.9.4 incluido en el módulo (BSD-2): los mapas funcionan sin acceso al CDN.
+const LEAFLET = "/transporte_gps_traccar/static/lib/leaflet";
 const COLORES = ["#0d6efd", "#198754", "#fd7e14", "#6f42c1", "#dc3545", "#20c997", "#6c757d"];
 
 export class CalidadDashboard extends Component {
@@ -78,7 +80,7 @@ export class CalidadDashboard extends Component {
         if (valor === null || valor === undefined || valor === false) {
             return "—";
         }
-        return `${Number(valor).toFixed(decimales)}${sufijo}`;
+        return `${formatFloat(Number(valor), { digits: [16, decimales] })}${sufijo}`;
     }
 
     fecha(texto) {

@@ -4,11 +4,19 @@
 - `docker compose up -d && docker compose --profile tunel up -d`; Traccar Client a 30 s apuntando al túnel.
 - En Odoo, el bus de prueba tiene su `ID de dispositivo Traccar` y el viaje del día está **Programado**.
 - Dashboard filtrado «Solo reales» para mostrar los datos del teléfono; «Solo simulados» para los escenarios.
+- Plan B sin teléfono ni Internet: los mapas cargan igual (Leaflet va incluido; sin Internet el fondo de calles es
+  gris). La cadena real Traccar → Odoo se demuestra con `bash scripts/prueba_integracion_traccar.sh` (Traccar efímero,
+  posiciones por el protocolo de Traccar Client, ~40 s).
 
 ## 1. Flujo en vivo (≈ 10 min)
-1. **Registro del vehículo:** Transporte en Buses ▸ Flota y Personal ▸ Buses ▸ bus con dispositivo GPS asociado.
+0. **Login y pantalla de Inicio** (SGM-TB Transporte ▸ Inicio): indicadores en vivo de los últimos 7 días, buses en
+   ruta con su avance, incidencias más frecuentes y accesos directos según el rol. Si los datos incluyen recorridos
+   simulados aparece el aviso «incluye N SIMULADOS» (nada simulado se presenta como real).
+1. **Registro del vehículo:** SGM-TB Transporte ▸ Flota y Personal ▸ Buses ▸ bus con dispositivo GPS asociado.
 2. **Rutas y paradas:** Rutas y Paradas ▸ Líneas y Rutas: origen, destino, distancia y tiempo estimados,
-   secuencia de ≥ 4 paradas con minutos desde el origen; pestaña *Corredor de referencia*.
+   secuencia de ≥ 4 paradas con minutos desde el origen; pestaña *Corredor de referencia*. Calidad del Servicio ▸
+   **Mapa de rutas**: el trazado contra el que se detectan desvíos, el radio de cada parada y el % de cumplimiento y
+   puntualidad histórico de cada ruta.
 3. **Asignación:** Operación de Viajes ▸ Viajes ▸ nuevo (ruta + bus + conductor + hora) ▸ *Programar* (se congelan
    las horas de cada parada) ▸ *Iniciar recorrido*. Mostrar que el mismo bus tiene otros viajes en otras rutas.
 4. **Recorrido con el teléfono** (datos móviles): Telemetría GPS ▸ Mapa de Buses (refresca cada 15 s) y
@@ -32,18 +40,19 @@
 ## 3. Respuestas a las preguntas del enunciado
 | Pregunta | Dónde se responde |
 | :--- | :--- |
-| ¿Dónde se encuentra actualmente el vehículo? | Dashboard ▸ tabla de buses + mapa; Mapa de Buses (posición, hora, velocidad, señal) |
-| ¿Qué ruta está realizando? | Dashboard ▸ columna «Ruta en curso» |
-| ¿Qué paradas ha visitado? | Dashboard ▸ «Paradas visitadas» (n/m y nombres); viaje ▸ Control de paradas |
+| ¿Dónde se encuentra actualmente el vehículo? | Inicio ▸ «En ruta ahora»; Dashboard ▸ tabla de buses + mapa; Mapa de Buses (posición, hora, velocidad, señal) |
+| ¿Qué ruta está realizando? | Inicio ▸ «En ruta ahora»; Dashboard ▸ columna «Ruta en curso» |
+| ¿Qué paradas ha visitado? | Inicio ▸ barra de avance (n/m); Dashboard ▸ «Paradas visitadas» (n/m y nombres); viaje ▸ Control de paradas |
 | ¿Está cumpliendo los horarios? | Dashboard ▸ «¿Horario?»; viaje ▸ puntualidad por parada |
 | ¿Cuánto retraso ha acumulado? | Dashboard ▸ «Retraso acumulado» (última parada visitada) |
 | ¿Se ha desviado de su ruta? | Dashboard ▸ «¿Desvío?»; viaje ▸ alejamiento máximo y % fuera del corredor |
 | ¿Cuántos recorridos ha realizado? | Dashboard ▸ columna «Recorridos» por bus y KPI de recorridos evaluados |
-| ¿Qué porcentaje se ha cumplido correctamente? | KPI «Cumplimiento de rutas» |
+| ¿Qué porcentaje se ha cumplido correctamente? | Inicio y Dashboard ▸ KPI «Cumplimiento de rutas»; por ruta en el Mapa de rutas y en la lista de rutas |
 | ¿Cuáles son las incidencias más frecuentes? | Gráfico de Pareto de incidencias |
 | ¿Qué tan confiable es el sistema? | KPIs de calidad del software: integridad GPS, exactitud Traccar ↔ Odoo, tiempo de respuesta, detección correcta |
-| ¿Qué mejoras se realizaron? | `docs/MEJORA_CONTINUA.md`: geocerca por tramo (detección correcta 90 % → 100 %) y estándar de 30 s |
+| ¿Qué mejoras se realizaron? | `docs/MEJORA_CONTINUA.md`: geocerca por tramo (detección correcta 90 % → 100 %), estándar de 30 s, pruebas de interfaz que ya no se saltan, mapas sin CDN y refactor de las reglas (complejidad 46 → ≤ 15) |
 
 ## 4. Pruebas y calidad (para la exposición)
-`bash scripts/ejecutar_pruebas.sh` → 128 pytest + 89 pruebas Odoo + rendimiento + 3 de interfaz;
-matriz en `docs/PLAN_PRUEBAS.md`; ISO 25010 y SonarQube en `docs/CALIDAD_SOFTWARE.md`.
+`bash scripts/ejecutar_pruebas.sh` → 128 pytest + 95 pruebas Odoo + rendimiento + 5 de interfaz (navegador real)
++ 2 de integración en vivo con Traccar; matriz en `docs/PLAN_PRUEBAS.md`; ISO 25010 y SonarQube (Quality Gate
+aprobado, 0 bugs, 0 vulnerabilidades) en `docs/CALIDAD_SOFTWARE.md`.

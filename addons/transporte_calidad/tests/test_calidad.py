@@ -211,6 +211,34 @@ class TestRutaYConfiguracion(CalidadCommon):
         self.ruta1.action_limpiar_trazado()
         self.assertEqual(self.ruta1.trazado_puntos, 0)
 
+    def test_indicadores_por_ruta(self):
+        self.assertEqual((self.ruta1.viajes_evaluados, self.ruta1.cumplimiento_pct), (0, 0.0))
+        ok = self._llegadas(self._viaje_manual(salida=self._salida(9)), [0, 0, 0, 0, 0, 0, 0])
+        mal = self._llegadas(self._viaje_manual(salida=self._salida(15)), [0, 9, None, 0, 0, None, None])
+        self.assertTrue(ok.cumple_ruta)
+        self.assertFalse(mal.cumple_ruta)
+        vs = ok | mal
+        self.assertEqual(self.ruta1.viajes_evaluados, 2)
+        self.assertEqual(self.ruta1.cumplimiento_pct, 50.0)
+        self.assertAlmostEqual(self.ruta1.puntualidad_pct,
+                               100.0 * sum(vs.mapped('paradas_puntuales')) / sum(vs.mapped('paradas_atendidas')),
+                               places=1)  # digits=(5, 1)
+        self.assertEqual(self.rutas[1].viajes_evaluados, 0)
+
+    def test_mapa_rutas(self):
+        self.ruta1.ancho_corredor_m = 80
+        datos = {r['codigo']: r for r in self.env['transporte.ruta'].get_mapa_rutas()}
+        r1, r2 = datos['TCAL-R1'], datos['TCAL-R2']
+        self.assertEqual([p['codigo'] for p in r1['paradas']], ['TCAL-P%s' % p for p, _t in RUTAS['TCAL-R1']])
+        self.assertEqual(r1['trazado'], [[p['lat'], p['lon']] for p in r1['paradas']])  # sin trazado: paradas
+        self.assertFalse(r1['trazado_real'])
+        self.assertEqual((r1['corredor'], r2['corredor']), (80, 150.0))  # propio vs. global de Ajustes
+        self.assertEqual((r1['evaluados'], r1['cumplimiento']), (0, 0.0))
+        self.ruta1.trazado_referencia = '[[-1.2384, -78.6215], [-1.2500, -78.6300], [-1.2685, -78.6470]]'
+        r1 = next(r for r in self.env['transporte.ruta'].get_mapa_rutas() if r['id'] == self.ruta1.id)
+        self.assertTrue(r1['trazado_real'])
+        self.assertEqual(len(r1['trazado']), 3)
+
     def test_settings_rechaza_tolerancias_negativas(self):
         with self.assertRaises(ValidationError):
             self.env['res.config.settings'].create({'cal_tol_retraso_min': -1})
@@ -337,3 +365,9 @@ class TestSeguridad(CalidadCommon):
         # el dashboard es consultable por el rol de consulta
         d = self.env['transporte.calidad.dashboard'].with_user(usuario).get_dashboard_data({'registrar': True})
         self.assertIn('transporte', d)
+        # y también el mapa de rutas con sus indicadores, sin poder modificar el trazado
+        rutas = self.env['transporte.ruta'].with_user(usuario).get_mapa_rutas()
+        r1 = next(r for r in rutas if r['id'] == self.ruta1.id)
+        self.assertEqual(r1['evaluados'], 1)
+        with self.assertRaises(AccessError):
+            self.ruta1.with_user(usuario).write({'trazado_referencia': '[[0, 0], [1, 1]]'})

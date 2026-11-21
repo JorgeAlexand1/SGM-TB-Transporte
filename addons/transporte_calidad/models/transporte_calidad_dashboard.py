@@ -306,7 +306,7 @@ class TransporteCalidadDashboard(models.AbstractModel):
             verificadas, iguales, faltantes, len(distintas), distintas[:20] or '')
         self.env['transporte.calidad.medicion'].registrar(
             'exactitud_sync', (time.perf_counter() - inicio) * 1000, registros=verificadas, valor=valor,
-            ok=valor == 100.0, detalle=detalle)
+            ok=iguales == verificadas, detalle=detalle)
         return {'valor': valor, 'verificadas': verificadas, 'iguales': iguales, 'faltantes': faltantes,
                 'distintas': len(distintas)}
 

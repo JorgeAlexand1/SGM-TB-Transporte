@@ -4,7 +4,8 @@ import { loadCSS, loadJS } from "@web/core/assets";
 import { useService } from "@web/core/utils/hooks";
 import { Component, onMounted, onWillUnmount, useRef } from "@odoo/owl";
 
-const LEAFLET = "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist";
+// Leaflet 1.9.4 incluido en el módulo (BSD-2): los mapas funcionan sin acceso al CDN.
+const LEAFLET = "/transporte_gps_traccar/static/lib/leaflet";
 const COLOR_PARADA = { atendida: "#198754", omitida: "#dc3545", pendiente: "#6c757d" };
 
 export class GpsMap extends Component {

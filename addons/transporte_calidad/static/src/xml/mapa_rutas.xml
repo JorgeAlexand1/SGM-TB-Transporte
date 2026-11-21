@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="transporte_calidad.MapaRutas" owl="1">
+        <div class="o_action o_calidad_mapa_rutas">
+          <div class="o_cmr_cuerpo">
+            <div class="o_cmr_lateral">
+                <div class="o_cmr_ayuda text-muted">
+                    Trazado contra el que se detectan desvíos. Línea continua: trazado de referencia;
+                    discontinua: línea entre paradas (ruta sin trazado). Círculos: radio de detección de cada parada.
+                </div>
+                <div t-if="state.sinMapa" class="alert alert-warning m-2">
+                    No se pudo cargar el mapa. Los indicadores siguen disponibles.
+                </div>
+                <div t-if="!state.rutas.length" class="text-muted p-3">No hay rutas activas.</div>
+                <table t-else="" class="table table-sm table-hover o_cmr_tabla mb-0">
+                    <thead>
+                        <tr>
+                            <th/>
+                            <th>Ruta</th>
+                            <th class="text-end" title="Recorridos evaluados">Rec.</th>
+                            <th class="text-end" title="% de recorridos que cumplen la ruta">% Cumpl.</th>
+                            <th class="text-end" title="% de paradas atendidas a tiempo">% Puntual.</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="state.rutas" t-as="r" t-key="r.id" class="o_cmr_ruta"
+                            t-on-click="() => this.enfocar(r)">
+                            <td>
+                                <input type="checkbox" t-att-checked="state.visibles[r.id]" title="Mostrar u ocultar"
+                                       t-on-click.stop="() => this.alternar(r)"/>
+                            </td>
+                            <td>
+                                <span class="o_cmr_color" t-attf-style="background: #{r.color}"/>
+                                <a href="#" t-on-click.stop.prevent="() => this.abrirRuta(r)" t-esc="r.codigo"/>
+                                <div class="small text-muted">
+                                    <t t-esc="r.nombre"/> · <t t-esc="r.paradas.length"/> paradas ·
+                                    corredor <t t-esc="r.corredor"/> m
+                                </div>
+                            </td>
+                            <td class="text-end" t-esc="r.evaluados"/>
+                            <td t-attf-class="text-end #{claseIndicador(r.cumplimiento, r.evaluados)}"
+                                t-esc="r.evaluados ? num(r.cumplimiento) : '—'"/>
+                            <td t-attf-class="text-end #{claseIndicador(r.puntualidad, r.evaluados)}"
+                                t-esc="r.evaluados ? num(r.puntualidad) : '—'"/>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="o_cmr_mapa" t-ref="mapa"/>
+          </div>
+        </div>
+    </t>
+</templates>

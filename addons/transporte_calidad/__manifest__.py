@@ -13,6 +13,7 @@ Calidad del servicio de transporte universitario (SGM-TB, actividades A5-A8)
 - Registro de incidencias automáticas (idempotente) y manuales.
 - Indicadores de transporte (8) y de calidad del software (4) calculados en vivo desde la BD.
 - Dashboard en Odoo (OWL + Chart.js + Leaflet), vistas pivot/gráfico e informe PDF por viaje.
+- Mapa de rutas con el trazado usado para detectar desvíos e indicadores de cumplimiento por ruta.
 - Generador de recorridos SIMULADOS (identificados como tales) para escenarios de incumplimiento.
     """,
     'author': 'Equipo SGM-TB',
@@ -30,6 +31,7 @@ Calidad del servicio de transporte universitario (SGM-TB, actividades A5-A8)
         'views/res_config_settings_views.xml',
         'wizard/simulacion_views.xml',
         'views/dashboard_action.xml',
+        'views/mapa_rutas_action.xml',
         'views/menus.xml',
     ],
     'assets': {
@@ -37,6 +39,9 @@ Calidad del servicio de transporte universitario (SGM-TB, actividades A5-A8)
             'transporte_calidad/static/src/js/dashboard.js',
             'transporte_calidad/static/src/xml/dashboard.xml',
             'transporte_calidad/static/src/scss/dashboard.scss',
+            'transporte_calidad/static/src/js/mapa_rutas.js',
+            'transporte_calidad/static/src/xml/mapa_rutas.xml',
+            'transporte_calidad/static/src/scss/mapa_rutas.scss',
         ],
     },
     'installable': True,

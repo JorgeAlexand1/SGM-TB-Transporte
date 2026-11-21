@@ -35,6 +35,7 @@ graph TD
     Core["transporte_core (Núcleo Operativo)"]:::customCore
     GPS["transporte_gps_traccar (Telemetría)"]:::customUpper
     Calidad["transporte_calidad (Indicadores & KPIs)"]:::customUpper
+    UIMod["transporte_ui (Interfaz SGM-TB)"]:::customUpper
 
     Fleet --> Base
     HR --> Base
@@ -47,6 +48,7 @@ graph TD
     GPS --> Core
     Calidad --> Core
     Calidad -.->|Extensión Opcional| GPS
+    UIMod --> Calidad
 ```
 
 ---
@@ -88,12 +90,15 @@ graph TD
     duración y distancia estimada vs real, % paradas y puntualidad, desvío máximo y % fuera de corredor, huecos de señal,
     marca `simulado`, incidencias esperadas y detección correcta.
   - `transporte.viaje.parada` (Extensión): `retraso_min` y `puntualidad` (puntual/atrasada/adelantada/omitida).
-  - `transporte.ruta` (Extensión): corredor permitido (m) y trazado de referencia JSON.
+  - `transporte.ruta` (Extensión): corredor permitido (m), trazado de referencia JSON e indicadores históricos
+    por ruta (recorridos evaluados, % cumplimiento, % puntualidad) que alimentan el **Mapa de rutas**.
   - `transporte.incidencia`: automáticas (idempotentes) y manuales; tipo, severidad, estado, valor medido, regla.
   - `transporte.calidad.medicion`: tiempos de respuesta y exactitud Traccar ↔ Odoo.
   - `transporte.calidad.dashboard` (abstracto): 8 KPIs de transporte y 4 de calidad del software calculados en vivo.
   - `transporte.calidad.simulacion` (asistente): genera el plan de 10 recorridos simulados.
-- **Interfaz:** dashboard OWL (Chart.js + Leaflet), vistas pivot/gráfico, informe PDF por viaje, ajustes de tolerancias.
+- **Interfaz:** dashboard OWL (Chart.js + Leaflet), mapa de rutas (trazado, paradas y KPIs por ruta), vistas
+  pivot/gráfico, informe PDF por viaje, ajustes de tolerancias. Leaflet 1.9.4 va incluido en
+  `transporte_gps_traccar/static/lib/leaflet` (los mapas no dependen de un CDN; solo los mosaicos de OSM requieren Internet).
 - **Cron:** evaluación de viajes en curso cada 5 min (además de evaluar al finalizar/cancelar y al llegar posiciones).
 
 ```mermaid
@@ -103,8 +108,21 @@ flowchart LR
     GPS --> CORE["transporte_core<br/>viajes, paradas"]
     GPS --> CAL["transporte_calidad<br/>reglas -> incidencias -> KPIs"]
     CORE --> CAL
-    CAL --> UI["Dashboard / pivot / PDF"]
+    CAL --> UI["Dashboard / mapa de rutas / pivot / PDF"]
+    CAL --> INI["transporte_ui<br/>Inicio, login, tema"]
 ```
+
+### 3.4. `transporte_ui` (Interfaz SGM-TB)
+- **Depende de:** `transporte_calidad` (instalarlo instala los cuatro módulos).
+- **Inicio** (`transporte.inicio`, abstracto; acción cliente `transporte_ui_inicio`): saludo, 8 indicadores de los
+  últimos 7 días tomados de `transporte.calidad.dashboard.get_dashboard_data` (mismos valores que el dashboard),
+  buses en ruta con progreso de paradas, incidencias más frecuentes y accesos directos filtrados con
+  `ir.ui.menu._visible_menu_ids()` (cada rol solo ve lo que puede abrir). Avisa si los datos incluyen recorridos SIMULADOS.
+- **Marca:** la aplicación abre en Inicio y usa icono propio; login propio (`web.login_layout`/`web.login`) sin
+  «Powered by Odoo»; título de pestaña y favicon SGM-TB; menú de usuario sin enlaces a odoo.com.
+- **Tema:** paleta propia vía `web._assets_primary_variables` (azul `#0F4C81`, ámbar `#F5A623`) y retoques de barra
+  superior, panel de control, formularios, listas y kanban (`static/src/scss/backend.scss`). Solo CSS: no cambia vistas
+  de negocio, por lo que desinstalar el módulo devuelve la interfaz estándar.
 
 ---
 
