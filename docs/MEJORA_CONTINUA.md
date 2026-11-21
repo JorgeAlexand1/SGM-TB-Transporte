@@ -133,15 +133,15 @@ nadie miraba la interfaz renderizada. Además, la regla central `reglas.evaluar_
 | Fase | Acción |
 | :--- | :--- |
 | **PLAN** | Causas: dependencia no verificada (`python3-websocket`), Odoo informa «0 failed» aunque salte pruebas, recursos de un CDN y una función que acumula 9 reglas. Meta: 0 pruebas de interfaz saltadas, mapas sin dependencias externas y ninguna regla de detección con complejidad > 15, sin cambiar resultados. |
-| **DO** | Dependencia instalada; `ejecutar_pruebas.sh` trata una prueba saltada como fallo; capturas automatizadas de escritorio y móvil; Leaflet incluido en el módulo; `evaluar_viaje` dividida en una función por regla (`_regla_retraso_inicio`, `_regla_retraso_llegada`, `_regla_diferencia_tiempo`, `_regla_recorrido_incompleto`, `_reglas_gps`, `_veredicto`). Se añadió una prueba de integración **en vivo** contra un Traccar real. |
-| **CHECK** | Ver tabla. Mismos resultados de detección (74 pytest, 95 Odoo y 10/10 escenarios simulados correctos) antes y después del refactor. |
-| **ACT** | El script falla si una prueba de interfaz se salta; el paso 5 (Traccar en vivo) forma parte de la suite; SonarQube se ejecuta con `docs/CALIDAD_SOFTWARE.md §2`. Siguiente candidato: `simulador.generar_recorrido` (complejidad 31). |
+| **DO** | Dependencia instalada; `ejecutar_pruebas.sh` trata una prueba saltada como fallo; capturas automatizadas de escritorio y móvil; Leaflet incluido en el módulo; `evaluar_viaje` dividida en una función por regla (`_regla_retraso_inicio`, `_regla_retraso_llegada`, `_regla_diferencia_tiempo`, `_regla_recorrido_incompleto`, `_reglas_gps`, `_veredicto`); `generar_recorrido` dividida en `_preparar_nodos`, `_posicion`, `_hueco_senal`, `_velocidad_kmh` e `_instantes`. Se añadió una prueba de integración **en vivo** contra un Traccar real. |
+| **CHECK** | Ver tabla. Mismos resultados de detección (74 pytest, 95 Odoo y 10/10 escenarios simulados correctos) antes y después del refactor; el simulador produce trazas idénticas byte a byte (huella SHA-256 sobre 72 combinaciones escenario × intervalo × semilla). |
+| **ACT** | El script falla si una prueba de interfaz se salta; el paso 5 (Traccar en vivo) forma parte de la suite; SonarQube se ejecuta con `docs/CALIDAD_SOFTWARE.md §2`. Las funciones nuevas se escriben con complejidad ≤ 15. |
 
 | Indicador | Antes | Después |
 | :--- | :-: | :-: |
 | Pruebas de interfaz realmente ejecutadas | 1 de 5 (4 saltadas) | **5 de 5** |
 | Pruebas de integración contra Traccar real | 0 (solo mocks) | **2** (OsmAnd → Traccar → Odoo → exactitud 100 %) |
 | Mapas que funcionan sin Internet | 0 de 3 | **3 de 3** (sin fondo de calles) |
-| Complejidad cognitiva de `evaluar_viaje` | 46 | **≤ 15** (ya no la señala SonarQube) |
-| Deuda técnica SonarQube | 399 min (1.ª pasada) | **333 min** |
+| Complejidad cognitiva de `evaluar_viaje` / `generar_recorrido` | 46 / 31 | **≤ 15** (ya no las señala SonarQube) |
+| Deuda técnica SonarQube | 399 min (1.ª pasada) | **312 min** |
 | Bugs / vulnerabilidades SonarQube | 3 / 3 | **0 / 0** |
