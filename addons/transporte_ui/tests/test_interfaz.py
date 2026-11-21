@@ -47,7 +47,7 @@ class TestInicio(CalidadCommon):
         """Inicio muestra 6 tarjetas; el resto de accesos queda en el menú (no se pierde ninguno)."""
         accesos = self.env['transporte.inicio'].get_inicio_data()['accesos']
         principales = [a['clave'] for a in accesos if a['principal']]
-        self.assertEqual(principales, ['dashboard', 'mapa_buses', 'mapa_rutas', 'viajes', 'incidencias', 'rutas'])
+        self.assertEqual(principales, ['en_vivo', 'dashboard', 'mapa_rutas', 'viajes', 'incidencias', 'rutas'])
         self.assertGreater(len(accesos), len(principales))
 
     def test_menu_raiz_abre_inicio(self):

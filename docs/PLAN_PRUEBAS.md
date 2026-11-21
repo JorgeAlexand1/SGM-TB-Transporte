@@ -53,6 +53,7 @@ Ejecutados el **20/11/2026**. *Evidencia* = prueba automatizada que lo comprueba
 | CP-24 | Integración en vivo | RF-07, RF-09, RF-10, RNF-06 | 3 reportes OsmAnd (protocolo de Traccar Client) a un Traccar real, uno sobre cada parada de un viaje en curso | Traccar los guarda; Odoo los sincroniza con hora GPS, sin duplicar al re-sincronizar; las 3 paradas quedan *Atendida (GPS)*; exactitud Traccar ↔ Odoo 100 % | Igual | `test_traccar_vivo.py` (log `backups/odoo_traccar_vivo.log`) | ✅ |
 | CP-25 | Usabilidad – dashboard por pestañas | RF-18, RNF-05 | Abrir el dashboard, activar «Fórmulas» y recorrer las 5 pestañas en un navegador real | Resumen: 8 KPIs y 2 gráficos, fórmulas ocultas hasta pedirlas; Flota: tabla + mapa (el mapa solo existe en esa pestaña); Rutas: evolución + 3 rutas; Historial; Software: 4 KPIs + tolerancias | Igual | `test_dashboard_renderiza_kpis_y_graficos`, `test_dashboard_pestanas_y_formulas` | ✅ |
 | CP-26 | Usabilidad – Inicio compacto | RF-18 | Usuario administrador abre Inicio | 4 KPIs principales, franja de estado con 4 datos y 6 accesos; los demás accesos siguen en el menú | Igual | `test_accesos_principales`, `test_inicio_renderiza` | ✅ |
+| CP-27 | Usabilidad – pantalla En vivo (benchmarking Moovit) | RF-07, RF-18 | Un bus en ruta: pasa la 1.ª parada con 8 min de retraso; otra prueba con la 1.ª parada omitida y otra sin GPS | El bus aparece en el tramo 0, la próxima parada es la 2.ª con llegada = programada + 8 min y estado «Con retraso»; omitida cuenta como pasada sin llegada; sin GPS no hay punto en el mapa y la confianza es «Según horario». En el navegador: lista → línea → volver → búsqueda sin resultados | Igual | `test_en_vivo.py` (6 unitarias + `test_en_vivo_lista_y_vista_de_linea`) | ✅ |
 
 ## 3. Resultados de ejecución
 
@@ -60,9 +61,9 @@ Ejecutados el **20/11/2026**. *Evidencia* = prueba automatizada que lo comprueba
 | :--- | :---: | :--- |
 | pytest `transporte_gps_traccar` | 54 | 54 aprobadas · cobertura de `lib/` **99 %** (ramas) |
 | pytest `transporte_calidad` | 74 | 74 aprobadas · cobertura de `lib/` **97 %** (ramas) |
-| Odoo `transporte_core` + `transporte_gps_traccar` + `transporte_calidad` + `transporte_ui` | 96 | **0 fallos, 0 errores** |
+| Odoo `transporte_core` + `transporte_gps_traccar` + `transporte_calidad` + `transporte_ui` | 102 | **0 fallos, 0 errores** |
 | Odoo rendimiento (`rendimiento`) | 1 (12 mediciones) | 0 fallos |
-| Odoo interfaz (`ui`, Chromium headless) | 6 | 0 fallos, 0 saltadas (Inicio, dashboard, pestañas del dashboard, mapa de rutas, formulario, informe) |
+| Odoo interfaz (`ui`, Chromium headless) | 7 | 0 fallos, 0 saltadas (Inicio, En vivo, dashboard, pestañas del dashboard, mapa de rutas, formulario, informe) |
 | Integración en vivo (`traccar_vivo`, Traccar 6.17 efímero) | 2 | 0 fallos, 0 saltadas |
 
 ## 4. Rendimiento

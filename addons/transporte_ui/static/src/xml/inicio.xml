@@ -24,6 +24,10 @@
                         <button class="btn btn-light" t-on-click="() => this.cargar()" title="Actualizar">
                             <i t-attf-class="fa fa-refresh #{state.cargando ? 'fa-spin' : ''}"/>
                         </button>
+                        <button t-if="tieneAcceso('en_vivo')" class="btn btn-light o_sgm_btn_vivo"
+                                t-on-click="() => this.abrir('en_vivo')">
+                            <span class="o_sgm_punto_vivo"/> En vivo
+                        </button>
                         <button t-if="tieneAcceso('dashboard')" class="btn o_sgm_btn_ambar"
                                 t-on-click="() => this.abrir('dashboard')">
                             <i class="fa fa-tachometer"/> Abrir dashboard
@@ -62,7 +66,7 @@
 
                 <!-- Estado operativo y confiabilidad, en una sola franja -->
                 <section class="o_sgm_estado">
-                    <div class="o_sgm_mini o_sgm_clic" t-on-click="() => this.abrir('mapa_buses')" title="Ver buses en el mapa">
+                    <div class="o_sgm_mini o_sgm_clic" t-on-click="() => this.abrir('en_vivo')" title="Ver buses en vivo">
                         <i class="fa fa-bus o_sgm_t_azul"/>
                         <div><b><t t-esc="k.en_ruta"/> de <t t-esc="k.buses"/></b> buses en ruta
                             <span><t t-esc="k.con_senal"/> con señal GPS</span></div>
@@ -87,7 +91,10 @@
                 <div class="o_sgm_columnas">
                     <!-- En ruta ahora -->
                     <section class="o_sgm_panel">
-                        <h2><i class="fa fa-location-arrow"/> En ruta ahora</h2>
+                        <h2><i class="fa fa-location-arrow"/> En ruta ahora
+                            <a t-if="tieneAcceso('en_vivo')" href="#" class="o_sgm_ver_mas"
+                               t-on-click.prevent="() => this.abrir('en_vivo')">Ver en vivo <i class="fa fa-angle-right"/></a>
+                        </h2>
                         <div t-if="!d.en_ruta.length" class="o_sgm_vacio">
                             <i class="fa fa-moon-o"/> No hay buses en ruta en este momento.
                         </div>

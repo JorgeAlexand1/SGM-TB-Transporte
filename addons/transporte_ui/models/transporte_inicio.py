@@ -7,14 +7,16 @@ from odoo import api, fields, models
 DIAS_RESUMEN = 7
 
 # Accesos que se muestran como tarjetas en Inicio; los demás siguen disponibles en el menú superior.
-PRINCIPALES = ('dashboard', 'mapa_buses', 'mapa_rutas', 'viajes', 'incidencias', 'rutas')
+PRINCIPALES = ('en_vivo', 'dashboard', 'mapa_rutas', 'viajes', 'incidencias', 'rutas')
 
 # (clave, menú que controla la visibilidad, acción, título, descripción, icono FontAwesome, tono)
 ACCESOS = [
+    ('en_vivo', 'transporte_ui.menu_en_vivo', 'transporte_ui.action_en_vivo',
+     'En vivo', 'Líneas, buses en el mapa y llegadas estimadas', 'fa-location-arrow', 'verde'),
     ('dashboard', 'transporte_calidad.menu_calidad_dashboard', 'transporte_calidad.action_dashboard_calidad',
      'Dashboard de calidad', 'Indicadores, comparación por ruta y período, historial', 'fa-tachometer', 'azul'),
     ('mapa_buses', 'transporte_gps_traccar.menu_gps_map', 'transporte_gps_traccar.action_gps_map',
-     'Buses en vivo', 'Posición GPS actual de cada bus', 'fa-map-marker', 'verde'),
+     'Mapa GPS', 'Última posición GPS de cada bus', 'fa-map-marker', 'turquesa'),
     ('mapa_rutas', 'transporte_calidad.menu_calidad_mapa_rutas', 'transporte_calidad.action_mapa_rutas',
      'Mapa de rutas', 'Trazados, paradas y cumplimiento por ruta', 'fa-map', 'turquesa'),
     ('viajes', 'transporte_core.menu_transporte_viaje', 'transporte_core.action_transporte_viaje',

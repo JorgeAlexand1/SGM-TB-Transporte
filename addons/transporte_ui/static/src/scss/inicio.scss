@@ -431,3 +431,80 @@ $sgm-tonos: (
         }
     }
 }
+
+// ------------------------------------------------------------ movimiento (entrada escalonada, botón «En vivo»)
+@keyframes o_sgm_aparecer {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: none; }
+}
+@keyframes o_sgm_pulso {
+    0% { transform: scale(0.6); opacity: 0.8; }
+    100% { transform: scale(2.6); opacity: 0; }
+}
+
+.o_sgm_inicio {
+    .o_sgm_hero,
+    .o_sgm_kpi,
+    .o_sgm_mini,
+    .o_sgm_panel,
+    .o_sgm_acceso {
+        animation: o_sgm_aparecer 0.45s cubic-bezier(0.2, 0.7, 0.3, 1) backwards;
+    }
+    @for $i from 1 through 6 {
+        .o_sgm_kpi:nth-child(#{$i}),
+        .o_sgm_mini:nth-child(#{$i}),
+        .o_sgm_acceso:nth-child(#{$i}) {
+            animation-delay: #{40 + $i * 50}ms;
+        }
+    }
+    .o_sgm_panel {
+        animation-delay: 300ms;
+    }
+    .o_sgm_mini.o_sgm_clic {
+        transition: background 0.15s ease;
+
+        &:hover {
+            background: rgba($sgm-azul, 0.04);
+        }
+    }
+    .o_sgm_acceso:hover .o_sgm_acceso_icono {
+        transform: scale(1.08) rotate(-4deg);
+    }
+    .o_sgm_acceso_icono {
+        transition: transform 0.2s ease;
+    }
+    .o_sgm_btn_vivo {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+    }
+    .o_sgm_punto_vivo {
+        position: relative;
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: #1E9E6A;
+
+        &::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: #1E9E6A;
+            animation: o_sgm_pulso 1.8s ease-out infinite;
+        }
+    }
+    .o_sgm_ver_mas {
+        float: right;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .o_sgm_inicio * {
+        animation: none !important;
+        transition: none !important;
+    }
+}

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_en_vivo" model="ir.actions.client">
+        <field name="name">En vivo</field>
+        <field name="tag">transporte_ui_en_vivo</field>
+    </record>
+
+    <menuitem id="menu_en_vivo" name="En vivo" parent="transporte_core.menu_transporte_root"
+              action="action_en_vivo" sequence="1"/>
+</odoo>

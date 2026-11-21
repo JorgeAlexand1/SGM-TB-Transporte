@@ -24,6 +24,8 @@
 5. En el viaje: paradas pasando a *Atendida (GPS)* con su hora real y retraso; pestaña *Evaluación de calidad*
    con el retraso acumulado en vivo.
 6. *Finalizar viaje* → resultado **Cumple / Incumple** e incidencias generadas automáticamente; botón *Informe PDF*.
+6b. **En vivo** (menú *En vivo* o botón en Inicio): elegir una línea → recorrido tipo metro con el bus en su tramo,
+   próxima parada con cuenta regresiva y punto de confianza (verde = GPS en vivo). Es la pantalla para el público.
 7. **Dashboard** (Calidad del Servicio ▸ Dashboard), organizado en pestañas:
    *Resumen* (8 KPIs con semáforo, Pareto y comparación por ruta; botón **Fórmulas** para mostrar cómo se calcula
    cada uno), *Flota en vivo* (tabla de buses + mapa), *Rutas y períodos*, *Historial* y *Calidad del software*.
@@ -55,6 +57,6 @@
 | ¿Qué mejoras se realizaron? | `docs/MEJORA_CONTINUA.md`: geocerca por tramo (detección correcta 90 % → 100 %), estándar de 30 s, pruebas de interfaz que ya no se saltan, mapas sin CDN y refactor de las reglas (complejidad 46 → ≤ 15) |
 
 ## 4. Pruebas y calidad (para la exposición)
-`bash scripts/ejecutar_pruebas.sh` → 128 pytest + 96 pruebas Odoo + rendimiento + 6 de interfaz (navegador real)
+`bash scripts/ejecutar_pruebas.sh` → 128 pytest + 102 pruebas Odoo + rendimiento + 7 de interfaz (navegador real)
 + 2 de integración en vivo con Traccar; matriz en `docs/PLAN_PRUEBAS.md`; ISO 25010 y SonarQube (Quality Gate
 aprobado, 0 bugs, 0 vulnerabilidades) en `docs/CALIDAD_SOFTWARE.md`.
