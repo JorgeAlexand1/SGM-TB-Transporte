@@ -5,8 +5,10 @@ Esta guía cubre lo que falta del proyecto y requiere el teléfono: actividades 
 fotos de evidencia de **A6** y **A8**. El software ya está terminado y probado; aquí solo se configura, se sale
 a recorrer y se captura.
 
-**Estado al 20/11/2026:** Traccar corre en `localhost:8082`, pero Odoo todavía no está conectado (sin URL ni
-token), ningún bus tiene dispositivo asociado y hay 0 posiciones reales. Las rutas `DEMO-RUT-*` son de
+**Estado al 20/11/2026:** §1 y §2 **ya están hechos** en la PC del servidor: Traccar tiene administrador y dos
+dispositivos (`sgmtb-bus01` → `TB-DEMO-01`, `sgmtb-bus02` → `TB-DEMO-02`), Odoo está conectado y la
+sincronización automática corre cada minuto sin errores. El túnel rápido de Cloudflare se probó desde Internet
+(Traccar respondió a través de Cloudflare). Hay 0 posiciones reales: falta salir con el teléfono (§3 en adelante). Las rutas `DEMO-RUT-*` son de
 demostración (nombres y tiempos ficticios) y **no** se usan para los recorridos reales.
 
 ---
@@ -15,7 +17,7 @@ demostración (nombres y tiempos ficticios) y **no** se usan para los recorridos
 
 | Tarea | Quién | Sección |
 | :--- | :--- | :--- |
-| Configurar Traccar (admin, dispositivos, token) y conectarlo a Odoo | 1 persona en la PC del servidor | §1, §2 |
+| ~~Configurar Traccar (admin, dispositivos) y conectarlo a Odoo~~ **hecho** | — | §1, §2 |
 | Prueba de escritorio con `curl` (valida toda la cadena sin teléfono) | misma persona | §4 |
 | Elegir las 3 rutas reales y tomar las coordenadas de las paradas | todo el equipo | §5 |
 | Análisis SonarQube | cualquiera | `docs/CALIDAD_SOFTWARE.md` |
@@ -23,7 +25,11 @@ demostración (nombres y tiempos ficticios) y **no** se usan para los recorridos
 
 ---
 
-## 1. Preparar Traccar (una sola vez)
+## 1. Preparar Traccar (una sola vez) — HECHO el 20/11/2026
+
+Las credenciales del administrador y los identificadores están en `config/traccar_credenciales.local` de la PC
+del servidor (archivo ignorado por git: **no lo suban**). Los pasos siguientes quedan como referencia por si hay
+que rehacer el servidor.
 
 1. Abrir `http://localhost:8082`.
    - Si pide registrarse: el **primer usuario que se registra queda como administrador**. Usen un correo del
@@ -33,19 +39,22 @@ demostración (nombres y tiempos ficticios) y **no** se usan para los recorridos
 
    | Nombre | Identificador (lo escriben en el teléfono) | Bus en Odoo |
    | :--- | :--- | :--- |
-   | `Bus UTA 01` | `utabus01` | `TB-DEMO-01` |
-   | `Bus UTA 02` | `utabus02` | `TB-DEMO-02` |
+   | `Bus TB-DEMO-01` | `sgmtb-bus01` | `TB-DEMO-01` (ID interno 1) |
+   | `Bus TB-DEMO-02` | `sgmtb-bus02` | `TB-DEMO-02` (ID interno 2) |
 
    El enunciado pide 2 vehículos registrados. Con **un solo teléfono** se puede simular el otro bus: se cambia
    el *Identificador* en Traccar Client antes de cada recorrido (un dispositivo solo puede estar en un bus).
 3. **Anotar el ID interno** de cada dispositivo: es un número (1, 2, …), distinto del identificador. Se ve en
    `http://localhost:8082/api/devices` con la sesión iniciada, o en la URL al editar el dispositivo.
-4. **Generar un token de API:** menú de usuario ▸ *Configuración / Cuenta* ▸ *Token* ▸ generar (con una fecha de
+4. *(Opcional; ahora Odoo usa usuario y contraseña)* **Generar un token de API:** menú de usuario ▸ *Configuración / Cuenta* ▸ *Token* ▸ generar (con una fecha de
    expiración posterior a la defensa) y copiarlo.
 
 📸 **Evidencia A2-03:** lista de dispositivos en Traccar.
 
-## 2. Conectar Odoo con Traccar
+## 2. Conectar Odoo con Traccar — HECHO el 20/11/2026
+
+Odoo quedó con URL `http://traccar:8082` y el usuario/contraseña del administrador de Traccar. Solo falta revisar
+la zona horaria (paso 4) y tomar las capturas.
 
 1. En Odoo: **Transporte en Buses ▸ Telemetría GPS ▸ Ajustes Traccar**.
    - *URL de Traccar*: `http://traccar:8082`. Es el nombre interno del contenedor, así que **no** se usa el túnel ni `localhost`.
@@ -77,7 +86,7 @@ En el teléfono, instalar **Traccar Client** (Play Store / App Store) y configur
 
 | Campo | Valor |
 | :--- | :--- |
-| Identificador del dispositivo | `utabus01` (o `utabus02`) |
+| Identificador del dispositivo | `sgmtb-bus01` (o `sgmtb-bus02`) |
 | URL del servidor | la URL `https://…trycloudflare.com` (sin puerto) |
 | Precisión | Alta |
 | Frecuencia / intervalo | **30 s**. Nunca dejen los 300 s por defecto: se pierden paradas (ver `MEJORA_CONTINUA.md`) |
@@ -94,7 +103,7 @@ Desde cualquier computador, **sin estar en la red de la casa** (por ejemplo, con
 simulen un reporte del teléfono por el túnel:
 ```bash
 URL=https://<la-url>.trycloudflare.com
-curl -i "$URL/?id=utabus01&lat=-1.2690&lon=-78.6250&speed=0&timestamp=$(date -u +%s)"
+curl -i "$URL/?id=sgmtb-bus01&lat=-1.2690&lon=-78.6250&speed=0&timestamp=$(date -u +%s)"
 ```
 - Respuesta esperada: `200`. En Traccar el dispositivo pasa a *Online*.
 - En Odoo, en 1 minuto (o con *Sincronizar ahora*): **Telemetría GPS ▸ Posiciones GPS** muestra la posición, y
