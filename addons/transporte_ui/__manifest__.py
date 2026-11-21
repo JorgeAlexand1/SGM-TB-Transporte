@@ -7,6 +7,8 @@
     'description': """
 Interfaz de SGM-TB
 ==================
+- Pantalla **En vivo** al estilo de las apps de transporte público: líneas con color, buses
+  moviéndose en el mapa, recorrido tipo metro y llegadas estimadas con indicador de confianza.
 - Pantalla de **Inicio** con indicadores en vivo (últimos 7 días), buses en ruta y accesos directos
   filtrados por los permisos del usuario.
 - Página de **inicio de sesión** propia (sin marca de Odoo).
@@ -18,6 +20,7 @@ Interfaz de SGM-TB
     'depends': ['transporte_calidad'],
     'data': [
         'views/inicio_views.xml',
+        'views/en_vivo_views.xml',
         'views/webclient_templates.xml',
     ],
     'assets': {
@@ -31,6 +34,9 @@ Interfaz de SGM-TB
             'transporte_ui/static/src/js/inicio.js',
             'transporte_ui/static/src/xml/inicio.xml',
             'transporte_ui/static/src/scss/inicio.scss',
+            'transporte_ui/static/src/js/en_vivo.js',
+            'transporte_ui/static/src/xml/en_vivo.xml',
+            'transporte_ui/static/src/scss/en_vivo.scss',
         ],
         'web.assets_frontend': [
             'transporte_ui/static/src/scss/login.scss',

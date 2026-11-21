@@ -358,3 +358,46 @@ $cd-amarillo: #D98A00;
         }
     }
 }
+
+// ------------------------------------------------------------ movimiento: cada pestaña entra con una animación corta
+@keyframes o_cd_aparecer {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
+}
+
+.o_calidad_dashboard {
+    .o_cd_kpi,
+    .o_cd_panel,
+    .o_cd_tol {
+        animation: o_cd_aparecer 0.4s cubic-bezier(0.2, 0.7, 0.3, 1) backwards;
+    }
+    @for $i from 1 through 8 {
+        .o_cd_kpi:nth-child(#{$i}) {
+            animation-delay: #{$i * 35}ms;
+        }
+    }
+    .o_cd_panel {
+        animation-delay: 220ms;
+    }
+    .o_cd_kpi {
+        transition: box-shadow 0.15s ease, transform 0.15s ease;
+
+        &:hover {
+            box-shadow: 0 8px 20px rgba($cd-azul-oscuro, 0.1);
+            transform: translateY(-2px);
+        }
+    }
+    .o_cd_tab {
+        transition: color 0.15s ease, border-color 0.2s ease;
+    }
+    .o_cd_tabla tbody tr {
+        transition: background 0.12s ease;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .o_calidad_dashboard * {
+        animation: none !important;
+        transition: none !important;
+    }
+}

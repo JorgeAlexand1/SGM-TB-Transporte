@@ -1,0 +1,701 @@
+// Pantalla «En vivo» (estilo app de transporte público): mapa a pantalla completa + panel de líneas.
+$ev-texto: #1F2D3D;
+$ev-suave: #6B7A8C;
+$ev-borde: #E6EBF1;
+$ev-fondo: #F5F7FA;
+$ev-ok: #1E9E6A;
+$ev-tarde: #E08A00;
+$ev-mal: #D64545;
+$ev-panel: 400px;
+
+@keyframes o_ev_pulso {
+    0% { transform: scale(0.6); opacity: 0.7; }
+    100% { transform: scale(2.4); opacity: 0; }
+}
+@keyframes o_ev_subir {
+    from { transform: translateY(10px); opacity: 0; }
+    to { transform: none; opacity: 1; }
+}
+@keyframes o_ev_desde_der {
+    from { transform: translateX(28px); opacity: 0; }
+    to { transform: none; opacity: 1; }
+}
+@keyframes o_ev_desde_izq {
+    from { transform: translateX(-20px); opacity: 0; }
+    to { transform: none; opacity: 1; }
+}
+@keyframes o_ev_parpadeo {
+    50% { opacity: 0.45; }
+}
+@keyframes o_ev_vaiven {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(3px); }
+}
+
+.o_ev {
+    position: relative;
+    display: grid;
+    grid-template-columns: $ev-panel minmax(0, 1fr);
+    height: 100%;
+    overflow: hidden;
+    background: $ev-fondo;
+    color: $ev-texto;
+
+    // ------------------------------------------------------------ mapa
+    .o_ev_mapa_zona {
+        position: relative;
+        grid-column: 2;
+        grid-row: 1;
+        min-height: 0;
+    }
+    .o_ev_mapa {
+        position: absolute;
+        inset: 0;
+        background: #E9EEF3;
+    }
+    .o_ev_estado_vivo {
+        position: absolute;
+        top: 14px;
+        left: 14px;
+        z-index: 800;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 14px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 4px 16px rgba(15, 35, 60, 0.15);
+        font-size: 0.86rem;
+    }
+    .o_ev_sin_mapa {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        max-width: 80%;
+        padding: 14px 18px;
+        border-radius: 12px;
+        background: #FFFFFF;
+        color: $ev-suave;
+        text-align: center;
+    }
+    .o_ev_punto_vivo {
+        position: relative;
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: $ev-ok;
+
+        &::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: $ev-ok;
+            animation: o_ev_pulso 1.8s ease-out infinite;
+        }
+    }
+    .o_ev_sep,
+    .o_ev_tenue {
+        color: $ev-suave;
+    }
+
+    // ------------------------------------------------------------ panel
+    .o_ev_panel {
+        position: relative;
+        z-index: 900;
+        grid-column: 1;
+        grid-row: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        background: #FFFFFF;
+        box-shadow: 4px 0 24px rgba(15, 35, 60, 0.1);
+    }
+    .o_ev_asa {
+        display: none;
+    }
+    .o_ev_vista {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        flex: 1 1 auto;
+    }
+    .o_ev_entrar_der {
+        animation: o_ev_desde_der 0.28s ease-out;
+    }
+    .o_ev_entrar_izq {
+        animation: o_ev_desde_izq 0.24s ease-out;
+    }
+    .o_ev_cabecera {
+        padding: 18px 18px 10px;
+
+        h2 {
+            margin: 0 0 10px;
+            font-size: 1.35rem;
+            font-weight: 800;
+        }
+    }
+    .o_ev_buscar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        margin: 0;
+        padding: 9px 14px;
+        border-radius: 12px;
+        background: $ev-fondo;
+        color: $ev-suave;
+        transition: box-shadow 0.15s;
+
+        &:focus-within {
+            box-shadow: 0 0 0 2px rgba(30, 136, 229, 0.35);
+        }
+        input {
+            flex: 1;
+            min-width: 0;
+            border: 0;
+            outline: 0;
+            background: transparent;
+            color: $ev-texto;
+        }
+    }
+
+    // ------------------------------------------------------------ tarjetas de línea
+    .o_ev_lista {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 4px 10px 10px;
+    }
+    .o_ev_linea {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        margin: 0 0 6px;
+        padding: 12px;
+        border: 0;
+        border-radius: 14px;
+        background: transparent;
+        color: inherit;
+        text-align: left;
+        animation: o_ev_subir 0.35s ease-out backwards;
+        transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+
+        &:hover,
+        &:focus-visible {
+            background: $ev-fondo;
+            transform: translateX(2px);
+            outline: 0;
+        }
+        &:hover .o_ev_flecha {
+            transform: translateX(3px);
+            color: var(--c);
+        }
+    }
+    .o_ev_badge {
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        width: 106px;
+        justify-content: center;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        padding: 5px 9px;
+        border-radius: 8px;
+        background: var(--c);
+        color: #FFFFFF;
+        font-weight: 800;
+        font-size: 0.9rem;
+        box-shadow: 0 3px 8px color-mix(in srgb, var(--c) 35%, transparent);
+    }
+    .o_ev_badge_claro {
+        width: auto;
+        background: rgba(255, 255, 255, 0.22);
+        box-shadow: none;
+    }
+    .o_ev_linea_txt {
+        flex: 1 1 auto;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+
+        b {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        small {
+            color: $ev-suave;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+    .o_ev_linea_buses {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin-top: 3px;
+        font-size: 0.78rem;
+    }
+    .o_ev_cuenta {
+        flex: 0 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        line-height: 1.1;
+
+        b {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: $ev-ok;
+        }
+        small {
+            color: $ev-suave;
+            font-size: 0.7rem;
+        }
+    }
+    .o_ev_cuenta_salida b {
+        color: $ev-texto;
+    }
+    .o_ev_flecha {
+        color: #B8C2CE;
+        font-size: 1.2rem;
+        transition: transform 0.15s, color 0.15s;
+    }
+    .o_ev_vacio {
+        padding: 24px 12px;
+        color: $ev-suave;
+        text-align: center;
+    }
+    .o_ev_leyenda {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin: 0;
+        padding: 10px 18px 14px;
+        border-top: 1px solid $ev-borde;
+        color: $ev-suave;
+        font-size: 0.76rem;
+    }
+
+    // ------------------------------------------------------------ píldoras y estados
+    .o_ev_pill {
+        display: inline-block;
+        padding: 1px 8px;
+        border-radius: 999px;
+        font-size: 0.76rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    .o_ev_ok {
+        background: rgba($ev-ok, 0.12);
+        color: $ev-ok;
+    }
+    .o_ev_tarde {
+        background: rgba($ev-tarde, 0.14);
+        color: darken($ev-tarde, 6%);
+    }
+    .o_ev_mal {
+        background: rgba($ev-mal, 0.12);
+        color: $ev-mal;
+    }
+    .o_ev_neutro {
+        background: $ev-fondo;
+        color: $ev-texto;
+    }
+    .o_ev_sim {
+        background: #F5A623;
+        color: #FFFFFF;
+    }
+    .o_ev_ok_txt {
+        color: $ev-ok;
+    }
+    .o_ev_mal_txt {
+        color: $ev-mal;
+        font-weight: 600;
+    }
+    .o_ev_conf {
+        display: inline-block;
+        width: 9px;
+        height: 9px;
+        margin-right: 3px;
+        border-radius: 50%;
+        vertical-align: middle;
+    }
+    .o_ev_conf_alta {
+        background: $ev-ok;
+        box-shadow: 0 0 0 3px rgba($ev-ok, 0.2);
+    }
+    .o_ev_conf_media {
+        background: $ev-tarde;
+    }
+    .o_ev_conf_baja {
+        background: #AAB5C2;
+    }
+
+    // ------------------------------------------------------------ vista de línea
+    .o_ev_linea_cab {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 16px 16px 18px;
+        background: var(--c);
+        color: #FFFFFF;
+
+        h2 {
+            margin: 6px 0 2px;
+            color: #FFFFFF;
+            font-size: 1.2rem;
+            font-weight: 800;
+        }
+        small {
+            opacity: 0.9;
+        }
+    }
+    .o_ev_volver {
+        flex: 0 0 auto;
+        width: 36px;
+        height: 36px;
+        border: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        color: #FFFFFF;
+        transition: background 0.15s, transform 0.15s;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.32);
+            transform: translateX(-2px);
+        }
+    }
+    .o_ev_scroll {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 0 14px 20px;
+    }
+    .o_ev_selector {
+        display: flex;
+        gap: 6px;
+        padding-top: 12px;
+        overflow-x: auto;
+    }
+    .o_ev_chip {
+        padding: 5px 12px;
+        border: 1px solid $ev-borde;
+        border-radius: 999px;
+        background: #FFFFFF;
+        font-size: 0.82rem;
+        white-space: nowrap;
+        transition: all 0.15s;
+    }
+    .o_ev_chip_activo {
+        border-color: var(--c);
+        background: var(--c);
+        color: #FFFFFF;
+    }
+    .o_ev_bus_card,
+    .o_ev_sin_bus {
+        margin-top: 12px;
+        padding: 14px;
+        border-radius: 14px;
+        background: #FFFFFF;
+        box-shadow: 0 6px 20px rgba(15, 35, 60, 0.1);
+        animation: o_ev_subir 0.3s ease-out backwards;
+    }
+    .o_ev_bus_fila {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+    }
+    .o_ev_bus_placa {
+        font-weight: 800;
+        margin-right: 4px;
+    }
+    .o_ev_proxima {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: end;
+        column-gap: 10px;
+        margin: 10px 0;
+
+        small {
+            grid-column: 1;
+            color: $ev-suave;
+            font-size: 0.78rem;
+        }
+        b {
+            grid-column: 1;
+            font-size: 1.05rem;
+        }
+    }
+    .o_ev_proxima_cuenta {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+        color: $ev-ok;
+        font-size: 1.7rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+    .o_ev_llegando {
+        animation: o_ev_parpadeo 1.2s ease-in-out infinite;
+    }
+    .o_ev_eta.o_ev_vencida {
+        color: $ev-tarde;
+        font-size: 0.85rem;
+    }
+    .o_ev_proxima_cuenta.o_ev_vencida {
+        color: $ev-tarde;
+        font-size: 1.1rem;
+    }
+    .o_ev_bus_meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 14px;
+        padding-top: 10px;
+        border-top: 1px dashed $ev-borde;
+        color: $ev-suave;
+        font-size: 0.8rem;
+
+        a {
+            margin-left: auto;
+            font-weight: 600;
+            color: var(--c);
+        }
+    }
+    .o_ev_sin_bus {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+
+        > .fa {
+            font-size: 1.4rem;
+            color: $ev-suave;
+        }
+        small {
+            display: block;
+            margin-top: 4px;
+            color: $ev-suave;
+        }
+        .o_ev_pill {
+            margin: 2px 2px 0 0;
+        }
+    }
+
+    // ------------------------------------------------------------ recorrido (vista de línea tipo metro)
+    .o_ev_recorrido {
+        list-style: none;
+        margin: 16px 0 0;
+        padding: 0;
+    }
+    .o_ev_parada,
+    .o_ev_tramo_bus {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-height: 50px;
+        padding: 6px 6px 6px 38px;
+
+        // tramo de la línea
+        &::before {
+            content: "";
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+            background: color-mix(in srgb, var(--c) 30%, #FFFFFF);
+        }
+    }
+    .o_ev_parada:first-child::before {
+        top: 50%;
+    }
+    .o_ev_parada:last-child::before {
+        bottom: 50%;
+    }
+    .o_ev_pasada::before,
+    .o_ev_recorrido_plan .o_ev_parada::before {
+        background: var(--c);
+    }
+    .o_ev_parada {
+        border-radius: 10px;
+        cursor: pointer;
+        transition: background 0.15s;
+
+        &:hover {
+            background: $ev-fondo;
+        }
+    }
+    .o_ev_nodo {
+        position: absolute;
+        left: 9px;
+        top: 50%;
+        width: 18px;
+        height: 18px;
+        margin-top: -9px;
+        border: 4px solid var(--c);
+        border-radius: 50%;
+        background: #FFFFFF;
+        transition: transform 0.2s;
+    }
+    .o_ev_extremo .o_ev_nodo {
+        width: 22px;
+        height: 22px;
+        left: 7px;
+        margin-top: -11px;
+    }
+    .o_ev_parada:hover .o_ev_nodo {
+        transform: scale(1.15);
+    }
+    .o_ev_p_atendida .o_ev_nodo {
+        background: var(--c);
+    }
+    .o_ev_p_omitida {
+        .o_ev_nodo {
+            border-color: $ev-mal;
+            background: #FFFFFF;
+        }
+        b {
+            text-decoration: line-through;
+            color: $ev-suave;
+        }
+    }
+    .o_ev_es_proxima {
+        background: color-mix(in srgb, var(--c) 9%, #FFFFFF);
+
+        b {
+            font-weight: 800;
+        }
+        .o_ev_nodo {
+            box-shadow: 0 0 0 5px color-mix(in srgb, var(--c) 25%, transparent);
+        }
+    }
+    .o_ev_parada_txt {
+        flex: 1 1 auto;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+
+        small {
+            color: $ev-suave;
+            font-size: 0.78rem;
+        }
+    }
+    .o_ev_retraso {
+        margin-left: 4px;
+        padding: 0 6px;
+        border-radius: 999px;
+        font-weight: 700;
+    }
+    .o_ev_eta {
+        flex: 0 0 auto;
+        font-weight: 800;
+        color: $ev-ok;
+    }
+    .o_ev_tramo_bus {
+        min-height: 40px;
+        font-size: 0.8rem;
+
+        &::before {
+            background: linear-gradient(var(--c) 50%, color-mix(in srgb, var(--c) 30%, #FFFFFF) 50%);
+        }
+    }
+    .o_ev_bus_mov {
+        position: absolute;
+        left: 4px;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--c);
+        color: #FFFFFF;
+        font-size: 0.8rem;
+        box-shadow: 0 0 0 4px #FFFFFF, 0 4px 10px rgba(15, 35, 60, 0.3);
+        animation: o_ev_vaiven 1.6s ease-in-out infinite;
+    }
+
+    // ------------------------------------------------------------ teléfono: mapa arriba + hoja inferior
+    @media (max-width: 767.98px) {
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+
+        .o_ev_mapa_zona {
+            flex: 0 0 42vh;
+        }
+        .o_ev_panel {
+            flex: 1 0 auto;
+            margin-top: -18px;
+            border-radius: 20px 20px 0 0;
+            box-shadow: 0 -6px 20px rgba(15, 35, 60, 0.12);
+        }
+        .o_ev_asa {
+            display: block;
+            width: 40px;
+            height: 5px;
+            margin: 8px auto 0;
+            border-radius: 3px;
+            background: #D3DAE3;
+        }
+        .o_ev_linea_cab {
+            margin-top: 8px;
+        }
+        .o_ev_lista,
+        .o_ev_scroll {
+            overflow: visible;
+        }
+    }
+}
+
+// Marcador de bus en el mapa (fuera de .o_ev porque Leaflet lo inserta en su propio panel).
+.o_ev_marca_icono {
+    background: transparent;
+    border: 0;
+}
+.o_ev_marca {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 9px 4px 8px;
+    border: 2px solid #FFFFFF;
+    border-radius: 999px;
+    background: var(--c);
+    color: #FFFFFF;
+    font-size: 12px;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(15, 35, 60, 0.35);
+    transition: transform 0.15s;
+
+    &:hover {
+        transform: scale(1.1);
+    }
+}
+.o_ev_marca_viva::after {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    z-index: -1;
+    border-radius: 999px;
+    background: var(--c);
+    animation: o_ev_pulso 2s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .o_ev *,
+    .o_ev_marca,
+    .o_ev_marca::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}

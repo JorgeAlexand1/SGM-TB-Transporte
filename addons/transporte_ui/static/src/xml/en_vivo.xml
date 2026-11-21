@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="transporte_ui.EnVivo" owl="1">
+        <div class="o_ev">
+            <section class="o_ev_mapa_zona">
+                <div class="o_ev_mapa" t-ref="mapa"/>
+                <div class="o_ev_estado_vivo">
+                    <span class="o_ev_punto_vivo"/>
+                    <b>En vivo</b>
+                    <span class="o_ev_sep">·</span>
+                    <span><t t-esc="state.datos.total_buses"/> <t t-esc="state.datos.total_buses === 1 ? 'bus en ruta' : 'buses en ruta'"/></span>
+                    <span class="o_ev_sep d-none d-md-inline">·</span>
+                    <span class="o_ev_tenue d-none d-md-inline">actualizado <t t-esc="haceActualizado"/></span>
+                </div>
+                <div t-if="state.sinMapa" class="o_ev_sin_mapa">
+                    <i class="fa fa-wifi"/> No se pudo cargar el mapa (sin Internet). Las líneas y las llegadas siguen
+                    actualizándose en el panel.
+                </div>
+            </section>
+
+            <aside class="o_ev_panel">
+                <div class="o_ev_asa" aria-hidden="true"/>
+
+                <!-- ====================================================== lista de líneas -->
+                <div t-if="!linea" class="o_ev_vista o_ev_entrar_izq" t-key="'lista'">
+                    <div class="o_ev_cabecera">
+                        <h2>Líneas</h2>
+                        <label class="o_ev_buscar">
+                            <i class="fa fa-search" aria-hidden="true"/>
+                            <input type="search" placeholder="Buscar línea o parada" t-model="state.buscar"
+                                   aria-label="Buscar línea o parada"/>
+                        </label>
+                    </div>
+                    <div class="o_ev_lista">
+                        <button t-foreach="lineas" t-as="l" t-key="l.id" type="button" class="o_ev_linea"
+                                t-att-style="'--c:' + l.color + ';animation-delay:' + (l_index * 45) + 'ms'"
+                                t-on-click="() => this.seleccionarLinea(l)">
+                            <span class="o_ev_badge"><i class="fa fa-bus"/> <t t-esc="l.codigo"/></span>
+                            <span class="o_ev_linea_txt">
+                                <b t-esc="l.nombre"/>
+                                <small><t t-esc="l.origen"/> <i class="fa fa-long-arrow-right"/> <t t-esc="l.destino"/></small>
+                                <span class="o_ev_linea_buses">
+                                    <t t-if="l.buses.length">
+                                        <span t-foreach="l.buses" t-as="b" t-key="b.viaje_id"
+                                              t-attf-class="o_ev_pill {{ estadoBus(b.estado).clase }}">
+                                            <t t-esc="b.bus"/>
+                                        </span>
+                                    </t>
+                                    <span t-else="" class="o_ev_tenue">Sin buses en ruta</span>
+                                </span>
+                            </span>
+                            <t t-set="r" t-value="resumenLinea(l)"/>
+                            <span t-if="r" t-attf-class="o_ev_cuenta o_ev_cuenta_{{ r.tipo }}">
+                                <b t-esc="r.texto"/>
+                                <small t-esc="r.etiqueta"/>
+                            </span>
+                            <i class="fa fa-angle-right o_ev_flecha" aria-hidden="true"/>
+                        </button>
+                        <p t-if="!lineas.length" class="o_ev_vacio">
+                            <i class="fa fa-search"/> Ninguna línea ni parada coincide con «<t t-esc="state.buscar"/>».
+                        </p>
+                    </div>
+                    <p class="o_ev_leyenda">
+                        <span><i class="o_ev_conf o_ev_conf_alta"/> GPS en vivo</span>
+                        <span><i class="o_ev_conf o_ev_conf_media"/> Señal desactualizada</span>
+                        <span><i class="o_ev_conf o_ev_conf_baja"/> Según horario</span>
+                    </p>
+                </div>
+
+                <!-- ====================================================== vista de una línea -->
+                <div t-else="" class="o_ev_vista o_ev_entrar_der" t-key="'linea' + linea.id"
+                     t-att-style="'--c:' + linea.color">
+                    <div class="o_ev_linea_cab">
+                        <button type="button" class="o_ev_volver" t-on-click="volver" aria-label="Volver a las líneas">
+                            <i class="fa fa-arrow-left"/>
+                        </button>
+                        <div>
+                            <span class="o_ev_badge o_ev_badge_claro"><i class="fa fa-bus"/> <t t-esc="linea.codigo"/></span>
+                            <h2 t-esc="linea.nombre"/>
+                            <small>
+                                <t t-esc="linea.origen"/> <i class="fa fa-long-arrow-right"/> <t t-esc="linea.destino"/>
+                                · <t t-esc="linea.paradas.length"/> paradas · <t t-esc="linea.tiempo"/> min
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="o_ev_scroll">
+                        <div t-if="linea.buses.length > 1" class="o_ev_selector">
+                            <button t-foreach="linea.buses" t-as="b" t-key="b.viaje_id" type="button"
+                                    t-attf-class="o_ev_chip {{ bus.viaje_id === b.viaje_id ? 'o_ev_chip_activo' : '' }}"
+                                    t-on-click="() => this.seleccionarBus(b)">
+                                <i class="fa fa-bus"/> <t t-esc="b.bus"/>
+                            </button>
+                        </div>
+
+                        <div t-if="bus" class="o_ev_bus_card">
+                            <div class="o_ev_bus_fila">
+                                <span class="o_ev_bus_placa"><i class="fa fa-bus"/> <t t-esc="bus.bus"/></span>
+                                <span t-attf-class="o_ev_pill {{ estadoBus(bus.estado).clase }}" t-esc="estadoBus(bus.estado).texto"/>
+                                <span t-if="bus.simulado" class="o_ev_pill o_ev_sim">SIMULADO</span>
+                            </div>
+                            <div class="o_ev_proxima">
+                                <t t-if="bus.proxima">
+                                    <small>Próxima parada</small>
+                                    <b t-esc="bus.proxima.nombre"/>
+                                    <span class="o_ev_proxima_cuenta" t-att-class="claseEta(bus.proxima.eta)">
+                                        <t t-esc="cuenta(bus.proxima.eta)"/>
+                                    </span>
+                                </t>
+                                <t t-else=""><b>Llegando al destino</b></t>
+                            </div>
+                            <div class="o_ev_bus_meta">
+                                <span t-att-title="confianza(bus.confianza).titulo">
+                                    <i t-attf-class="o_ev_conf o_ev_conf_{{ bus.confianza }}"/>
+                                    <t t-esc="confianza(bus.confianza).texto"/>
+                                </span>
+                                <span t-if="bus.velocidad !== null"><i class="fa fa-tachometer"/> <t t-esc="Math.round(bus.velocidad)"/> km/h</span>
+                                <span t-if="bus.fecha_gps"><i class="fa fa-clock-o"/> <t t-esc="hace(bus.fecha_gps)"/></span>
+                                <span t-if="bus.retraso"><i class="fa fa-hourglass-half"/> <t t-esc="retrasoTexto(bus.retraso)"/></span>
+                                <a href="#" t-on-click.prevent="() => this.abrirViaje(bus.viaje_id)">Ver viaje <i class="fa fa-angle-right"/></a>
+                            </div>
+                        </div>
+
+                        <div t-else="" class="o_ev_sin_bus">
+                            <i class="fa fa-moon-o"/>
+                            <div>
+                                <b>Ningún bus en ruta en esta línea</b>
+                                <t t-if="linea.salidas.length">
+                                    <small>Próximas salidas:
+                                        <t t-foreach="linea.salidas" t-as="s" t-key="s.viaje_id">
+                                            <span class="o_ev_pill o_ev_neutro"><t t-esc="horaLocal(s.hora)"/> · <t t-esc="s.bus"/></span>
+                                        </t>
+                                    </small>
+                                </t>
+                                <small t-else="">No hay salidas programadas en las próximas horas.</small>
+                            </div>
+                        </div>
+
+                        <ol class="o_ev_recorrido" t-att-class="{ o_ev_recorrido_plan: !bus }">
+                            <t t-foreach="filasLinea" t-as="f" t-key="f.clave">
+                                <li t-if="f.tipo === 'bus'" class="o_ev_tramo_bus">
+                                    <span class="o_ev_bus_mov"><i class="fa fa-bus"/></span>
+                                    <span class="o_ev_tenue">El bus va aquí</span>
+                                </li>
+                                <li t-else="" class="o_ev_parada" t-att-class="claseParada(f)"
+                                    t-on-click="() => this.verParada(f)">
+                                    <span class="o_ev_nodo"/>
+                                    <span class="o_ev_parada_txt">
+                                        <b t-esc="f.nombre"/>
+                                        <small t-if="f.estado === 'plan'">minuto <t t-esc="f.min"/> desde el origen</small>
+                                        <small t-elif="f.estado === 'omitida'" class="o_ev_mal_txt">Omitida</small>
+                                        <small t-elif="f.estado === 'atendida'">
+                                            Llegó <t t-esc="horaLocal(f.real)"/>
+                                            <span t-attf-class="o_ev_retraso {{ claseRetraso(f.retraso) }}" t-esc="retrasoTexto(f.retraso)"/>
+                                        </small>
+                                        <small t-else="">Programada <t t-esc="horaLocal(f.programada)"/></small>
+                                    </span>
+                                    <span t-if="f.estado === 'pendiente' and f.eta" class="o_ev_eta" t-att-class="claseEta(f.eta)">
+                                        <t t-esc="cuenta(f.eta)"/>
+                                    </span>
+                                    <i t-elif="f.estado === 'atendida'" class="fa fa-check o_ev_ok_txt"/>
+                                </li>
+                            </t>
+                        </ol>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </t>
+</templates>

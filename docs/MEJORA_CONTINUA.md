@@ -145,3 +145,23 @@ nadie miraba la interfaz renderizada. Además, la regla central `reglas.evaluar_
 | Complejidad cognitiva de `evaluar_viaje` / `generar_recorrido` | 46 / 31 | **≤ 15** (ya no las señala SonarQube) |
 | Deuda técnica SonarQube | 399 min (1.ª pasada) | **312 min** |
 | Bugs / vulnerabilidades SonarQube | 3 / 3 | **0 / 0** |
+
+## 6. Tercer ciclo PDCA — usabilidad por *benchmarking* con Moovit (21/11/2026)
+
+Problema: la retroalimentación del equipo sobre la interfaz fue «todo está muy abultado, mucha información, mala
+repartición» y «se ve rígido y estático, como Odoo». Una persona que solo quiere saber **dónde va el bus y cuándo
+llega** tenía que abrir el dashboard (12 indicadores) o el mapa GPS (sin horarios).
+
+| Fase | Acción |
+| :--- | :--- |
+| **PLAN** | *Benchmarking* (herramienta de gestión de calidad) contra Moovit, app de transporte público de referencia. Prácticas que adoptamos: (1) cada ruta es una **línea con color e insignia**; (2) **vista de línea tipo metro** con el bus intercalado en el tramo en que va; (3) **cuenta regresiva** («4 min», «Llegando») en vez de horas; (4) **indicador de confianza** de la estimación en verde/ámbar/gris, como el semáforo de precisión de Moovit; (5) **mapa protagonista** con el panel a un lado (hoja inferior en el teléfono); (6) movimiento: buses que se deslizan, punto «en vivo» que late, transiciones cortas. Lo que NO copiamos: posiciones estimadas en el mapa sin GPS (serían datos presentados como reales). Meta: responder «¿dónde va y cuándo llega?» en ≤ 2 clics y desde una sola pantalla. |
+| **DO** | Pantalla **En vivo** (`transporte_ui`, modelo `transporte.en.vivo`): lista de líneas con búsqueda por línea o parada, vista de línea con las paradas pasadas/omitidas/próxima, llegada estimada = hora programada + retraso acumulado, confianza según la señal GPS, próximas salidas. Refresco cada 15 s y cuenta regresiva cada segundo, sincronizada con el reloj del servidor. Inicio y dashboard con animaciones de entrada y realce al pasar el ratón; se respeta «reducir movimiento» del sistema operativo. |
+| **CHECK** | Ver tabla. 6 pruebas unitarias nuevas (tramo, llegada estimada con retraso, parada omitida, confianza sin GPS, próximas salidas, permisos de consulta) y 1 de navegador (lista → línea → volver → búsqueda vacía). |
+| **ACT** | «En vivo» reemplaza al mapa GPS como acceso principal en Inicio (el mapa sigue en *Telemetría GPS*). Regla para pantallas nuevas: una pregunta por pantalla, la respuesta en la primera vista y el detalle bajo demanda. |
+
+| Indicador | Antes | Después |
+| :--- | :-: | :-: |
+| Clics desde Inicio hasta «¿cuándo llega el bus a mi parada?» | 3 + leer una tabla (Dashboard ▸ Flota ▸ fila) | **2** (En vivo ▸ línea) |
+| Pantallas con llegada estimada por parada | 0 | **1** |
+| Pantallas que indican qué tan confiable es el dato | 0 | **1** (verde/ámbar/gris) |
+| Datos actualizados sin recargar | Inicio cada 60 s | Inicio 60 s; **En vivo 15 s + cuenta regresiva por segundo** |
