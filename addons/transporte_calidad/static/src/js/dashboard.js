@@ -2,6 +2,7 @@
 import { registry } from "@web/core/registry";
 import { loadCSS, loadJS } from "@web/core/assets";
 import { useService } from "@web/core/utils/hooks";
+import { formatFloat } from "@web/views/fields/formatters";
 import { deserializeDateTime, formatDateTime } from "@web/core/l10n/dates";
 import { Component, onMounted, onWillStart, onWillUnmount, useRef, useState } from "@odoo/owl";
 
@@ -79,7 +80,7 @@ export class CalidadDashboard extends Component {
         if (valor === null || valor === undefined || valor === false) {
             return "—";
         }
-        return `${Number(valor).toFixed(decimales)}${sufijo}`;
+        return `${formatFloat(Number(valor), { digits: [16, decimales] })}${sufijo}`;
     }
 
     fecha(texto) {
