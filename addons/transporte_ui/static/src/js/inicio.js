@@ -63,6 +63,10 @@ export class InicioSgm extends Component {
         return texto.charAt(0).toUpperCase() + texto.slice(1);
     }
 
+    get accesosPrincipales() {
+        return this.state.datos.accesos.filter((a) => a.principal);
+    }
+
     get maxIncidencias() {
         return Math.max(1, ...this.state.datos.top_incidencias.map((f) => f.n));
     }

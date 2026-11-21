@@ -1,73 +1,360 @@
+// Dashboard de calidad. Colores alineados con la paleta SGM-TB (transporte_ui), escritos aquí en valor
+// para que el módulo se vea bien aunque transporte_ui no esté instalado.
+$cd-azul: #0F4C81;
+$cd-azul-oscuro: #0B2A4A;
+$cd-azul-claro: #1663A6;
+$cd-ambar: #F5A623;
+$cd-fondo: #F3F6FA;
+$cd-borde: #E3E9F1;
+$cd-texto: #2B3A4A;
+$cd-suave: #6B7A8C;
+$cd-verde: #1E9E6A;
+$cd-rojo: #D64545;
+$cd-amarillo: #D98A00;
+
 .o_calidad_dashboard {
     height: 100%;
-    background: $o-view-background-color;
+    background: $cd-fondo;
+    color: $cd-texto;
 
     .o_cd_scroll {
         height: 100%;
         overflow-y: auto;
-        padding: 12px 16px 32px;
+        padding: 16px 24px 40px;
+    }
+    .o_cd_cargando {
+        padding: 48px;
+        text-align: center;
+        color: $cd-suave;
+    }
+
+    // ------------------------------------------------------------ cabecera y filtros
+    .o_cd_cabecera {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: $cd-azul-oscuro;
+        }
+    }
+    .o_cd_resumen {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 14px;
+        margin-top: 2px;
+        font-size: 0.85rem;
+        color: $cd-suave;
+
+        b {
+            color: $cd-texto;
+        }
+    }
+    .o_cd_chip_sim {
+        padding: 0 8px;
+        border-radius: 999px;
+        background: rgba($cd-ambar, 0.2);
+        color: darken($cd-amarillo, 12%);
+        font-weight: 600;
     }
     .o_cd_filtros {
         display: flex;
         flex-wrap: wrap;
         align-items: flex-end;
         gap: 10px;
-        margin-bottom: 8px;
+        padding: 10px 14px;
+        background: #FFFFFF;
+        border: 1px solid $cd-borde;
+        border-radius: 12px;
+
         label {
-            font-size: 0.8rem;
-            color: $text-muted;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
             margin: 0;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: $cd-suave;
+            min-width: 140px;
         }
     }
-    .o_cd_resumen {
+
+    // ------------------------------------------------------------ pestañas
+    .o_cd_tabs {
         display: flex;
-        flex-wrap: wrap;
-        gap: 16px;
-        font-size: 0.85rem;
-        padding: 6px 0 4px;
-        border-bottom: 1px solid $border-color;
+        gap: 4px;
+        margin: 16px 0 14px;
+        border-bottom: 1px solid $cd-borde;
+        overflow-x: auto;
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
     }
-    .o_cd_titulo {
-        margin: 16px 0 8px;
-        font-size: 1.05rem;
+    .o_cd_tab {
+        flex: 0 0 auto;
+        padding: 8px 14px;
+        border: 0;
+        border-bottom: 3px solid transparent;
+        background: none;
+        color: $cd-suave;
+        font-weight: 600;
+        white-space: nowrap;
+
+        &:hover {
+            color: $cd-azul;
+        }
+        &.active {
+            color: $cd-azul;
+            border-bottom-color: $cd-ambar;
+        }
+        .fa {
+            margin-right: 4px;
+        }
     }
+
+    // ------------------------------------------------------------ indicadores
     .o_cd_kpis {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 10px;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
     }
     .o_cd_kpi {
-        border: 1px solid $border-color;
-        border-left-width: 6px;
-        border-radius: 6px;
-        padding: 8px 10px;
-        background: $o-view-background-color;
-        .o_cd_kpi_titulo { font-size: 0.8rem; color: $text-muted; }
-        .o_cd_kpi_valor { font-size: 1.6rem; font-weight: 600; line-height: 1.2; }
-        .o_cd_kpi_detalle { font-size: 0.75rem; }
-        .o_cd_kpi_formula { font-size: 0.7rem; color: $text-muted; font-style: italic; margin-top: 2px; }
+        padding: 14px 16px;
+        background: #FFFFFF;
+        border: 1px solid $cd-borde;
+        border-top: 4px solid #D5DDE8;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba($cd-azul-oscuro, 0.05);
+
+        .o_cd_kpi_titulo {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: $cd-suave;
+        }
+        .o_cd_kpi_valor {
+            margin: 4px 0 2px;
+            font-size: 1.9rem;
+            font-weight: 800;
+            line-height: 1.1;
+            color: $cd-azul-oscuro;
+        }
+        .o_cd_kpi_detalle {
+            font-size: 0.82rem;
+            color: $cd-suave;
+        }
+        .o_cd_kpi_formula {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed $cd-borde;
+            font-size: 0.75rem;
+            color: $cd-azul-claro;
+        }
     }
-    .o_sem_verde { border-left-color: #198754; }
-    .o_sem_amarillo { border-left-color: #ffc107; }
-    .o_sem_rojo { border-left-color: #dc3545; }
-    .o_sem_gris { border-left-color: #adb5bd; }
+    .o_sem_verde { border-top-color: $cd-verde; }
+    .o_sem_amarillo { border-top-color: $cd-ambar; }
+    .o_sem_rojo { border-top-color: $cd-rojo; }
+    .o_sem_gris { border-top-color: #D5DDE8; }
+
+    // ------------------------------------------------------------ paneles
     .o_cd_fila {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 10px;
-        > .o_cd_panel { flex: 1 1 320px; margin-top: 0; }
-        > .o_cd_ancho { flex: 2 1 560px; overflow-x: auto; }
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 14px;
+
+        > .o_cd_panel {
+            margin-top: 0;
+        }
+    }
+    .o_cd_fila_flota {
+        grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
     }
     .o_cd_panel {
-        border: 1px solid $border-color;
-        border-radius: 6px;
-        padding: 8px 10px;
-        margin-top: 10px;
+        margin-top: 14px;
+        padding: 14px 16px;
+        background: #FFFFFF;
+        border: 1px solid $cd-borde;
+        border-radius: 12px;
         overflow-x: auto;
-        h5 { font-size: 0.95rem; }
+
+        h5 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: $cd-azul-oscuro;
+            margin-bottom: 10px;
+        }
     }
-    .o_cd_mapa { min-height: 300px; }
-    .o_cd_chart { position: relative; height: 260px; }
-    .o_cd_click { cursor: pointer; }
+    .o_cd_link {
+        margin-left: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    .o_cd_mapa_marco {
+        position: relative;
+        padding: 0;
+        overflow: hidden;
+    }
+    .o_cd_mapa {
+        height: 100%;
+        min-height: 420px;
+    }
+    .o_cd_mapa_vacio {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        z-index: 500;
+        transform: translate(-50%, -50%);
+        max-width: 80%;
+        padding: 12px 16px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.92);
+        box-shadow: 0 4px 14px rgba($cd-azul-oscuro, 0.12);
+        color: $cd-suave;
+        text-align: center;
+        font-size: 0.88rem;
+        pointer-events: none;
+
+        .fa {
+            color: $cd-azul-claro;
+        }
+    }
+    .o_cd_chart {
+        position: relative;
+        height: 280px;
+    }
+    .o_cd_click {
+        cursor: pointer;
+    }
+    .o_cd_intro {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 14px;
+        color: $cd-suave;
+    }
+
+    // ------------------------------------------------------------ tablas
+    .o_cd_tabla {
+        font-size: 0.88rem;
+
+        th {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            color: $cd-suave;
+            border-bottom-width: 1px;
+            white-space: nowrap;
+        }
+        td {
+            vertical-align: middle;
+        }
+    }
+    .o_cd_sub {
+        font-size: 0.75rem;
+        color: $cd-suave;
+    }
+    .o_cd_col_paradas {
+        min-width: 110px;
+    }
+    .o_cd_progreso {
+        height: 6px;
+        border-radius: 999px;
+        background: #E8EEF5;
+        overflow: hidden;
+
+        > div {
+            height: 100%;
+            background: $cd-azul-claro;
+        }
+    }
+    .o_cd_badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+    .o_cd_bien { background: rgba($cd-verde, 0.14); color: darken($cd-verde, 8%); }
+    .o_cd_regular { background: rgba($cd-ambar, 0.2); color: darken($cd-amarillo, 12%); }
+    .o_cd_mal { background: rgba($cd-rojo, 0.14); color: darken($cd-rojo, 8%); }
+    .o_cd_neutro { background: #EEF2F7; color: $cd-suave; }
+    .o_cd_info { background: rgba($cd-azul-claro, 0.14); color: $cd-azul; }
+    .o_cd_sim { background: rgba($cd-ambar, 0.2); color: darken($cd-amarillo, 12%); }
+    .o_cd_txt_bien { color: $cd-verde; font-weight: 700; }
+    .o_cd_txt_regular { color: $cd-amarillo; font-weight: 700; }
+    .o_cd_txt_mal { color: $cd-rojo; font-weight: 700; }
+
+    // ------------------------------------------------------------ tolerancias
+    .o_cd_tol {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 10px;
+
+        > div {
+            display: flex;
+            flex-direction: column;
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: $cd-fondo;
+        }
+        b {
+            font-size: 1.15rem;
+            color: $cd-azul-oscuro;
+        }
+        span {
+            font-size: 0.78rem;
+            color: $cd-suave;
+        }
+    }
+
+    // ------------------------------------------------------------ pantallas medianas y móviles
+    @media (max-width: 1199.98px) {
+        .o_cd_kpis {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .o_cd_fila,
+        .o_cd_fila_flota {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+    @media (max-width: 575.98px) {
+        .o_cd_scroll {
+            padding: 12px 12px 32px;
+        }
+        .o_cd_kpis {
+            gap: 10px;
+        }
+        .o_cd_kpi {
+            padding: 10px 12px;
+
+            .o_cd_kpi_valor {
+                font-size: 1.4rem;
+            }
+        }
+        .o_cd_filtros {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+
+            label {
+                min-width: 0;
+            }
+            label:last-child {
+                grid-column: span 2;
+            }
+        }
+        .o_cd_mapa {
+            min-height: 320px;
+        }
+    }
 }
