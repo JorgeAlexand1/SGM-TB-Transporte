@@ -6,7 +6,7 @@
 | :--- | :--- | :--- | :--- |
 | Caja blanca (lógica pura) | **pytest** + pytest-cov | Reglas de retraso, desvío, señal, KPIs, geocerca, simulador, parser/cliente Traccar | `addons/*/tests/pytest/` |
 | Funcional / caja negra | Runner de Odoo (`TransactionCase`) | Entradas válidas, inválidas y valores límite sobre modelos reales | `addons/*/tests/test_*.py` |
-| Integración Traccar ↔ Odoo | Odoo + mocks de la API + Traccar real (contenedor) | Sincronización, duplicados, webhook, exactitud | `transporte_gps_traccar/tests`, `test_calidad.py` |
+| Integración Traccar ↔ Odoo | Odoo + mocks de la API; **en vivo** contra un Traccar 6.17 efímero (`scripts/prueba_integracion_traccar.sh`) | Sincronización, duplicados, webhook, geocercas, exactitud | `transporte_gps_traccar/tests`, `test_calidad.py`, `test_traccar_vivo.py` |
 | Rendimiento | Odoo (tag `rendimiento`) + `scripts/prueba_rendimiento.py` (JSON-RPC) | Tiempos con 10/30/60 recorridos y 1 400–8 700 posiciones | `test_rendimiento.py` |
 | Interfaz | `HttpCase` + Chromium headless (tag `ui`) | Inicio, dashboard, mapa de rutas, formulario e informe sin errores JS | `test_ui.py`, `transporte_ui/tests` |
 | Calidad de código | SonarQube | Defectos, duplicación, mantenibilidad, seguridad | `sonar-project.properties` |
@@ -50,6 +50,7 @@ Ejecutados el **20/11/2026**. *Evidencia* = prueba automatizada que lo comprueba
 | CP-21 | Seguridad – mapa de rutas | RNF-01 | Usuario *Consulta* abre el mapa de rutas e intenta cambiar el trazado | Ve rutas e indicadores; AccessError al escribir | Igual | `TestSeguridad` | ✅ |
 | CP-22 | Caja negra – Inicio | RF-17, RF-18 | 10 recorridos simulados + 1 bus en ruta | Inicio = mismos valores que el dashboard en 7 días; el bus aparece en «En ruta ahora»; aviso de SIMULADOS | Igual | `test_inicio_coincide_con_registros` | ✅ |
 | CP-23 | Seguridad – Inicio | RNF-01 | Usuario *Consulta* vs. *Responsable* | El acceso «Recorridos simulados» solo aparece al responsable | Igual | `test_accesos_segun_rol` | ✅ |
+| CP-24 | Integración en vivo | RF-07, RF-09, RF-10, RNF-06 | 3 reportes OsmAnd (protocolo de Traccar Client) a un Traccar real, uno sobre cada parada de un viaje en curso | Traccar los guarda; Odoo los sincroniza con hora GPS, sin duplicar al re-sincronizar; las 3 paradas quedan *Atendida (GPS)*; exactitud Traccar ↔ Odoo 100 % | Igual | `test_traccar_vivo.py` (log `backups/odoo_traccar_vivo.log`) | ✅ |
 
 ## 3. Resultados de ejecución
 
@@ -60,6 +61,7 @@ Ejecutados el **20/11/2026**. *Evidencia* = prueba automatizada que lo comprueba
 | Odoo `transporte_core` + `transporte_gps_traccar` + `transporte_calidad` + `transporte_ui` | 95 | **0 fallos, 0 errores** |
 | Odoo rendimiento (`rendimiento`) | 1 (12 mediciones) | 0 fallos |
 | Odoo interfaz (`ui`, Chromium headless) | 5 | 0 fallos, 0 saltadas (Inicio, dashboard, mapa de rutas, formulario, informe) |
+| Integración en vivo (`traccar_vivo`, Traccar 6.17 efímero) | 2 | 0 fallos, 0 saltadas |
 
 ## 4. Rendimiento
 

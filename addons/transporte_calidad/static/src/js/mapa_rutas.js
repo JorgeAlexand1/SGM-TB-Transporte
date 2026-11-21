@@ -3,6 +3,7 @@ import { registry } from "@web/core/registry";
 import { loadCSS, loadJS } from "@web/core/assets";
 import { useService } from "@web/core/utils/hooks";
 import { escape } from "@web/core/utils/strings";
+import { formatFloat } from "@web/views/fields/formatters";
 import { Component, onMounted, onWillStart, onWillUnmount, useRef, useState } from "@odoo/owl";
 
 // Leaflet 1.9.4 incluido en el módulo (BSD-2): los mapas funcionan sin acceso al CDN.
@@ -71,7 +72,7 @@ export class MapaRutas extends Component {
                     `<b>${escape(r.codigo)} · ${escape(r.nombre)}</b><br/>` +
                         `${r.trazado_real ? "Trazado de referencia" : "Línea entre paradas (sin trazado)"}<br/>` +
                         `Corredor permitido: ${r.corredor} m<br/>` +
-                        `${r.distancia.toFixed(2)} km · ${r.tiempo} min`
+                        `${this.num(r.distancia, 2)} km · ${r.tiempo} min`
                 )
                 .addTo(capa);
         }
@@ -123,6 +124,11 @@ export class MapaRutas extends Component {
             res_id: r.id,
             views: [[false, "form"]],
         });
+    }
+
+    /** Número con el separador decimal del idioma del usuario. */
+    num(valor, decimales = 1) {
+        return formatFloat(Number(valor), { digits: [16, decimales] });
     }
 
     claseIndicador(valor, evaluados) {

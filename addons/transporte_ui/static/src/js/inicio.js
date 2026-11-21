@@ -1,6 +1,7 @@
 /** @odoo-module **/
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
+import { formatFloat } from "@web/views/fields/formatters";
 import { Component, onMounted, onWillStart, onWillUnmount, useState } from "@odoo/owl";
 
 const REFRESCO_MS = 60000;
@@ -31,12 +32,17 @@ export class InicioSgm extends Component {
     }
 
     // ------------------------------------------------------------------ formato
+    /** Número con el separador decimal del idioma del usuario (es_EC: coma). */
+    num(valor, decimales = 1) {
+        return formatFloat(Number(valor), { digits: [16, decimales] });
+    }
+
     pct(valor) {
-        return valor === null || valor === undefined ? "—" : `${Number(valor).toFixed(1)} %`;
+        return valor === null || valor === undefined ? "—" : `${this.num(valor)} %`;
     }
 
     min(valor) {
-        return valor === null || valor === undefined ? "—" : `${Number(valor).toFixed(1)} min`;
+        return valor === null || valor === undefined ? "—" : `${this.num(valor)} min`;
     }
 
     tono(valor, bueno = 90, regular = 70) {

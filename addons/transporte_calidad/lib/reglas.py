@@ -252,26 +252,12 @@ def _evaluar_gps(datos, fin_ventana, tol):
     return desv, huecos, incidencias
 
 
-def evaluar_viaje(datos, tol=None):
-    """Evalúa un recorrido y devuelve indicadores e incidencias detectadas.
-
-    :param datos: dict con
-        estado ('completed'|'cancelled'|'in_progress'), salida_plan, llegada_plan, salida_real, llegada_real,
-        paradas=[{id, secuencia, estado, hora_plan, hora_real}], tiene_gps (bool),
-        posiciones=[(fecha, lat, lon)] válidas y ordenadas, trazado=[(lat, lon)], ancho_corredor_m,
-        distancia_estimada_km, distancia_recorrida_km, ahora (para viajes en curso)
-    :param tol: tolerancias (ver TOLERANCIAS_DEFECTO)
-    """
-    tol = dict(TOLERANCIAS_DEFECTO, **(tol or {}))
-    finalizado = datos['estado'] in ESTADOS_FINALIZADOS
-    filas, incidencias = _evaluar_paradas(datos.get('paradas') or [], finalizado, tol)
-
+def _resumen_paradas(filas, datos, finalizado):
+    """Conteos y retrasos por parada (sin reglas)."""
     programadas = len(filas)
     atendidas = [f for f in filas if f['clase'] in ('puntual', 'atrasada', 'adelantada')]
     destino = filas[-1] if filas else None
     destino_atendido = bool(destino and destino['estado'] == 'atendida')
-    llegada_efectiva = destino['hora_real'] if destino_atendido else datos.get('llegada_real')
-
     r = {
         'paradas_programadas': programadas,
         'paradas_atendidas': len(atendidas),
@@ -293,71 +279,116 @@ def evaluar_viaje(datos, tol=None):
         'filas': filas,
     }
     r['porcentaje_puntualidad'] = porcentaje(r['paradas_puntuales'], len(atendidas))
+    llegada_efectiva = destino['hora_real'] if destino_atendido else datos.get('llegada_real')
+    return r, destino_atendido, llegada_efectiva
 
-    # --- inicio
-    if r['retraso_inicio_min'] is not None and r['retraso_inicio_min'] > tol['retraso_min']:
-        incidencias.append(_incidencia(
-            'retraso_inicio', severidad_retraso(r['retraso_inicio_min'], tol['retraso_min']),
-            r['retraso_inicio_min'], 'min',
-            'Salida con %.1f min de retraso sobre la hora programada.' % r['retraso_inicio_min'],
-            'retraso de salida > %.0f min' % tol['retraso_min']))
 
-    # --- llegada, duración e integridad del recorrido (solo viajes finalizados)
-    if finalizado:
-        if destino_atendido:
-            r['retraso_llegada_min'] = minutos_entre(datos.get('llegada_plan'), llegada_efectiva)
-            if r['retraso_llegada_min'] is not None and r['retraso_llegada_min'] > tol['retraso_min']:
-                incidencias.append(_incidencia(
-                    'retraso_llegada', severidad_retraso(r['retraso_llegada_min'], tol['retraso_min']),
-                    r['retraso_llegada_min'], 'min',
-                    'Llegada a destino con %.1f min de retraso.' % r['retraso_llegada_min'],
-                    'retraso de llegada > %.0f min' % tol['retraso_min']))
-        r['duracion_real_min'] = minutos_entre(datos.get('salida_real'), llegada_efectiva)
-        if r['duracion_real_min'] is not None and r['duracion_estimada_min']:
-            r['diferencia_duracion_min'] = round(r['duracion_real_min'] - r['duracion_estimada_min'], 2)
-            r['diferencia_duracion_pct'] = porcentaje(r['diferencia_duracion_min'], r['duracion_estimada_min'])
-            if (r['completo'] and abs(r['diferencia_duracion_pct']) > tol['duracion_pct']
-                    and abs(r['diferencia_duracion_min']) > tol['retraso_min']):
-                incidencias.append(_incidencia(
-                    'diferencia_tiempo', 'media', r['diferencia_duracion_min'], 'min',
-                    'Duración real %.1f min vs estimada %.1f min (%+.1f %%).'
-                    % (r['duracion_real_min'], r['duracion_estimada_min'], r['diferencia_duracion_pct']),
-                    '|diferencia| > %.0f %% y > %.0f min' % (tol['duracion_pct'], tol['retraso_min'])))
-        if datos.get('salida_real') and not r['completo']:
-            motivo = 'cancelado en ruta' if datos['estado'] == 'cancelled' else 'no llegó a la parada de destino'
-            incidencias.append(_incidencia(
-                'recorrido_incompleto', 'alta', r['porcentaje_paradas'] or 0.0, '%',
-                'Recorrido incompleto (%s): %d de %d paradas visitadas.'
-                % (motivo, r['paradas_atendidas'], programadas),
-                'destino no alcanzado o viaje cancelado después de iniciar'))
+def _regla_retraso_inicio(r, tol):
+    retraso = r['retraso_inicio_min']
+    if retraso is None or retraso <= tol['retraso_min']:
+        return []
+    return [_incidencia(
+        'retraso_inicio', severidad_retraso(retraso, tol['retraso_min']), retraso, 'min',
+        'Salida con %.1f min de retraso sobre la hora programada.' % retraso,
+        'retraso de salida > %.0f min' % tol['retraso_min'])]
 
-    # --- distancia
+
+def _regla_retraso_llegada(r, datos, llegada_efectiva, tol):
+    r['retraso_llegada_min'] = minutos_entre(datos.get('llegada_plan'), llegada_efectiva)
+    retraso = r['retraso_llegada_min']
+    if retraso is None or retraso <= tol['retraso_min']:
+        return []
+    return [_incidencia(
+        'retraso_llegada', severidad_retraso(retraso, tol['retraso_min']), retraso, 'min',
+        'Llegada a destino con %.1f min de retraso.' % retraso,
+        'retraso de llegada > %.0f min' % tol['retraso_min'])]
+
+
+def _regla_diferencia_tiempo(r, datos, llegada_efectiva, tol):
+    r['duracion_real_min'] = minutos_entre(datos.get('salida_real'), llegada_efectiva)
+    if r['duracion_real_min'] is None or not r['duracion_estimada_min']:
+        return []
+    r['diferencia_duracion_min'] = round(r['duracion_real_min'] - r['duracion_estimada_min'], 2)
+    r['diferencia_duracion_pct'] = porcentaje(r['diferencia_duracion_min'], r['duracion_estimada_min'])
+    excede = (abs(r['diferencia_duracion_pct']) > tol['duracion_pct']
+              and abs(r['diferencia_duracion_min']) > tol['retraso_min'])
+    if not (r['completo'] and excede):
+        return []
+    return [_incidencia(
+        'diferencia_tiempo', 'media', r['diferencia_duracion_min'], 'min',
+        'Duración real %.1f min vs estimada %.1f min (%+.1f %%).'
+        % (r['duracion_real_min'], r['duracion_estimada_min'], r['diferencia_duracion_pct']),
+        '|diferencia| > %.0f %% y > %.0f min' % (tol['duracion_pct'], tol['retraso_min']))]
+
+
+def _regla_recorrido_incompleto(r, datos):
+    if not datos.get('salida_real') or r['completo']:
+        return []
+    motivo = 'cancelado en ruta' if datos['estado'] == 'cancelled' else 'no llegó a la parada de destino'
+    return [_incidencia(
+        'recorrido_incompleto', 'alta', r['porcentaje_paradas'] or 0.0, '%',
+        'Recorrido incompleto (%s): %d de %d paradas visitadas.'
+        % (motivo, r['paradas_atendidas'], r['paradas_programadas']),
+        'destino no alcanzado o viaje cancelado después de iniciar')]
+
+
+def _diferencia_distancia(r, datos):
     est, rec = datos.get('distancia_estimada_km') or 0.0, datos.get('distancia_recorrida_km')
     r['distancia_estimada_km'] = est
     r['diferencia_distancia_km'] = round(rec - est, 3) if (est and rec) else None
-    r['diferencia_distancia_pct'] = porcentaje(r['diferencia_distancia_km'], est) if r['diferencia_distancia_km'] is not None else None
+    r['diferencia_distancia_pct'] = (porcentaje(r['diferencia_distancia_km'], est)
+                                     if r['diferencia_distancia_km'] is not None else None)
 
-    # --- reglas GPS
-    desv, huecos = {'max_m': 0.0, 'pct_fuera': None, 'desviado': False}, []
+
+def _reglas_gps(r, datos, fin_ventana, tol):
+    desv, huecos, incidencias = {'max_m': 0.0, 'pct_fuera': None, 'desviado': False}, [], []
     if datos.get('tiene_gps') and datos.get('salida_real'):
-        fin_ventana = llegada_efectiva if finalizado else datos.get('ahora')
-        desv, huecos, inc_gps = _evaluar_gps(datos, fin_ventana, tol)
-        incidencias.extend(inc_gps)
+        desv, huecos, incidencias = _evaluar_gps(datos, fin_ventana, tol)
     r['max_desviacion_m'] = desv['max_m']
     r['porcentaje_fuera_corredor'] = desv['pct_fuera']
     r['desviado'] = desv['desviado']
     r['huecos_senal'] = len(huecos)
     r['max_hueco_senal_min'] = max([h[2] for h in huecos], default=0.0)
+    return incidencias
 
-    # --- veredicto
+
+def _veredicto(r, finalizado, tol):
+    llegada_ok = r['retraso_llegada_min'] is None or r['retraso_llegada_min'] <= tol['retraso_min']
     r['puntual'] = bool(finalizado and r['completo'] and r['paradas_atrasadas'] == 0
-                        and r['paradas_adelantadas'] == 0
-                        and (r['retraso_llegada_min'] is None or r['retraso_llegada_min'] <= tol['retraso_min']))
+                        and r['paradas_adelantadas'] == 0 and llegada_ok)
     r['cumple_ruta'] = bool(r['completo'] and r['paradas_omitidas'] == 0 and not r['desviado'])
     if not finalizado:
         r['resultado'] = 'en_curso'
     else:
         r['resultado'] = 'cumple' if (r['cumple_ruta'] and r['puntual']) else 'incumple'
+
+
+def evaluar_viaje(datos, tol=None):
+    """Evalúa un recorrido y devuelve indicadores e incidencias detectadas.
+
+    Orquesta las reglas; cada una vive en su propia función y devuelve sus incidencias.
+
+    :param datos: dict con
+        estado ('completed'|'cancelled'|'in_progress'), salida_plan, llegada_plan, salida_real, llegada_real,
+        paradas=[{id, secuencia, estado, hora_plan, hora_real}], tiene_gps (bool),
+        posiciones=[(fecha, lat, lon)] válidas y ordenadas, trazado=[(lat, lon)], ancho_corredor_m,
+        distancia_estimada_km, distancia_recorrida_km, ahora (para viajes en curso)
+    :param tol: tolerancias (ver TOLERANCIAS_DEFECTO)
+    """
+    tol = dict(TOLERANCIAS_DEFECTO, **(tol or {}))
+    finalizado = datos['estado'] in ESTADOS_FINALIZADOS
+    filas, incidencias = _evaluar_paradas(datos.get('paradas') or [], finalizado, tol)
+    r, destino_atendido, llegada_efectiva = _resumen_paradas(filas, datos, finalizado)
+
+    incidencias += _regla_retraso_inicio(r, tol)
+    if finalizado:  # llegada, duración e integridad solo con el viaje terminado
+        if destino_atendido:
+            incidencias += _regla_retraso_llegada(r, datos, llegada_efectiva, tol)
+        incidencias += _regla_diferencia_tiempo(r, datos, llegada_efectiva, tol)
+        incidencias += _regla_recorrido_incompleto(r, datos)
+    _diferencia_distancia(r, datos)
+    incidencias += _reglas_gps(r, datos, llegada_efectiva if finalizado else datos.get('ahora'), tol)
+    _veredicto(r, finalizado, tol)
     r['incidencias'] = incidencias
     return r
 
