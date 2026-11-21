@@ -24,8 +24,10 @@
 5. En el viaje: paradas pasando a *Atendida (GPS)* con su hora real y retraso; pestaña *Evaluación de calidad*
    con el retraso acumulado en vivo.
 6. *Finalizar viaje* → resultado **Cumple / Incumple** e incidencias generadas automáticamente; botón *Informe PDF*.
-7. **Dashboard** (Calidad del Servicio ▸ Dashboard): KPIs con fórmula visible y semáforo, Pareto, comparación
-   por ruta y por día, historial. Registrar un viaje nuevo y mostrar que los indicadores cambian.
+7. **Dashboard** (Calidad del Servicio ▸ Dashboard), organizado en pestañas:
+   *Resumen* (8 KPIs con semáforo, Pareto y comparación por ruta; botón **Fórmulas** para mostrar cómo se calcula
+   cada uno), *Flota en vivo* (tabla de buses + mapa), *Rutas y períodos*, *Historial* y *Calidad del software*.
+   Registrar un viaje nuevo y mostrar que los indicadores cambian.
 
 ## 2. Caso de cumplimiento y caso de incumplimiento
 | Caso | Dónde mostrarlo | Regla que explica el resultado |
@@ -40,12 +42,12 @@
 ## 3. Respuestas a las preguntas del enunciado
 | Pregunta | Dónde se responde |
 | :--- | :--- |
-| ¿Dónde se encuentra actualmente el vehículo? | Inicio ▸ «En ruta ahora»; Dashboard ▸ tabla de buses + mapa; Mapa de Buses (posición, hora, velocidad, señal) |
-| ¿Qué ruta está realizando? | Inicio ▸ «En ruta ahora»; Dashboard ▸ columna «Ruta en curso» |
-| ¿Qué paradas ha visitado? | Inicio ▸ barra de avance (n/m); Dashboard ▸ «Paradas visitadas» (n/m y nombres); viaje ▸ Control de paradas |
-| ¿Está cumpliendo los horarios? | Dashboard ▸ «¿Horario?»; viaje ▸ puntualidad por parada |
-| ¿Cuánto retraso ha acumulado? | Dashboard ▸ «Retraso acumulado» (última parada visitada) |
-| ¿Se ha desviado de su ruta? | Dashboard ▸ «¿Desvío?»; viaje ▸ alejamiento máximo y % fuera del corredor |
+| ¿Dónde se encuentra actualmente el vehículo? | Inicio ▸ «En ruta ahora»; Dashboard ▸ pestaña *Flota en vivo* (tabla + mapa); Mapa de Buses (posición, hora, velocidad, señal) |
+| ¿Qué ruta está realizando? | Inicio ▸ «En ruta ahora»; Dashboard ▸ *Flota en vivo*, columna «Recorrido en curso» |
+| ¿Qué paradas ha visitado? | Inicio ▸ barra de avance (n/m); Dashboard ▸ *Flota en vivo*, columna «Paradas» (barra n de m; nombres al pasar el ratón); viaje ▸ Control de paradas |
+| ¿Está cumpliendo los horarios? | Dashboard ▸ *Flota en vivo*, columna «Estado» (A tiempo / Con retraso / Desviado); viaje ▸ puntualidad por parada |
+| ¿Cuánto retraso ha acumulado? | Dashboard ▸ *Flota en vivo*, columna «Retraso» (última parada visitada) |
+| ¿Se ha desviado de su ruta? | Dashboard ▸ *Flota en vivo*, estado «Desviado»; viaje ▸ alejamiento máximo y % fuera del corredor |
 | ¿Cuántos recorridos ha realizado? | Dashboard ▸ columna «Recorridos» por bus y KPI de recorridos evaluados |
 | ¿Qué porcentaje se ha cumplido correctamente? | Inicio y Dashboard ▸ KPI «Cumplimiento de rutas»; por ruta en el Mapa de rutas y en la lista de rutas |
 | ¿Cuáles son las incidencias más frecuentes? | Gráfico de Pareto de incidencias |
@@ -53,6 +55,6 @@
 | ¿Qué mejoras se realizaron? | `docs/MEJORA_CONTINUA.md`: geocerca por tramo (detección correcta 90 % → 100 %), estándar de 30 s, pruebas de interfaz que ya no se saltan, mapas sin CDN y refactor de las reglas (complejidad 46 → ≤ 15) |
 
 ## 4. Pruebas y calidad (para la exposición)
-`bash scripts/ejecutar_pruebas.sh` → 128 pytest + 95 pruebas Odoo + rendimiento + 5 de interfaz (navegador real)
+`bash scripts/ejecutar_pruebas.sh` → 128 pytest + 96 pruebas Odoo + rendimiento + 6 de interfaz (navegador real)
 + 2 de integración en vivo con Traccar; matriz en `docs/PLAN_PRUEBAS.md`; ISO 25010 y SonarQube (Quality Gate
 aprobado, 0 bugs, 0 vulnerabilidades) en `docs/CALIDAD_SOFTWARE.md`.

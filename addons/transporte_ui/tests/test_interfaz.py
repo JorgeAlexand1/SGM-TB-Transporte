@@ -43,6 +43,13 @@ class TestInicio(CalidadCommon):
         for acceso in self.env['transporte.inicio'].get_inicio_data()['accesos']:
             self.assertTrue(self.env.ref(acceso['accion']))
 
+    def test_accesos_principales(self):
+        """Inicio muestra 6 tarjetas; el resto de accesos queda en el menú (no se pierde ninguno)."""
+        accesos = self.env['transporte.inicio'].get_inicio_data()['accesos']
+        principales = [a['clave'] for a in accesos if a['principal']]
+        self.assertEqual(principales, ['dashboard', 'mapa_buses', 'mapa_rutas', 'viajes', 'incidencias', 'rutas'])
+        self.assertGreater(len(accesos), len(principales))
+
     def test_menu_raiz_abre_inicio(self):
         raiz = self.env.ref('transporte_core.menu_transporte_root')
         self.assertEqual(raiz.action, self.env.ref('transporte_ui.action_inicio'))
@@ -67,8 +74,9 @@ class TestUiInicio(CalidadCommon, HttpCase):
 
     def test_inicio_renderiza(self):
         self._wizard().action_generar()
-        listo = ("document.querySelectorAll('.o_sgm_inicio .o_sgm_kpi').length === 8"
-                 " && document.querySelectorAll('.o_sgm_inicio .o_sgm_acceso').length > 5"
+        listo = ("document.querySelectorAll('.o_sgm_inicio .o_sgm_kpi').length === 4"
+                 " && document.querySelectorAll('.o_sgm_inicio .o_sgm_mini').length === 4"
+                 " && document.querySelectorAll('.o_sgm_inicio .o_sgm_acceso').length === 6"
                  " && document.title.includes('SGM-TB')")
         self.browser_js('/web#action=transporte_ui.action_inicio', "console.log('test successful')",
                         ready=listo, login='admin', timeout=90)

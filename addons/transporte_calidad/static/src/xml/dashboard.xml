@@ -3,9 +3,33 @@
     <t t-name="transporte_calidad.Dashboard" owl="1">
         <div class="o_action o_calidad_dashboard">
             <div class="o_cd_scroll">
+                <!-- Encabezado: título, resumen y acciones -->
+                <header class="o_cd_cabecera">
+                    <div class="me-auto">
+                        <h2 class="mb-0">Calidad del servicio</h2>
+                        <div t-if="state.datos" class="o_cd_resumen">
+                            <t t-set="r" t-value="state.datos.resumen"/>
+                            <span><b t-esc="r.evaluados"/> recorridos evaluados</span>
+                            <span><b t-esc="r.cumplen"/> cumplen</span>
+                            <span><b t-esc="r.en_curso"/> en curso</span>
+                            <span><b t-esc="r.reales"/> reales</span>
+                            <span t-if="r.simulados" class="o_cd_chip_sim" title="Recorridos generados para probar las reglas">
+                                <i class="fa fa-flask"/> <t t-esc="r.simulados"/> simulados
+                            </span>
+                        </div>
+                    </div>
+                    <button t-attf-class="btn btn-sm #{state.formulas ? 'btn-primary' : 'btn-outline-secondary'}"
+                            t-on-click="() => this.state.formulas = !this.state.formulas"
+                            title="Muestra cómo se calcula cada indicador">
+                        <i class="fa fa-calculator"/> Fórmulas
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" t-on-click="() => this.refrescar()" title="Actualizar">
+                        <i t-attf-class="fa fa-refresh #{state.cargando ? 'fa-spin' : ''}"/>
+                    </button>
+                </header>
+
                 <!-- Filtros -->
                 <div class="o_cd_filtros">
-                    <h2 class="me-auto mb-0">Calidad del servicio de transporte</h2>
                     <label>Desde <input type="date" class="form-control form-control-sm" t-att-value="state.filtros.fecha_desde"
                                         t-on-change="(ev) => this.aplicarFiltro('fecha_desde', ev)"/></label>
                     <label>Hasta <input type="date" class="form-control form-control-sm" t-att-value="state.filtros.fecha_hasta"
@@ -33,143 +57,182 @@
                             <option value="simulados" t-att-selected="state.filtros.datos === 'simulados'">Solo simulados</option>
                         </select>
                     </label>
-                    <span t-if="state.cargando" class="fa fa-spinner fa-spin"/>
                 </div>
+
+                <!-- Pestañas -->
+                <nav class="o_cd_tabs" role="tablist">
+                    <button t-foreach="pestanas" t-as="p" t-key="p.id" type="button" role="tab"
+                            t-attf-class="o_cd_tab #{state.pestana === p.id ? 'active' : ''}" t-att-data-tab="p.id"
+                            t-on-click="() => this.cambiarPestana(p.id)">
+                        <i t-attf-class="fa #{p.icono}"/> <t t-esc="p.nombre"/>
+                    </button>
+                </nav>
 
                 <t t-if="state.datos">
                     <t t-set="d" t-value="state.datos"/>
-                    <div class="o_cd_resumen">
-                        <span><b t-esc="d.resumen.evaluados"/> recorridos evaluados</span>
-                        <span><b t-esc="d.resumen.reales"/> reales</span>
-                        <span t-att-class="d.resumen.simulados ? 'text-warning fw-bold' : ''"><b t-esc="d.resumen.simulados"/> simulados</span>
-                        <span><b t-esc="d.resumen.en_curso"/> en curso</span>
-                        <span><b t-esc="d.resumen.cumplen"/> cumplen</span>
-                        <span class="text-muted">Tolerancias: retraso <t t-esc="d.tolerancias.retraso_min"/> min · adelanto <t t-esc="d.tolerancias.adelanto_min"/> min · corredor <t t-esc="d.tolerancias.ancho_corredor_m"/> m · señal <t t-esc="d.tolerancias.gap_senal_min"/> min</span>
-                        <span class="text-muted ms-auto">Calculado en <t t-esc="d.calculo_ms"/> ms</span>
-                    </div>
 
-                    <!-- KPIs de transporte -->
-                    <h4 class="o_cd_titulo">Indicadores del servicio de transporte</h4>
-                    <div class="o_cd_kpis">
-                        <t t-foreach="kpisTransporte" t-as="k" t-key="k.titulo">
-                            <div t-att-class="'o_cd_kpi ' + k.clase" t-att-title="'Fórmula: ' + k.formula">
-                                <div class="o_cd_kpi_titulo" t-esc="k.titulo"/>
-                                <div class="o_cd_kpi_valor" t-esc="k.valor"/>
-                                <div class="o_cd_kpi_detalle" t-esc="k.detalle"/>
-                                <div class="o_cd_kpi_formula" t-esc="k.formula"/>
-                            </div>
-                        </t>
-                    </div>
+                    <!-- ================= Resumen ================= -->
+                    <t t-if="state.pestana === 'resumen'">
+                        <div class="o_cd_kpis">
+                            <t t-foreach="kpisTransporte" t-as="k" t-key="k.titulo">
+                                <t t-call="transporte_calidad.DashboardKpi"/>
+                            </t>
+                        </div>
+                        <div class="o_cd_fila">
+                            <section class="o_cd_panel">
+                                <h5>Incidencias más frecuentes (Pareto)
+                                    <a href="#" class="o_cd_link" t-on-click.prevent="abrirIncidencias">ver todas</a></h5>
+                                <div class="o_cd_chart"><canvas t-ref="chartPareto"/></div>
+                            </section>
+                            <section class="o_cd_panel">
+                                <h5>Comparación entre rutas</h5>
+                                <div class="o_cd_chart"><canvas t-ref="chartRutas"/></div>
+                            </section>
+                        </div>
+                    </t>
 
-                    <!-- KPIs de software -->
-                    <h4 class="o_cd_titulo">Calidad del software (¿qué tan confiable es el sistema?)
-                        <button class="btn btn-sm btn-outline-primary ms-2" t-on-click="verificarExactitud">
-                            <i class="fa fa-check-square-o"/> Verificar exactitud contra Traccar
-                        </button>
-                    </h4>
-                    <div class="o_cd_kpis">
-                        <t t-foreach="kpisSoftware" t-as="k" t-key="k.titulo">
-                            <div t-att-class="'o_cd_kpi ' + k.clase" t-att-title="'Fórmula: ' + k.formula">
-                                <div class="o_cd_kpi_titulo" t-esc="k.titulo"/>
-                                <div class="o_cd_kpi_valor" t-esc="k.valor"/>
-                                <div class="o_cd_kpi_detalle" t-esc="k.detalle"/>
-                                <div class="o_cd_kpi_formula" t-esc="k.formula"/>
-                            </div>
-                        </t>
-                    </div>
-                    <div t-if="d.software.deteccion_correcta.fallos.length" class="alert alert-danger py-1">
-                        Detección distinta a la esperada:
-                        <t t-foreach="d.software.deteccion_correcta.fallos" t-as="f" t-key="f.id">
-                            <a href="#" class="ms-2" t-on-click.prevent="() => this.abrirViaje(f.id)"><t t-esc="f.name"/></a>
-                            (<t t-esc="f.detalle"/>)
-                        </t>
-                    </div>
+                    <!-- ================= Flota en vivo ================= -->
+                    <t t-if="state.pestana === 'flota'">
+                        <div class="o_cd_fila o_cd_fila_flota">
+                            <section class="o_cd_panel o_cd_ancho">
+                                <h5>¿Dónde están los buses y qué están haciendo?</h5>
+                                <table class="table table-sm table-hover mb-0 o_cd_tabla">
+                                    <thead><tr><th>Bus</th><th>Señal GPS</th><th>Recorrido en curso</th><th>Paradas</th>
+                                        <th class="text-end">Retraso</th><th>Estado</th><th class="text-end" title="Recorridos en el período">Recorridos</th></tr></thead>
+                                    <tbody>
+                                        <tr t-foreach="d.vehiculos" t-as="v" t-key="v.id">
+                                            <td><b t-esc="v.placa"/>
+                                                <div t-if="v.fecha" class="o_cd_sub" t-att-title="fmt(v.lat, '', 5) + ', ' + fmt(v.lon, '', 5)">
+                                                    <i class="fa fa-map-marker"/> <t t-esc="fecha(v.fecha)"/></div></td>
+                                            <td><span t-attf-class="o_cd_badge #{senal(v.senal).clase}" t-esc="senal(v.senal).texto"/></td>
+                                            <t t-if="v.viaje">
+                                                <td><a href="#" t-on-click.prevent="() => this.abrirViaje(v.viaje.id)" t-esc="v.viaje.ruta"/></td>
+                                                <td class="o_cd_col_paradas">
+                                                    <div class="o_cd_progreso" t-att-title="v.viaje.paradas.join(' → ')">
+                                                        <div t-attf-style="width: #{v.viaje.total ? 100 * v.viaje.visitadas / v.viaje.total : 0}%"/>
+                                                    </div>
+                                                    <span class="o_cd_sub"><t t-esc="v.viaje.visitadas"/> de <t t-esc="v.viaje.total"/></span>
+                                                </td>
+                                                <td class="text-end" t-esc="fmt(v.viaje.retraso, ' min')"/>
+                                                <td><span t-attf-class="o_cd_badge #{estadoViaje(v.viaje).clase}" t-esc="estadoViaje(v.viaje).texto"/></td>
+                                            </t>
+                                            <t t-else=""><td colspan="4" class="text-muted">Sin recorrido en curso</td></t>
+                                            <td class="text-end" t-esc="v.viajes_periodo"/>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </section>
+                            <section class="o_cd_panel o_cd_mapa_marco">
+                                <div class="o_cd_mapa" t-ref="mapa"/>
+                                <div t-if="!hayPosiciones" class="o_cd_mapa_vacio">
+                                    <i class="fa fa-map-marker"/> Aún no hay posiciones GPS: los buses aparecen aquí
+                                    en cuanto Traccar Client empiece a enviar datos.
+                                </div>
+                            </section>
+                        </div>
+                    </t>
 
-                    <!-- Ubicación de vehículos -->
-                    <h4 class="o_cd_titulo">¿Dónde están los buses y qué están haciendo?</h4>
-                    <div class="o_cd_fila">
-                        <div class="o_cd_panel o_cd_ancho">
-                            <table class="table table-sm table-hover mb-0">
-                                <thead><tr><th>Bus</th><th>Señal</th><th>Última posición</th><th>Ruta en curso</th>
-                                    <th>Paradas visitadas</th><th>Retraso acumulado</th><th>¿Horario?</th><th>¿Desvío?</th><th>Recorridos</th></tr></thead>
+                    <!-- ================= Rutas y períodos ================= -->
+                    <t t-if="state.pestana === 'rutas'">
+                        <section class="o_cd_panel">
+                            <h5>Evolución por <t t-esc="d.periodos.agrupacion"/></h5>
+                            <div class="o_cd_chart"><canvas t-ref="chartPeriodos"/></div>
+                        </section>
+                        <section class="o_cd_panel">
+                            <h5>Rutas registradas</h5>
+                            <table class="table table-sm mb-0 o_cd_tabla">
+                                <thead><tr><th>Ruta</th><th class="text-end">Paradas</th><th class="text-end">Dist. estimada</th>
+                                    <th class="text-end">Recorridos</th><th class="text-end">% cumplimiento</th><th class="text-end">% puntualidad</th>
+                                    <th class="text-end">Retraso prom.</th><th class="text-end">Tiempo prom.</th><th class="text-end">Km recorridos</th><th class="text-end">Incidencias</th></tr></thead>
                                 <tbody>
-                                    <tr t-foreach="d.vehiculos" t-as="v" t-key="v.id">
-                                        <td><b t-esc="v.placa"/> <span class="text-muted small" t-esc="v.estado"/></td>
-                                        <td><span t-att-class="'badge ' + (v.senal === 'con_senal' ? 'bg-success' : v.senal === 'sin_senal' ? 'bg-danger' : 'bg-secondary')" t-esc="v.senal"/></td>
-                                        <td><t t-if="v.lat !== null"><t t-esc="fmt(v.lat, '', 5)"/>, <t t-esc="fmt(v.lon, '', 5)"/><br/><span class="small text-muted" t-esc="fecha(v.fecha)"/></t><t t-else="">—</t></td>
-                                        <t t-if="v.viaje">
-                                            <td><a href="#" t-on-click.prevent="() => this.abrirViaje(v.viaje.id)" t-esc="v.viaje.ruta"/></td>
-                                            <td><t t-esc="v.viaje.visitadas"/>/<t t-esc="v.viaje.total"/>
-                                                <div class="small text-muted" t-esc="v.viaje.paradas.join(' → ')"/></td>
-                                            <td t-esc="fmt(v.viaje.retraso, ' min')"/>
-                                            <td><span t-att-class="v.viaje.cumple_horario ? 'text-success' : 'text-danger fw-bold'" t-esc="v.viaje.cumple_horario ? 'Sí' : 'No'"/></td>
-                                            <td><span t-att-class="v.viaje.desviado ? 'text-danger fw-bold' : 'text-success'" t-esc="v.viaje.desviado ? 'Sí' : 'No'"/></td>
-                                        </t>
-                                        <t t-else=""><td colspan="5" class="text-muted">Sin recorrido en curso</td></t>
-                                        <td t-esc="v.viajes_periodo"/>
+                                    <tr t-foreach="d.rutas" t-as="r" t-key="r.id">
+                                        <td><b t-esc="r.codigo"/> <span t-esc="r.nombre"/>
+                                            <div class="o_cd_sub"><t t-esc="r.origen"/> → <t t-esc="r.destino"/></div></td>
+                                        <td class="text-end" t-esc="r.paradas"/>
+                                        <td class="text-end" t-esc="fmt(r.distancia_estimada, ' km', 2)"/>
+                                        <td class="text-end" t-esc="r.viajes"/>
+                                        <td t-attf-class="text-end #{tonoTexto(r.cumplimiento)}" t-esc="fmt(r.cumplimiento, ' %')"/>
+                                        <td t-attf-class="text-end #{tonoTexto(r.puntualidad)}" t-esc="fmt(r.puntualidad, ' %')"/>
+                                        <td class="text-end" t-esc="fmt(r.retraso_promedio, ' min')"/>
+                                        <td class="text-end" t-esc="fmt(r.tiempo_promedio, ' min')"/>
+                                        <td class="text-end" t-esc="fmt(r.distancia_km, '', 2)"/>
+                                        <td class="text-end" t-esc="r.incidencias"/>
                                     </tr>
                                 </tbody>
                             </table>
-                        </div>
-                        <div class="o_cd_panel o_cd_mapa" t-ref="mapa"/>
-                    </div>
+                        </section>
+                    </t>
 
-                    <!-- Comparaciones -->
-                    <div class="o_cd_fila">
-                        <div class="o_cd_panel">
-                            <h5>Comparación entre rutas</h5>
-                            <div class="o_cd_chart"><canvas t-ref="chartRutas"/></div>
-                        </div>
-                        <div class="o_cd_panel">
-                            <h5>Evolución por <t t-esc="d.periodos.agrupacion"/></h5>
-                            <div class="o_cd_chart"><canvas t-ref="chartPeriodos"/></div>
-                        </div>
-                        <div class="o_cd_panel">
-                            <h5>Incidencias más frecuentes (Pareto) <a href="#" class="small" t-on-click.prevent="abrirIncidencias">ver todas</a></h5>
-                            <div class="o_cd_chart"><canvas t-ref="chartPareto"/></div>
-                        </div>
-                    </div>
+                    <!-- ================= Historial ================= -->
+                    <t t-if="state.pestana === 'historial'">
+                        <section class="o_cd_panel">
+                            <h5>Historial de recorridos <span class="o_cd_sub">(últimos 20 evaluados · clic para abrir)</span></h5>
+                            <table class="table table-sm table-hover mb-0 o_cd_tabla">
+                                <thead><tr><th>Viaje</th><th>Ruta</th><th>Bus</th><th>Salida programada</th><th>Resultado</th>
+                                    <th class="text-end">Paradas</th><th class="text-end">Retraso llegada</th><th class="text-end">Km</th>
+                                    <th class="text-end">Incid.</th><th>Origen</th><th/></tr></thead>
+                                <tbody>
+                                    <tr t-foreach="d.historial" t-as="h" t-key="h.id" class="o_cd_click" t-on-click="() => this.abrirViaje(h.id)">
+                                        <td t-esc="h.name"/><td t-esc="h.ruta"/><td t-esc="h.bus"/><td t-esc="fecha(h.salida)"/>
+                                        <td><span t-attf-class="o_cd_badge #{h.resultado === 'cumple' ? 'o_cd_bien' : 'o_cd_mal'}"
+                                                  t-esc="h.resultado === 'cumple' ? 'Cumple' : 'No cumple'"/></td>
+                                        <td class="text-end" t-esc="h.paradas"/>
+                                        <td class="text-end" t-esc="fmt(h.retraso_llegada, ' min')"/>
+                                        <td class="text-end" t-esc="fmt(h.distancia, '', 2)"/>
+                                        <td class="text-end" t-esc="h.incidencias"/>
+                                        <td><span t-if="h.simulado" class="o_cd_badge o_cd_sim" t-att-title="h.escenario">Simulado</span>
+                                            <span t-else="" class="o_cd_badge o_cd_info">GPS real</span></td>
+                                        <td><a href="#" title="Ver trazado" t-on-click.stop.prevent="() => this.abrirMapaViaje(h.id)"><i class="fa fa-map"/></a></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </section>
+                    </t>
 
-                    <!-- Rutas registradas -->
-                    <div class="o_cd_panel">
-                        <h5>Rutas registradas</h5>
-                        <table class="table table-sm mb-0">
-                            <thead><tr><th>Código</th><th>Ruta</th><th>Origen → Destino</th><th>Paradas</th><th>Dist. est.</th><th>Tiempo est.</th>
-                                <th>Recorridos</th><th>% cumpl.</th><th>% puntual.</th><th>Retraso prom.</th><th>Tiempo prom.</th><th>Km recorridos</th><th>Incid.</th></tr></thead>
-                            <tbody>
-                                <tr t-foreach="d.rutas" t-as="r" t-key="r.id">
-                                    <td t-esc="r.codigo"/><td t-esc="r.nombre"/>
-                                    <td class="small"><t t-esc="r.origen"/> → <t t-esc="r.destino"/></td>
-                                    <td t-esc="r.paradas"/><td t-esc="fmt(r.distancia_estimada, ' km', 2)"/><td t-esc="fmt(r.tiempo_estimado, ' min', 0)"/>
-                                    <td t-esc="r.viajes"/><td t-esc="fmt(r.cumplimiento, ' %')"/><td t-esc="fmt(r.puntualidad, ' %')"/>
-                                    <td t-esc="fmt(r.retraso_promedio, ' min')"/><td t-esc="fmt(r.tiempo_promedio, ' min')"/>
-                                    <td t-esc="fmt(r.distancia_km, '', 2)"/><td t-esc="r.incidencias"/>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Historial -->
-                    <div class="o_cd_panel">
-                        <h5>Historial de recorridos (últimos 20 evaluados)</h5>
-                        <table class="table table-sm table-hover mb-0">
-                            <thead><tr><th>Viaje</th><th>Ruta</th><th>Bus</th><th>Salida programada</th><th>Resultado</th><th>Paradas</th>
-                                <th>Retraso llegada</th><th>Km</th><th>Incid.</th><th>Origen</th><th/></tr></thead>
-                            <tbody>
-                                <tr t-foreach="d.historial" t-as="h" t-key="h.id" class="o_cd_click" t-on-click="() => this.abrirViaje(h.id)">
-                                    <td t-esc="h.name"/><td t-esc="h.ruta"/><td t-esc="h.bus"/><td t-esc="fecha(h.salida)"/>
-                                    <td><span t-att-class="'badge ' + (h.resultado === 'cumple' ? 'bg-success' : 'bg-danger')" t-esc="h.resultado"/></td>
-                                    <td t-esc="h.paradas"/><td t-esc="fmt(h.retraso_llegada, ' min')"/><td t-esc="fmt(h.distancia, '', 2)"/>
-                                    <td t-esc="h.incidencias"/>
-                                    <td><span t-if="h.simulado" class="badge bg-warning text-dark" t-att-title="h.escenario">SIMULADO</span>
-                                        <span t-else="" class="badge bg-info">GPS real</span></td>
-                                    <td><a href="#" title="Ver trazado" t-on-click.stop.prevent="() => this.abrirMapaViaje(h.id)"><i class="fa fa-map"/></a></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    <!-- ================= Calidad del software ================= -->
+                    <t t-if="state.pestana === 'software'">
+                        <div class="o_cd_intro">
+                            <span>¿Qué tan confiable es el sistema? Indicadores de calidad del software (ISO/IEC 25010).</span>
+                            <button class="btn btn-sm btn-primary" t-on-click="verificarExactitud">
+                                <i class="fa fa-check-square-o"/> Verificar exactitud contra Traccar
+                            </button>
+                        </div>
+                        <div class="o_cd_kpis">
+                            <t t-foreach="kpisSoftware" t-as="k" t-key="k.titulo">
+                                <t t-call="transporte_calidad.DashboardKpi"/>
+                            </t>
+                        </div>
+                        <div t-if="d.software.deteccion_correcta.fallos.length" class="alert alert-danger py-2 mt-3">
+                            Detección distinta a la esperada:
+                            <t t-foreach="d.software.deteccion_correcta.fallos" t-as="f" t-key="f.id">
+                                <a href="#" class="ms-2" t-on-click.prevent="() => this.abrirViaje(f.id)"><t t-esc="f.name"/></a>
+                                (<t t-esc="f.detalle"/>)
+                            </t>
+                        </div>
+                        <section class="o_cd_panel o_cd_tolerancias">
+                            <h5>Tolerancias aplicadas</h5>
+                            <div class="o_cd_tol">
+                                <div><b><t t-esc="d.tolerancias.retraso_min"/> min</b><span>retraso permitido</span></div>
+                                <div><b><t t-esc="d.tolerancias.adelanto_min"/> min</b><span>adelanto permitido</span></div>
+                                <div><b><t t-esc="d.tolerancias.ancho_corredor_m"/> m</b><span>ancho del corredor</span></div>
+                                <div><b><t t-esc="d.tolerancias.gap_senal_min"/> min</b><span>sin datos = pérdida de señal</span></div>
+                                <div><b><t t-esc="d.calculo_ms"/> ms</b><span>cálculo de este panel</span></div>
+                            </div>
+                        </section>
+                    </t>
                 </t>
+                <div t-else="" class="o_cd_cargando"><i class="fa fa-circle-o-notch fa-spin"/> Calculando indicadores…</div>
             </div>
+        </div>
+    </t>
+
+    <!-- Tarjeta de indicador: valor grande, una línea de contexto y la fórmula solo si se pide -->
+    <t t-name="transporte_calidad.DashboardKpi" owl="1">
+        <div t-attf-class="o_cd_kpi #{k.clase}" t-att-title="'Fórmula: ' + k.formula">
+            <div class="o_cd_kpi_titulo" t-esc="k.titulo"/>
+            <div class="o_cd_kpi_valor" t-esc="k.valor"/>
+            <div class="o_cd_kpi_detalle" t-esc="k.detalle"/>
+            <div t-if="state.formulas" class="o_cd_kpi_formula"><i class="fa fa-calculator"/> <t t-esc="k.formula"/></div>
         </div>
     </t>
 </templates>

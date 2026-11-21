@@ -51,6 +51,8 @@ Ejecutados el **20/11/2026**. *Evidencia* = prueba automatizada que lo comprueba
 | CP-22 | Caja negra – Inicio | RF-17, RF-18 | 10 recorridos simulados + 1 bus en ruta | Inicio = mismos valores que el dashboard en 7 días; el bus aparece en «En ruta ahora»; aviso de SIMULADOS | Igual | `test_inicio_coincide_con_registros` | ✅ |
 | CP-23 | Seguridad – Inicio | RNF-01 | Usuario *Consulta* vs. *Responsable* | El acceso «Recorridos simulados» solo aparece al responsable | Igual | `test_accesos_segun_rol` | ✅ |
 | CP-24 | Integración en vivo | RF-07, RF-09, RF-10, RNF-06 | 3 reportes OsmAnd (protocolo de Traccar Client) a un Traccar real, uno sobre cada parada de un viaje en curso | Traccar los guarda; Odoo los sincroniza con hora GPS, sin duplicar al re-sincronizar; las 3 paradas quedan *Atendida (GPS)*; exactitud Traccar ↔ Odoo 100 % | Igual | `test_traccar_vivo.py` (log `backups/odoo_traccar_vivo.log`) | ✅ |
+| CP-25 | Usabilidad – dashboard por pestañas | RF-18, RNF-05 | Abrir el dashboard, activar «Fórmulas» y recorrer las 5 pestañas en un navegador real | Resumen: 8 KPIs y 2 gráficos, fórmulas ocultas hasta pedirlas; Flota: tabla + mapa (el mapa solo existe en esa pestaña); Rutas: evolución + 3 rutas; Historial; Software: 4 KPIs + tolerancias | Igual | `test_dashboard_renderiza_kpis_y_graficos`, `test_dashboard_pestanas_y_formulas` | ✅ |
+| CP-26 | Usabilidad – Inicio compacto | RF-18 | Usuario administrador abre Inicio | 4 KPIs principales, franja de estado con 4 datos y 6 accesos; los demás accesos siguen en el menú | Igual | `test_accesos_principales`, `test_inicio_renderiza` | ✅ |
 
 ## 3. Resultados de ejecución
 
@@ -58,9 +60,9 @@ Ejecutados el **20/11/2026**. *Evidencia* = prueba automatizada que lo comprueba
 | :--- | :---: | :--- |
 | pytest `transporte_gps_traccar` | 54 | 54 aprobadas · cobertura de `lib/` **99 %** (ramas) |
 | pytest `transporte_calidad` | 74 | 74 aprobadas · cobertura de `lib/` **97 %** (ramas) |
-| Odoo `transporte_core` + `transporte_gps_traccar` + `transporte_calidad` + `transporte_ui` | 95 | **0 fallos, 0 errores** |
+| Odoo `transporte_core` + `transporte_gps_traccar` + `transporte_calidad` + `transporte_ui` | 96 | **0 fallos, 0 errores** |
 | Odoo rendimiento (`rendimiento`) | 1 (12 mediciones) | 0 fallos |
-| Odoo interfaz (`ui`, Chromium headless) | 5 | 0 fallos, 0 saltadas (Inicio, dashboard, mapa de rutas, formulario, informe) |
+| Odoo interfaz (`ui`, Chromium headless) | 6 | 0 fallos, 0 saltadas (Inicio, dashboard, pestañas del dashboard, mapa de rutas, formulario, informe) |
 | Integración en vivo (`traccar_vivo`, Traccar 6.17 efímero) | 2 | 0 fallos, 0 saltadas |
 
 ## 4. Rendimiento

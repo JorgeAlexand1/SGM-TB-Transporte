@@ -44,8 +44,8 @@ $sgm-tonos: (
         justify-content: space-between;
         align-items: flex-end;
         gap: 16px;
-        padding: 24px 28px;
-        margin-bottom: 20px;
+        padding: 20px 26px;
+        margin-bottom: 18px;
         border-radius: 16px;
         color: #FFFFFF;
         background:
@@ -55,7 +55,7 @@ $sgm-tonos: (
 
         h1 {
             color: #FFFFFF;
-            font-size: 1.9rem;
+            font-size: 1.6rem;
             font-weight: 800;
             margin: 0 0 4px;
         }
@@ -64,6 +64,7 @@ $sgm-tonos: (
         }
         .o_sgm_fecha {
             opacity: 0.9;
+            font-size: 0.92rem;
         }
         .o_sgm_periodo {
             margin-top: 10px;
@@ -100,9 +101,9 @@ $sgm-tonos: (
     // ------------------------------------------------------------ indicadores
     .o_sgm_kpis {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 14px;
-        margin-bottom: 20px;
+        margin-bottom: 14px;
     }
     .o_sgm_kpi {
         position: relative;
@@ -148,12 +149,57 @@ $sgm-tonos: (
         }
     }
     .o_sgm_kpi_titulo {
-        margin-top: 6px;
+        margin-bottom: 6px;
+        padding-right: 44px;
+        font-size: 0.85rem;
         font-weight: 700;
+        color: #6B7A8C;
     }
     .o_sgm_kpi_pie {
         font-size: 0.82rem;
         color: #6B7A8C;
+    }
+
+    // ------------------------------------------------------------ franja de estado
+    .o_sgm_estado {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        margin-bottom: 20px;
+        background: #FFFFFF;
+        border: 1px solid #E3E9F1;
+        border-radius: 14px;
+        overflow: hidden;
+    }
+    .o_sgm_mini {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        font-size: 0.9rem;
+
+        & + .o_sgm_mini {
+            border-left: 1px solid #EEF2F7;
+        }
+        &.o_sgm_clic:hover {
+            background: rgba($sgm-azul, 0.04);
+        }
+        > .fa {
+            flex: 0 0 34px;
+            height: 34px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        b {
+            font-size: 1.05rem;
+            color: $sgm-azul-oscuro;
+        }
+        span {
+            display: block;
+            font-size: 0.78rem;
+            color: #6B7A8C;
+        }
     }
 
     // ------------------------------------------------------------ paneles
@@ -284,7 +330,7 @@ $sgm-tonos: (
     }
     .o_sgm_accesos {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 14px;
     }
     .o_sgm_acceso {
@@ -329,9 +375,24 @@ $sgm-tonos: (
     }
 
     // ------------------------------------------------------------ móvil
+    @include media-breakpoint-down(xl) {
+        .o_sgm_estado {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .o_sgm_mini:nth-child(3) {
+            border-left: 0;
+        }
+        .o_sgm_mini:nth-child(n + 3) {
+            border-top: 1px solid #EEF2F7;
+        }
+    }
     @include media-breakpoint-down(lg) {
         .o_sgm_columnas {
             grid-template-columns: 1fr;
+        }
+        .o_sgm_kpis,
+        .o_sgm_accesos {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
         }
     }
     @include media-breakpoint-down(md) {
@@ -346,8 +407,21 @@ $sgm-tonos: (
             }
         }
         .o_sgm_kpis {
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 10px;
+        }
+        .o_sgm_estado,
+        .o_sgm_accesos {
+            grid-template-columns: minmax(0, 1fr);
+        }
+        .o_sgm_mini {
+            border-left: 0 !important;
+        }
+        .o_sgm_mini + .o_sgm_mini {
+            border-top: 1px solid #EEF2F7;
+        }
+        .o_sgm_kpi_titulo {
+            padding-right: 0;
         }
         .o_sgm_kpi_valor {
             font-size: 1.5rem;

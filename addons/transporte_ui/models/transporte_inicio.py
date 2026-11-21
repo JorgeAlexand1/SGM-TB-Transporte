@@ -6,6 +6,9 @@ from odoo import api, fields, models
 
 DIAS_RESUMEN = 7
 
+# Accesos que se muestran como tarjetas en Inicio; los demás siguen disponibles en el menú superior.
+PRINCIPALES = ('dashboard', 'mapa_buses', 'mapa_rutas', 'viajes', 'incidencias', 'rutas')
+
 # (clave, menú que controla la visibilidad, acción, título, descripción, icono FontAwesome, tono)
 ACCESOS = [
     ('dashboard', 'transporte_calidad.menu_calidad_dashboard', 'transporte_calidad.action_dashboard_calidad',
@@ -54,7 +57,8 @@ class TransporteInicio(models.AbstractModel):
             menu = self.env.ref(menu_xmlid, raise_if_not_found=False)
             if menu and menu.id in visibles:
                 filas.append({'clave': clave, 'accion': accion, 'menu_id': menu.id, 'titulo': titulo,
-                              'descripcion': descripcion, 'icono': icono, 'tono': tono})
+                              'descripcion': descripcion, 'icono': icono, 'tono': tono,
+                              'principal': clave in PRINCIPALES})
         return filas
 
     @api.model
