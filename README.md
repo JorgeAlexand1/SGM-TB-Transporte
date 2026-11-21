@@ -6,9 +6,10 @@ Odoo 16 Community + Traccar + Cloudflare Tunnel · Proyecto final de Gestión de
 | :--- | :--- |
 | `addons/transporte_core` | Buses, conductores, rutas (origen, destino, distancia), paradas, horarios y despacho de viajes |
 | `addons/transporte_gps_traccar` | Integración Traccar: posiciones sin duplicados, webhook, geocercas por tramo, señal, mapa |
-| `addons/transporte_calidad` | Detección automática de incumplimientos, incidencias, KPIs, dashboard, informe PDF, simulación |
+| `addons/transporte_calidad` | Detección automática de incumplimientos, incidencias, KPIs, dashboard, mapa de rutas, informe PDF, simulación |
+| `addons/transporte_ui` | Interfaz SGM-TB: pantalla de Inicio con indicadores en vivo, login propio, paleta y navegación |
 
-El repositorio solo versiona estos tres módulos. Otros addons que existan en la carpeta local `addons/`
+El repositorio solo versiona estos cuatro módulos. Otros addons que existan en la carpeta local `addons/`
 (talleres de otras asignaturas) están excluidos en `.gitignore`.
 
 ## Inicio rápido
@@ -16,7 +17,7 @@ El repositorio solo versiona estos tres módulos. Otros addons que existan en la
 cp .env.example .env                      # definir contraseñas locales
 docker compose up -d                      # Odoo :8070, Traccar :8082/:5055
 docker exec odoo16_web /entrypoint.sh odoo -d transporte_universitario_gc \
-  -i transporte_calidad --no-http --stop-after-init && docker restart odoo16_web
+  -i transporte_ui --no-http --stop-after-init && docker restart odoo16_web   # instala los 4 módulos
 docker compose --profile tunel up -d      # túnel Cloudflare para Traccar Client (datos móviles)
 bash scripts/ejecutar_pruebas.sh          # todas las pruebas
 ```
@@ -33,4 +34,5 @@ bash scripts/ejecutar_pruebas.sh          # todas las pruebas
 | 10 | Mejora continua (Ishikawa, Pareto, PDCA) | `docs/MEJORA_CONTINUA.md` |
 | — | Trabajo de campo: Traccar, rutas reales, recorridos y capturas | `docs/GUIA_TRABAJO_CAMPO.md` |
 | — | Guion de la defensa | `docs/GUIA_DEMOSTRACION.md` |
+| — | Presentación de la defensa (15 diapositivas, HTML + PDF) | `docs/presentacion/` |
 | — | Instalación y flujo Git | `docs/GUIA_INSTALACION.md`, `docs/GUIA_GIT.md` |

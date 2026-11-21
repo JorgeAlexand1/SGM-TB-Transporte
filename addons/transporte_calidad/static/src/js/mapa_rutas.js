@@ -3,9 +3,11 @@ import { registry } from "@web/core/registry";
 import { loadCSS, loadJS } from "@web/core/assets";
 import { useService } from "@web/core/utils/hooks";
 import { escape } from "@web/core/utils/strings";
+import { formatFloat } from "@web/views/fields/formatters";
 import { Component, onMounted, onWillStart, onWillUnmount, useRef, useState } from "@odoo/owl";
 
-const LEAFLET = "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist";
+// Leaflet 1.9.4 incluido en el módulo (BSD-2): los mapas funcionan sin acceso al CDN.
+const LEAFLET = "/transporte_gps_traccar/static/lib/leaflet";
 const COLORES = ["#0d6efd", "#198754", "#fd7e14", "#6f42c1", "#dc3545", "#20c997", "#6c757d"];
 
 /**
@@ -70,7 +72,7 @@ export class MapaRutas extends Component {
                     `<b>${escape(r.codigo)} · ${escape(r.nombre)}</b><br/>` +
                         `${r.trazado_real ? "Trazado de referencia" : "Línea entre paradas (sin trazado)"}<br/>` +
                         `Corredor permitido: ${r.corredor} m<br/>` +
-                        `${r.distancia.toFixed(2)} km · ${r.tiempo} min`
+                        `${this.num(r.distancia, 2)} km · ${r.tiempo} min`
                 )
                 .addTo(capa);
         }
@@ -124,11 +126,19 @@ export class MapaRutas extends Component {
         });
     }
 
+    /** Número con el separador decimal del idioma del usuario. */
+    num(valor, decimales = 1) {
+        return formatFloat(Number(valor), { digits: [16, decimales] });
+    }
+
     claseIndicador(valor, evaluados) {
         if (!evaluados) {
             return "text-muted";
         }
-        return valor >= 90 ? "text-success" : valor >= 70 ? "text-warning" : "text-danger";
+        if (valor >= 90) {
+            return "text-success";
+        }
+        return valor >= 70 ? "text-warning" : "text-danger";
     }
 }
 

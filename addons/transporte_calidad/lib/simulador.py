@@ -79,6 +79,64 @@ def _interpolar(a, b, f):
     return a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f
 
 
+def _preparar_nodos(paradas, escenario):
+    """Nodos, tiempos (min) e índice de la última parada alcanzada según el escenario."""
+    factor = 1.5 if escenario == 'congestion' else 1.0
+    nodos = [(p['lat'], p['lon']) for p in paradas]
+    tiempos = [p['t_min'] * factor for p in paradas]
+    ultima = len(nodos) // 2 - 1 if escenario == 'incompleto' else len(nodos) - 1
+    if escenario == 'parada_omitida':
+        medio = len(nodos) // 2
+        pn, pe = _hacia_vecinos(nodos[medio - 1], nodos[medio], nodos[medio + 1])
+        nodos[medio] = _desplazar(nodos[medio][0], nodos[medio][1], pn * 110, pe * 110)
+    return nodos, tiempos, ultima
+
+
+def _posicion(nodos, tiempos, ultima, escenario, t_min):
+    """Posición sobre la ruta en el minuto t (desde la salida real)."""
+    for i in range(ultima):
+        if tiempos[i] <= t_min <= tiempos[i + 1]:
+            tramo = tiempos[i + 1] - tiempos[i] or 1.0
+            f = (t_min - tiempos[i]) / tramo
+            lat, lon = _interpolar(nodos[i], nodos[i + 1], f)
+            if escenario == 'desviacion' and i == 1:
+                pn, pe = _perpendicular(nodos[1], nodos[2])
+                desvio = 450.0 * math.sin(math.pi * f)
+                lat, lon = _desplazar(lat, lon, pn * desvio, pe * desvio)
+            return lat, lon
+    return nodos[ultima]
+
+
+def _hueco_senal(tiempos, ultima, escenario):
+    """Hueco de señal de 5 min centrado en el tramo más largo (solo 'perdida_senal')."""
+    if escenario != 'perdida_senal':
+        return None
+    i = max(range(ultima), key=lambda k: tiempos[k + 1] - tiempos[k])
+    centro = (tiempos[i] + tiempos[i + 1]) / 2.0
+    return (centro - 2.5, centro + 2.5)
+
+
+def _velocidad_kmh(previo, t_actual, lat, lon):
+    """Velocidad estimada entre el punto previo (t, lat, lon) y el actual."""
+    if not previo:
+        return 0.0
+    d = math.hypot((lat - previo[1]) * M_POR_GRADO,
+                   (lon - previo[2]) * M_POR_GRADO * math.cos(math.radians(lat)))
+    dt = (t_actual - previo[0]) * 60.0
+    return round(d / dt * 3.6, 1) if dt else 0.0
+
+
+def _instantes(fin_min, paso):
+    """Minutos de muestreo desde 0 hasta fin_min (incluido)."""
+    t = 0.0
+    while True:
+        t_actual = min(t, fin_min)
+        yield t_actual
+        if t_actual >= fin_min:
+            return
+        t += paso
+
+
 def generar_recorrido(paradas, salida_plan, escenario, intervalo_s=15, semilla=0):
     """Genera la traza GPS de un recorrido.
 
@@ -92,62 +150,23 @@ def generar_recorrido(paradas, salida_plan, escenario, intervalo_s=15, semilla=0
         raise ValueError('Se necesitan al menos 3 paradas para simular un recorrido')
     rnd = random.Random(semilla)
     descripcion, esperadas = ESCENARIOS[escenario]
-    factor = 1.5 if escenario == 'congestion' else 1.0
     retraso_salida = {'atrasado': 10.0, 'puntual': 1.0, 'muestreo_disperso': 1.0}.get(escenario, 0.0)
     salida_real = salida_plan + timedelta(minutes=retraso_salida)
 
-    nodos = [(p['lat'], p['lon']) for p in paradas]
-    tiempos = [p['t_min'] * factor for p in paradas]
-    ultima = len(nodos) - 1
-    if escenario == 'incompleto':
-        ultima = len(nodos) // 2 - 1
-    medio = len(nodos) // 2
-    if escenario == 'parada_omitida':
-        pn, pe = _hacia_vecinos(nodos[medio - 1], nodos[medio], nodos[medio + 1])
-        nodos[medio] = _desplazar(nodos[medio][0], nodos[medio][1], pn * 110, pe * 110)
-
-    def posicion(t_min):
-        """Posición sobre la ruta en el minuto t (desde la salida real)."""
-        for i in range(ultima):
-            if tiempos[i] <= t_min <= tiempos[i + 1]:
-                tramo = tiempos[i + 1] - tiempos[i] or 1.0
-                f = (t_min - tiempos[i]) / tramo
-                lat, lon = _interpolar(nodos[i], nodos[i + 1], f)
-                if escenario == 'desviacion' and i == 1:
-                    pn, pe = _perpendicular(nodos[1], nodos[2])
-                    desvio = 450.0 * math.sin(math.pi * f)
-                    lat, lon = _desplazar(lat, lon, pn * desvio, pe * desvio)
-                return lat, lon
-        return nodos[ultima]
-
-    # hueco de señal: 5 min centrados en el tramo más largo
-    hueco = None
-    if escenario == 'perdida_senal':
-        i = max(range(ultima), key=lambda k: tiempos[k + 1] - tiempos[k])
-        centro = (tiempos[i] + tiempos[i + 1]) / 2.0
-        hueco = (centro - 2.5, centro + 2.5)
-
+    nodos, tiempos, ultima = _preparar_nodos(paradas, escenario)
+    hueco = _hueco_senal(tiempos, ultima, escenario)
     fin_min = tiempos[ultima]
-    puntos, t, previo = [], 0.0, None
-    paso = intervalo_s / 60.0
-    while True:
-        t_actual = min(t, fin_min)
-        if not (hueco and hueco[0] < t_actual < hueco[1]):
-            lat, lon = posicion(t_actual)
-            # ruido GPS de ±3 m (determinista por semilla)
-            lat, lon = _desplazar(lat, lon, rnd.uniform(-3, 3), rnd.uniform(-3, 3))
-            vel = 0.0
-            if previo:
-                d = math.hypot((lat - previo[1]) * M_POR_GRADO,
-                               (lon - previo[2]) * M_POR_GRADO * math.cos(math.radians(lat)))
-                dt = (t_actual - previo[0]) * 60.0
-                vel = round(d / dt * 3.6, 1) if dt else 0.0
-            fecha = salida_real + timedelta(minutes=t_actual)
-            puntos.append((fecha.replace(microsecond=0), round(lat, 6), round(lon, 6), vel))
-            previo = (t_actual, lat, lon)
-        if t_actual >= fin_min:
-            break
-        t += paso
+    puntos, previo = [], None
+    for t_actual in _instantes(fin_min, intervalo_s / 60.0):
+        if hueco and hueco[0] < t_actual < hueco[1]:
+            continue
+        lat, lon = _posicion(nodos, tiempos, ultima, escenario, t_actual)
+        # ruido GPS de ±3 m (determinista por semilla)
+        lat, lon = _desplazar(lat, lon, rnd.uniform(-3, 3), rnd.uniform(-3, 3))
+        vel = _velocidad_kmh(previo, t_actual, lat, lon)
+        fecha = salida_real + timedelta(minutes=t_actual)
+        puntos.append((fecha.replace(microsecond=0), round(lat, 6), round(lon, 6), vel))
+        previo = (t_actual, lat, lon)
 
     llegada_real = salida_real + timedelta(minutes=fin_min + (2 if escenario == 'incompleto' else 0))
     return {

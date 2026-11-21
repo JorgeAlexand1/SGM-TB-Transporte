@@ -80,5 +80,6 @@ addons/*
 !addons/transporte_core/
 !addons/transporte_gps_traccar/
 !addons/transporte_calidad/
+!addons/transporte_ui/
 tarea1/
 .claude_progreso.md

@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SGM-TB · Defensa del proyecto</title>
+<style>
+  :root {
+    --azul-oscuro: #0B2A4A; --azul: #0F4C81; --azul-claro: #1663A6; --ambar: #F5A623;
+    --verde: #1E9E6A; --rojo: #D64545; --texto: #2B3A4A; --suave: #5E6E80; --fondo: #F3F6FA; --borde: #E3E9F1;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #1b2633; font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; color: var(--texto); }
+  .deck { position: relative; width: 100%; height: 100%; overflow: hidden; }
+  .slide {
+    position: absolute; top: 50%; left: 50%; width: 1280px; height: 720px; padding: 56px 72px;
+    background: #FFFFFF; transform-origin: center center; display: none; overflow: hidden;
+  }
+  .slide.activa { display: block; }
+  .oscura { background: linear-gradient(135deg, var(--azul-oscuro) 0%, var(--azul) 60%, var(--azul-claro) 100%); color: #FFFFFF; }
+  .oscura h1, .oscura h2 { color: #FFFFFF; }
+  h1 { font-size: 54px; line-height: 1.1; margin: 0 0 18px; font-weight: 800; color: var(--azul-oscuro); }
+  h2 { font-size: 38px; margin: 0 0 8px; font-weight: 800; color: var(--azul-oscuro); }
+  .sub { font-size: 19px; color: var(--suave); margin: 0 0 26px; }
+  .oscura .sub { color: rgba(255, 255, 255, .85); }
+  p, li, td, th { font-size: 17px; line-height: 1.45; }
+  .pie { position: absolute; left: 72px; right: 72px; bottom: 22px; display: flex; justify-content: space-between; font-size: 13px; color: var(--suave); }
+  .oscura .pie { color: rgba(255, 255, 255, .7); }
+  .marca { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 22px; }
+  .marca img { width: 48px; height: 48px; border-radius: 11px; }
+  .cols { display: grid; gap: 28px; }
+  .c2 { grid-template-columns: 1fr 1fr; }
+  .c3 { grid-template-columns: repeat(3, 1fr); }
+  .c4 { grid-template-columns: repeat(4, 1fr); }
+  .tarjeta { background: var(--fondo); border: 1px solid var(--borde); border-radius: 14px; padding: 18px 20px; }
+  .tarjeta h3 { margin: 0 0 6px; font-size: 19px; color: var(--azul-oscuro); }
+  .tarjeta p { margin: 0; font-size: 15px; color: var(--suave); }
+  .icono { width: 40px; height: 40px; border-radius: 11px; display: inline-flex; align-items: center; justify-content: center;
+           font-weight: 800; font-size: 18px; margin-bottom: 10px; color: #FFFFFF; background: var(--azul); }
+  .i-ambar { background: var(--ambar); color: var(--azul-oscuro); } .i-verde { background: var(--verde); } .i-rojo { background: var(--rojo); }
+  .cifra { font-size: 50px; font-weight: 800; color: var(--azul-oscuro); line-height: 1; }
+  .cifra small { font-size: 20px; color: var(--suave); font-weight: 600; }
+  .etq { font-size: 15px; color: var(--suave); margin-top: 6px; }
+  ul.lista { margin: 0; padding-left: 22px; } ul.lista li { margin-bottom: 8px; }
+  table { border-collapse: collapse; width: 100%; }
+  th { text-align: left; font-size: 14px; text-transform: uppercase; letter-spacing: .4px; color: var(--suave); border-bottom: 2px solid var(--borde); padding: 8px 10px; }
+  td { padding: 8px 10px; border-bottom: 1px solid var(--borde); font-size: 16px; vertical-align: top; }
+  .ok { color: var(--verde); font-weight: 700; } .ko { color: var(--rojo); font-weight: 700; }
+  .captura { border-radius: 12px; box-shadow: 0 10px 30px rgba(11, 42, 74, .18); border: 1px solid var(--borde); display: block; }
+  .flujo { display: flex; align-items: stretch; gap: 14px; margin: 26px 0; }
+  .nodo { flex: 1; border-radius: 14px; padding: 16px; background: var(--fondo); border: 1px solid var(--borde); }
+  .nodo b { display: block; color: var(--azul-oscuro); font-size: 17px; margin-bottom: 4px; }
+  .nodo span { font-size: 14px; color: var(--suave); }
+  .flecha { align-self: center; font-size: 28px; color: var(--ambar); font-weight: 800; }
+  .nodo.odoo { background: #E7F0F9; border-color: #B9D2EA; }
+  .chip { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 13px; font-weight: 700; background: var(--ambar); color: var(--azul-oscuro); }
+  .barra { height: 22px; border-radius: 6px; background: linear-gradient(90deg, var(--ambar), var(--rojo)); }
+  .pareto td { padding: 5px 10px; font-size: 15px; }
+  @media print {
+    @page { size: 1280px 720px; margin: 0; }
+    html, body { background: #FFFFFF; height: auto; }
+    .deck { overflow: visible; height: auto; }
+    .slide { display: block !important; position: relative; top: 0; left: 0; transform: none !important; page-break-after: always; break-after: page; }
+  }
+</style>
+</head>
+<body>
+<div class="deck">
+
+<!-- 1 -->
+<section class="slide oscura">
+  <div class="marca"><img src="../../addons/transporte_ui/static/description/icon.svg" alt=""> SGM-TB</div>
+  <div style="margin-top:120px">
+    <h1 style="font-size:60px">Monitoreo y evaluación de rutas<br>de transporte universitario</h1>
+    <p class="sub" style="font-size:22px">Odoo 16 + Traccar + Cloudflare Tunnel · evaluación objetiva del cumplimiento de rutas y de la calidad del software</p>
+    <span class="chip">Proyecto final integrador · Gestión de Calidad del Software</span>
+  </div>
+  <div class="pie"><span>Universidad Técnica de Ambato</span><span>Noviembre 2026</span></div>
+</section>
+
+<!-- 2 -->
+<section class="slide">
+  <h2>Del problema a preguntas que el sistema responde</h2>
+  <p class="sub">Sin seguimiento centralizado no se sabe dónde está el bus ni si la ruta se cumple</p>
+  <div class="cols c2">
+    <div class="tarjeta">
+      <h3>Situación inicial</h3>
+      <ul class="lista">
+        <li>Ubicación de los buses desconocida</li>
+        <li>Retrasos y desvíos sin registrar</li>
+        <li>Sin historial ni métricas de servicio</li>
+        <li>Datos GPS de confiabilidad desconocida</li>
+      </ul>
+    </div>
+    <div class="tarjeta" style="background:#E7F0F9;border-color:#B9D2EA">
+      <h3>SGM-TB responde, con datos de la BD</h3>
+      <ul class="lista">
+        <li>¿Dónde está el bus y qué ruta hace? → <b>Inicio</b>, mapa en vivo</li>
+        <li>¿Qué paradas visitó y cuánto retraso lleva? → viaje y dashboard</li>
+        <li>¿Cumple la ruta? ¿Se desvió? → reglas automáticas</li>
+        <li>¿Qué tan confiable es el sistema? → 4 KPIs de software</li>
+      </ul>
+    </div>
+  </div>
+  <div class="pie"><span>SGM-TB</span><span>2</span></div>
+</section>
+
+<!-- 3 -->
+<section class="slide">
+  <h2>Arquitectura</h2>
+  <p class="sub">El teléfono transmite por datos móviles; Odoo sincroniza, evalúa y presenta</p>
+  <div class="flujo">
+    <div class="nodo"><b>Traccar Client</b><span>Teléfono · OsmAnd cada 30 s</span></div>
+    <div class="flecha">→</div>
+    <div class="nodo"><b>Cloudflare Tunnel</b><span>HTTPS sin IP pública</span></div>
+    <div class="flecha">→</div>
+    <div class="nodo"><b>Traccar Server</b><span>:5055 / API REST :8082</span></div>
+    <div class="flecha">→</div>
+    <div class="nodo odoo"><b>Odoo 16</b><span>cron 1 min + webhook · PostgreSQL 15</span></div>
+  </div>
+  <div class="cols c4">
+    <div class="tarjeta"><div class="icono">C</div><h3>transporte_core</h3><p>Buses (Fleet), conductores, rutas, paradas, horarios y despacho de viajes</p></div>
+    <div class="tarjeta"><div class="icono">G</div><h3>transporte_gps_traccar</h3><p>Posiciones sin duplicados, geocercas por tramo, señal, mapa</p></div>
+    <div class="tarjeta"><div class="icono i-ambar">Q</div><h3>transporte_calidad</h3><p>9 reglas, incidencias, 12 KPIs, dashboard, mapa de rutas, PDF</p></div>
+    <div class="tarjeta"><div class="icono i-verde">UI</div><h3>transporte_ui</h3><p>Inicio con indicadores en vivo, login y tema propios</p></div>
+  </div>
+  <div class="pie"><span>Dependencias unidireccionales · lógica pura en lib/ probada con pytest</span><span>3</span></div>
+</section>
+
+<!-- 4 -->
+<section class="slide">
+  <h2>Integración Traccar ↔ Odoo</h2>
+  <p class="sub">Verificada de extremo a extremo contra un servidor Traccar 6.17 real (CP-24)</p>
+  <div class="cols c2">
+    <ul class="lista">
+      <li><b>Dispositivo ↔ bus</b>: un ID de Traccar por bus (restricción única)</li>
+      <li><b>Sin duplicados</b>: UNIQUE por id de posición; re-sincronizar no duplica</li>
+      <li><b>Hora GPS</b>, no hora de recepción; posiciones al viaje en curso</li>
+      <li><b>Geocerca por tramo</b>: la parada se marca aunque la muestra caiga fuera del radio</li>
+      <li><b>Señal</b>: bus sin reportes &gt; 5 min → «sin señal»</li>
+      <li><b>Exactitud</b>: compara cada posición de Odoo contra Traccar</li>
+    </ul>
+    <div class="tarjeta">
+      <h3>Prueba en vivo (sin mocks)</h3>
+      <p style="margin-bottom:14px">3 reportes por el protocolo de Traccar Client → Traccar → Odoo</p>
+      <table>
+        <tr><td>Posiciones recibidas y sincronizadas</td><td class="ok">3 / 3</td></tr>
+        <tr><td>Duplicados al re-sincronizar</td><td class="ok">0</td></tr>
+        <tr><td>Paradas atendidas por GPS</td><td class="ok">3 / 3</td></tr>
+        <tr><td>Exactitud Traccar ↔ Odoo</td><td class="ok">100 %</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="pie"><span>scripts/prueba_integracion_traccar.sh</span><span>4</span></div>
+</section>
+
+<!-- 5 -->
+<section class="slide">
+  <h2>Detección automática de incumplimientos</h2>
+  <p class="sub">9 reglas con tolerancias configurables · incidencias idempotentes</p>
+  <div class="cols c2" style="grid-template-columns:1.3fr 1fr">
+    <table>
+      <tr><th>Regla</th><th>Criterio (defecto)</th></tr>
+      <tr><td>Retraso en parada / salida / llegada</td><td>&gt; 5 min sobre lo programado</td></tr>
+      <tr><td>Llegada adelantada</td><td>&gt; 2 min antes</td></tr>
+      <tr><td>Parada omitida · recorrido incompleto</td><td>sin llegada · destino no alcanzado</td></tr>
+      <tr><td>Diferencia de tiempo</td><td>|real − estimado| &gt; 20 % y &gt; 5 min</td></tr>
+      <tr><td>Desviación de la ruta</td><td>≥ 3 posiciones seguidas &gt; 150 m del corredor</td></tr>
+      <tr><td>Pérdida de señal GPS</td><td>hueco &gt; 3 min dentro del viaje</td></tr>
+    </table>
+    <div class="tarjeta oscura" style="background:var(--azul-oscuro);border:0">
+      <h3 style="color:#fff">Ejemplo del enunciado</h3>
+      <p style="color:rgba(255,255,255,.85);font-size:17px">Parada programada <b>08:15</b>, tolerancia 5 min, llegada <b>08:23</b></p>
+      <div class="cifra" style="color:var(--ambar);margin:18px 0 6px">8 min</div>
+      <p style="color:rgba(255,255,255,.85);font-size:17px">de retraso → incidencia «Retraso en parada» e incumplimiento de puntualidad (prueba CP-05)</p>
+    </div>
+  </div>
+  <div class="pie"><span>Una función por regla en lib/reglas.py</span><span>5</span></div>
+</section>
+
+<!-- 6 -->
+<section class="slide">
+  <h2>12 indicadores, todos calculados desde la BD</h2>
+  <p class="sub">Cada uno con fórmula, fuente, unidad e interpretación (docs/METRICAS.md) · ningún valor estático</p>
+  <div class="cols c2">
+    <div class="tarjeta">
+      <h3>Transporte (8)</h3>
+      <ul class="lista" style="columns:2">
+        <li>Cumplimiento de rutas</li><li>Puntualidad</li><li>Retraso promedio</li><li>Paradas cumplidas</li>
+        <li>Desviación de la ruta</li><li>Distancia estimada vs recorrida</li><li>Tiempo promedio de recorrido</li><li>Nº y frecuencia de incidencias</li>
+      </ul>
+    </div>
+    <div class="tarjeta">
+      <h3>Calidad del software (4)</h3>
+      <ul class="lista">
+        <li>Integridad de los registros GPS</li><li>Exactitud Traccar ↔ Odoo</li>
+        <li>Tiempo de respuesta (promedio y p95)</li><li>Detección correcta de incidencias</li>
+      </ul>
+    </div>
+  </div>
+  <p style="margin-top:22px">Prueba CP-11: los valores del dashboard coinciden con las consultas directas a los registros, y cambian al registrar un recorrido nuevo.</p>
+  <div class="pie"><span>Datos simulados siempre identificados («SIMULADO») y filtrables</span><span>6</span></div>
+</section>
+
+<!-- 7 -->
+<section class="slide" style="padding-top:44px">
+  <h2>Interfaz: Inicio</h2>
+  <p class="sub">Lo importante al entrar: buses en ruta, cumplimiento, puntualidad, incidencias y accesos por rol</p>
+  <div class="cols" style="grid-template-columns:auto auto;justify-content:space-between;align-items:start">
+    <img class="captura" src="img/02_inicio_escritorio.png" alt="Pantalla de Inicio en escritorio" style="height:500px;width:auto">
+    <img class="captura" src="img/02_inicio_movil.png" alt="Pantalla de Inicio en móvil" style="height:500px;width:auto">
+  </div>
+  <div class="pie"><span>Capturas de la BD de pruebas con datos simulados (marcados)</span><span>7</span></div>
+</section>
+
+<!-- 8 -->
+<section class="slide" style="padding-top:44px">
+  <h2>Dashboard y mapa de rutas</h2>
+  <p class="sub">Comparación por ruta y período, historial, Pareto · trazado contra el que se detectan desvíos</p>
+  <div class="cols c2">
+    <img class="captura" src="img/03_dashboard_escritorio.png" alt="Dashboard de calidad" style="width:100%">
+    <img class="captura" src="img/04_mapa_rutas_escritorio.png" alt="Mapa de rutas" style="width:100%">
+  </div>
+  <div class="pie"><span>Mapas con Leaflet incluido: funcionan sin CDN</span><span>8</span></div>
+</section>
+
+<!-- 9 -->
+<section class="slide">
+  <h2>Cumplimiento e incumplimiento</h2>
+  <p class="sub">Escenarios demostrables en la defensa y la regla que explica cada resultado</p>
+  <table>
+    <tr><th>Caso</th><th>Resultado</th><th>Regla</th></tr>
+    <tr><td>Recorrido puntual</td><td class="ok">Cumple</td><td>Paradas en [−2, +5] min, destino alcanzado, dentro del corredor</td></tr>
+    <tr><td>Atrasado</td><td class="ko">Incumple</td><td>Salida +10 min → retraso de salida, de paradas y de llegada</td></tr>
+    <tr><td>Parada omitida</td><td class="ko">Incumple</td><td>El bus pasa a 110 m de una parada de radio 35 m</td></tr>
+    <tr><td>Desvío</td><td class="ko">Incumple</td><td>≥ 3 posiciones seguidas a más de 150 m del trazado (máx. ~450 m)</td></tr>
+    <tr><td>Incompleto</td><td class="ko">Incumple</td><td>Destino no alcanzado → recorrido incompleto + paradas omitidas</td></tr>
+  </table>
+  <p style="margin-top:18px">Plan de 10 recorridos simulados: <b>detección correcta 10/10</b> (cada uno con sus incidencias esperadas).</p>
+  <div class="pie"><span>docs/GUIA_DEMOSTRACION.md</span><span>9</span></div>
+</section>
+
+<!-- 10 -->
+<section class="slide">
+  <h2>Pruebas de software</h2>
+  <p class="sub">Caja negra, caja blanca, integración, rendimiento, interfaz y en vivo · 25 casos en la matriz</p>
+  <div class="cols c4" style="margin-bottom:28px">
+    <div><div class="cifra">128</div><div class="etq">pytest · cobertura de la lógica 97 %</div></div>
+    <div><div class="cifra">95</div><div class="etq">pruebas Odoo · 0 fallos</div></div>
+    <div><div class="cifra">5<small> / 5</small></div><div class="etq">de interfaz en navegador real, 0 saltadas</div></div>
+    <div><div class="cifra">2</div><div class="etq">en vivo contra Traccar real</div></div>
+  </div>
+  <div class="tarjeta">
+    <h3>Rendimiento (RNF-03: &lt; 3 s)</h3>
+    <table>
+      <tr><th>Consulta</th><th>10 recorridos</th><th>30</th><th>60 recorridos</th></tr>
+      <tr><td>Dashboard completo</td><td>15 ms</td><td>25 ms</td><td class="ok">31 ms</td></tr>
+      <tr><td>Mapa del viaje</td><td>3 ms</td><td>3 ms</td><td class="ok">6 ms</td></tr>
+      <tr><td>Reevaluar todos (hasta 8 664 posiciones)</td><td>57 ms</td><td>176 ms</td><td class="ok">437 ms</td></tr>
+    </table>
+  </div>
+  <div class="pie"><span>bash scripts/ejecutar_pruebas.sh · 20/11/2026</span><span>10</span></div>
+</section>
+
+<!-- 11 -->
+<section class="slide">
+  <h2>Calidad del código: SonarQube</h2>
+  <p class="sub">Quality Gate aprobado · Community 26.8 sobre el código propio (6 699 líneas)</p>
+  <div class="cols c4" style="margin-bottom:26px">
+    <div class="tarjeta"><div class="cifra">0</div><div class="etq">bugs (había 3: corregidos)</div></div>
+    <div class="tarjeta"><div class="cifra">0</div><div class="etq">vulnerabilidades (3 falsos positivos justificados)</div></div>
+    <div class="tarjeta"><div class="cifra">A</div><div class="etq">fiabilidad · seguridad · mantenibilidad</div></div>
+    <div class="tarjeta"><div class="cifra">0,2<small> %</small></div><div class="etq">deuda técnica · duplicación 0,3 %</div></div>
+  </div>
+  <table>
+    <tr><th>ISO/IEC 25010</th><th>Evidencia</th></tr>
+    <tr><td>Adecuación funcional</td><td>22 RF trazados a pruebas; fórmulas verificadas contra registros</td></tr>
+    <tr><td>Eficiencia de desempeño</td><td>Dashboard 31 ms con 60 recorridos</td></tr>
+    <tr><td>Fiabilidad · Seguridad</td><td>0 duplicados GPS, exactitud 100 %; RBAC, webhook con Bearer</td></tr>
+    <tr><td>Mantenibilidad</td><td>4 módulos desacoplados, cobertura 97 %, SonarQube A</td></tr>
+  </table>
+  <div class="pie"><span>docs/CALIDAD_SOFTWARE.md</span><span>11</span></div>
+</section>
+
+<!-- 12 -->
+<section class="slide">
+  <h2>Mejora continua: Pareto de defectos</h2>
+  <p class="sub">Severidad × alcance de los 10 defectos encontrados · 5 concentran el 77 % del impacto</p>
+  <table class="pareto">
+    <tr><th style="width:44%">Defecto</th><th>Impacto</th><th style="width:34%"></th><th>% acum.</th></tr>
+    <tr><td>D-01 Paradas visitadas marcadas omitidas</td><td>25</td><td><div class="barra" style="width:100%"></div></td><td>22,9</td></tr>
+    <tr><td>D-07 Pruebas de navegador saltadas en silencio</td><td>20</td><td><div class="barra" style="width:80%"></div></td><td>41,3</td></tr>
+    <tr><td>D-05 Servidor sin ruta de addons</td><td>15</td><td><div class="barra" style="width:60%"></div></td><td>55,0</td></tr>
+    <tr><td>D-02 Rol Consulta sin acceso a buses</td><td>12</td><td><div class="barra" style="width:48%"></div></td><td>66,1</td></tr>
+    <tr><td>D-08 Mapas dependientes del CDN</td><td>12</td><td><div class="barra" style="width:48%"></div></td><td>77,1</td></tr>
+    <tr><td>D-03, D-09, D-06, D-10, D-04 y otros</td><td>25</td><td><div class="barra" style="width:100%;opacity:.35"></div></td><td>100</td></tr>
+  </table>
+  <div class="pie"><span>Ishikawa y Pareto: docs/MEJORA_CONTINUA.md</span><span>12</span></div>
+</section>
+
+<!-- 13 -->
+<section class="slide">
+  <h2>Dos ciclos PDCA con resultados medidos</h2>
+  <p class="sub">Problema → causa → corrección → verificación → estándar</p>
+  <div class="cols c2">
+    <div class="tarjeta">
+      <h3>PDCA 1 · Detección de paradas (D-01)</h3>
+      <p style="margin-bottom:10px">Causa: con intervalos GPS largos ninguna muestra cae dentro del radio</p>
+      <table>
+        <tr><th>Indicador</th><th>Antes</th><th>Después</th></tr>
+        <tr><td>Detección correcta (60 recorridos)</td><td>90 %</td><td class="ok">100 %</td></tr>
+        <tr><td>Paradas detectadas a 30 s</td><td>77,8 %</td><td class="ok">100 %</td></tr>
+      </table>
+      <p style="margin-top:10px">Acción: geocerca por tramo + estándar de Traccar Client a 30 s</p>
+    </div>
+    <div class="tarjeta">
+      <h3>PDCA 2 · Confiabilidad de pruebas y código</h3>
+      <p style="margin-bottom:10px">Causa: dependencia no verificada, CDN y una función con 9 reglas</p>
+      <table>
+        <tr><th>Indicador</th><th>Antes</th><th>Después</th></tr>
+        <tr><td>Pruebas de interfaz ejecutadas</td><td>1 / 5</td><td class="ok">5 / 5</td></tr>
+        <tr><td>Mapas sin Internet</td><td>0 / 3</td><td class="ok">3 / 3</td></tr>
+        <tr><td>Complejidad de evaluar_viaje</td><td>46</td><td class="ok">≤ 15</td></tr>
+        <tr><td>Bugs / vulnerabilidades</td><td>3 / 3</td><td class="ok">0 / 0</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="pie"><span>docs/MEJORA_CONTINUA.md §4 y §5</span><span>13</span></div>
+</section>
+
+<!-- 14 -->
+<section class="slide">
+  <h2>Demostración en vivo</h2>
+  <p class="sub">Un caso de cumplimiento y uno de incumplimiento, con datos de Traccar Client</p>
+  <div class="cols c3">
+    <div class="tarjeta"><div class="icono">1</div><h3>Registrar y asignar</h3><p>Bus con dispositivo GPS → ruta con ≥ 4 paradas y horarios → viaje programado e iniciado</p></div>
+    <div class="tarjeta"><div class="icono i-ambar">2</div><h3>Recorrer</h3><p>Teléfono en datos móviles por el túnel: el bus en el mapa y las paradas «Atendida (GPS)»</p></div>
+    <div class="tarjeta"><div class="icono i-verde">3</div><h3>Evaluar</h3><p>Finalizar → Cumple / Incumple, incidencias automáticas, informe PDF y KPIs actualizados</p></div>
+  </div>
+  <div class="tarjeta" style="margin-top:26px">
+    <h3>Plan B sin teléfono ni Internet</h3>
+    <p>Mapas operativos sin CDN · prueba en vivo con Traccar efímero (~40 s) · 10 escenarios simulados identificados como tales</p>
+  </div>
+  <div class="pie"><span>docs/GUIA_DEMOSTRACION.md</span><span>14</span></div>
+</section>
+
+<!-- 15 -->
+<section class="slide oscura">
+  <h2 style="font-size:46px;margin-top:40px">Conclusiones</h2>
+  <ul class="lista" style="margin-top:26px">
+    <li style="font-size:21px">El sistema administra rutas, registra historial y <b>evalúa el cumplimiento con reglas explícitas</b></li>
+    <li style="font-size:21px">Los 12 indicadores salen de la BD y se verifican contra los registros</li>
+    <li style="font-size:21px">La calidad se midió y se mejoró: 0 bugs, pruebas que de verdad se ejecutan, 2 ciclos PDCA</li>
+    <li style="font-size:21px">Pendiente de campo: recorridos reales con Traccar Client en datos móviles y su exactitud</li>
+  </ul>
+  <p style="margin-top:46px;font-size:24px;font-weight:700;color:var(--ambar)">¿Preguntas?</p>
+  <div class="pie"><span>SGM-TB · Gestión de Calidad del Software</span><span>15</span></div>
+</section>
+
+</div>
+<script>
+  (function () {
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    let actual = Math.max(0, Math.min(slides.length - 1, (parseInt(location.hash.slice(1), 10) || 1) - 1));
+    function escalar() {
+      const k = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+      slides.forEach(function (s) { s.style.transform = 'translate(-50%, -50%) scale(' + k + ')'; });
+    }
+    function mostrar(i) {
+      actual = Math.max(0, Math.min(slides.length - 1, i));
+      slides.forEach(function (s, n) { s.classList.toggle('activa', n === actual); });
+      history.replaceState(null, '', '#' + (actual + 1));
+    }
+    document.addEventListener('keydown', function (e) {
+      if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { mostrar(actual + 1); }
+      if (['ArrowLeft', 'PageUp'].includes(e.key)) { mostrar(actual - 1); }
+      if (e.key === 'Home') { mostrar(0); }
+      if (e.key === 'End') { mostrar(slides.length - 1); }
+      if (e.key === 'p' || e.key === 'P') { window.print(); }
+    });
+    document.addEventListener('click', function (e) { mostrar(actual + (e.clientX > window.innerWidth / 3 ? 1 : -1)); });
+    window.addEventListener('resize', escalar);
+    escalar();
+    mostrar(actual);
+  })();
+</script>
+</body>
+</html>
