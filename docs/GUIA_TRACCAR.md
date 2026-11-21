@@ -83,6 +83,8 @@ comprueba en Odoo la sincronización, la ausencia de duplicados, las paradas mar
 móviles (A2), que sigue pendiente.
 
 ## 7. Límites conocidos
+- **Hecho (20/11/2026)**: Traccar del equipo configurado (administrador + dispositivos `sgmtb-bus01/02`), Odoo
+  conectado con sincronización automática sin errores y túnel rápido de Cloudflare probado desde Internet.
 - **Pendiente**: validar con un teléfono físico en datos móviles a través del túnel de Cloudflare (evidencia de A2/A5; requiere Cloudflare y el teléfono). Ver `docs/GUIA_CLOUDFLARE.md`.
 - Leaflet 1.9.4 va incluido en el módulo (`static/lib/leaflet`, licencia BSD-2): los mapas cargan sin CDN. Los mosaicos de OpenStreetMap sí requieren Internet; sin conexión se ven trazados, paradas y buses sobre fondo gris. La acción *Mapa de Buses* no tiene prueba de interfaz propia.
 - Una posición que llegue a Traccar con más de 1 min de retraso respecto a la última sincronizada no se recuperaría por cron (sí por webhook).
