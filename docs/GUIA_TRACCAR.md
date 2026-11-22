@@ -22,11 +22,11 @@ Una posición es *inválida* si Traccar la marca `valid=false`, o sus coordenada
 
 1. Instalar el módulo: `docker compose exec web odoo -d <bd> -i transporte_gps_traccar --stop-after-init` (o desde Aplicaciones).
 2. **Transporte ▸ Telemetría GPS ▸ Ajustes Traccar**:
-   - *URL de Traccar*: la URL HTTPS del túnel hacia el puerto **8082** (API/web).
+   - *URL de Traccar*: `http://traccar:8082` (red interna de Docker; Odoo **no** usa el túnel).
    - *Token de API* (Traccar ▸ Cuenta ▸ Token) o usuario/contraseña.
    - *Minutos para sin señal*: 5 por defecto.
 3. En cada bus, pestaña **GPS / Traccar**, poner el **id interno** del dispositivo (Traccar ▸ Dispositivos; no es el "identificador" que se escribe en el teléfono). Botón **Sincronizar ahora** para probar.
-4. Traccar Client (teléfono): servidor = URL HTTPS del túnel hacia el puerto **5055**; identificador = el de Traccar; intervalo 10–30 s.
+4. Traccar Client (teléfono): servidor = URL HTTPS del túnel (que apunta al puerto **5055**), sin puerto; identificador = el de Traccar; intervalo 30 s. Pasos exactos: `docs/PASOS_TRACCAR.md`.
 
 ### Webhook opcional
 En `traccar.xml`:
