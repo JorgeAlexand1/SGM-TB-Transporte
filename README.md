@@ -36,4 +36,7 @@ bash scripts/ejecutar_pruebas.sh          # todas las pruebas
 | — | Guion de la defensa | `docs/GUIA_DEMOSTRACION.md` |
 | — | Presentación de la defensa (15 diapositivas, HTML + PDF) | `docs/presentacion/` |
 | — | **Despliegue para el equipo** (qué módulo instalar, para qué sirve cada cosa, copia idéntica del servidor) | `docs/DESPLIEGUE_EQUIPO.md` |
+| — | **Levantar la aplicación en la PC servidor** y qué probar | `docs/GUIA_LEVANTAR_APLICACION.md` |
+| — | **Configurar y probar el celular** (Traccar Client) | `docs/GUIA_CLIENTE_CELULAR.md` |
+| — | **Verificación de cumplimiento del enunciado y la rúbrica** | `docs/VERIFICACION_ENUNCIADO.md` |
 | — | Instalación y flujo Git | `docs/GUIA_INSTALACION.md`, `docs/GUIA_GIT.md` |
