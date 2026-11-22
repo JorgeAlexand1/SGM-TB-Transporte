@@ -16,11 +16,18 @@ SALIDA="$RAIZ/backups"
 mkdir -p "$SALIDA"
 
 echo "== 1/5 pytest + cobertura"
-if [ ! -x "$RAIZ/.venv/bin/python" ]; then
-  python3 -m venv "$RAIZ/.venv" && "$RAIZ/.venv/bin/pip" -q install pytest pytest-cov requests
+# Portabilidad Windows (Git Bash): sin conversión de rutas para docker exec, 'python' en vez de 'python3'
+# (en Windows python3 es un alias de la Tienda) y venv con Scripts/ en lugar de bin/.
+export MSYS_NO_PATHCONV=1
+PY_SISTEMA=python3; "$PY_SISTEMA" -c "" >/dev/null 2>&1 || PY_SISTEMA=python
+VENV_PY="$RAIZ/.venv/bin/python"; [ -d "$RAIZ/.venv/Scripts" ] && VENV_PY="$RAIZ/.venv/Scripts/python.exe"
+if [ ! -x "$VENV_PY" ]; then
+  "$PY_SISTEMA" -m venv "$RAIZ/.venv"
+  [ -d "$RAIZ/.venv/Scripts" ] && VENV_PY="$RAIZ/.venv/Scripts/python.exe" || VENV_PY="$RAIZ/.venv/bin/python"
+  "$VENV_PY" -m pip -q install pytest pytest-cov requests
 fi
 for m in transporte_gps_traccar transporte_calidad; do
-  (cd "$RAIZ/addons/$m/tests/pytest" && "$RAIZ/.venv/bin/python" -m pytest -q -p no:cacheprovider \
+  (cd "$RAIZ/addons/$m/tests/pytest" && "$VENV_PY" -m pytest -q -p no:cacheprovider \
       --cov=../../lib --cov-branch --cov-report=term --cov-report=xml:"$SALIDA/coverage-$m.xml" \
       --junitxml="$SALIDA/junit-$m.xml")
 done

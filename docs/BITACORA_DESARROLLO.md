@@ -643,3 +643,24 @@ Fase 1.6 completada exitosamente. Repositorio privado publicado en `git@github.c
 - `simulador.generar_recorrido` (complejidad cognitiva 31) dividida en funciones pequeñas; trazas idénticas
   (huella SHA-256 de 72 combinaciones antes = después). Suite completa OK; SonarQube: gate aprobado, 64 smells,
   deuda 312 min.
+
+---
+
+## [2026-11-22] - Fase 6: Verificación en un equipo Windows nuevo (`feature/cierre-presentacion`)
+
+### Actividades Realizadas
+1. Arranque del proyecto en Windows 11 + Docker Desktop (Odoo 16, Postgres 15, Traccar). La BD `transporte_dev`
+   solo tenía `core` y `gps_traccar`: se respaldó (`pg_dump`) y se instalaron `transporte_calidad` y `transporte_ui`.
+2. `scripts/ejecutar_pruebas.sh` hecho portable a Git Bash/Windows: `MSYS_NO_PATHCONV=1` (sin él Git Bash convierte
+   `/entrypoint.sh` en una ruta de Windows), `python` si `python3` es el alias de la Tienda y `.venv/Scripts/`.
+3. El contenedor recreado perdió Chromium y `python3-websocket`; se reinstalaron según `docs/PLAN_PRUEBAS.md`.
+4. BD de trabajo: idioma `es_EC` y zona `America/Guayaquil` para `admin`/`demo` (con `Europe/Brussels` el generador
+   de recorridos habría desplazado las horas ~5-6 h); se canceló el viaje de demostración VJ/2026/00001, atascado
+   «en curso» desde el 14-nov, y se generaron los 10 recorridos SIMULADOS (31 incidencias).
+
+### Resultados
+- pytest OK (cobertura `lib/` 97-100 %), Odoo 102/102, rendimiento OK, interfaz 7/7 (0 saltadas), integración en
+  vivo con Traccar 2/2. Sincronización Traccar → Odoo por cron cada minuto sin duplicados.
+
+### Pendiente
+- Recorridos reales con Traccar Client en datos móviles por el túnel (`docs/GUIA_TRABAJO_CAMPO.md`).
