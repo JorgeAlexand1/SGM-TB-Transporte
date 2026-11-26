@@ -78,10 +78,17 @@ Todas se modifican en **Calidad del Servicio ▸ Ajustes de calidad** y se reapl
 
 ## 4. Consultas de verificación (PostgreSQL)
 
+> **MT-03 es un promedio por recorrido (promedio de promedios), no ponderado por paradas**: cada viaje pesa lo mismo
+> aunque tenga más paradas. Ejemplo: viaje A (2 paradas a 0 min) y viaje B (10 paradas a 10 min) → 5,0 min por
+> recorrido; ponderado por parada sería 8,33 min. Verificado contra el dashboard el 26/11/2026 (MT-01/02/04/07/08 iguales
+> a SQL; MT-03 y MT-05 iguales tras aplicar COALESCE).
+
 ```sql
 -- 1. Cumplimiento de rutas y 3. retraso promedio (viajes evaluados de un periodo)
 SELECT count(*) FILTER (WHERE cumple_ruta) * 100.0 / count(*) AS cumplimiento_pct,
-       avg(retraso_promedio_min) FILTER (WHERE paradas_atendidas > 0) AS retraso_promedio_min,
+       -- El ORM lee NULL como 0,0: COALESCE reproduce exactamente el dashboard (H-M01)
+       avg(COALESCE(retraso_promedio_min, 0)) FILTER (WHERE paradas_atendidas > 0) AS retraso_promedio_min,
+       avg(COALESCE(porcentaje_fuera_corredor, 0)) FILTER (WHERE tiene_gps AND cantidad_posiciones > 0) AS desviacion_pct,
        count(*) FILTER (WHERE puntual) * 100.0 / count(*) AS viajes_puntuales_pct
 FROM transporte_viaje
 WHERE resultado IN ('cumple','incumple') AND fecha_viaje BETWEEN '2026-11-19' AND '2026-11-19';

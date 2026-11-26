@@ -83,3 +83,39 @@ addons/*
 !addons/transporte_ui/
 tarea1/
 .claude_progreso.md
+
+# ==============================================================================
+# Archivos generados por pruebas y análisis
+# ==============================================================================
+coverage.xml
+junit.xml
+.pytest_cache/
+.hypothesis/
+.cache/
+.pyre/
+.pytype/
+
+# ==============================================================================
+# Bases de datos locales y archivos generados por Traccar
+# ==============================================================================
+traccar-data/
+traccar-logs/
+*.mv.db
+*.trace.db
+*.sqlite
+*.sqlite3
+
+# ==============================================================================
+# Cachés y configuraciones locales de herramientas
+# ==============================================================================
+.sonarlint/
+.sonar/
+*.tmp
+*.temp
+*.orig
+*.rej
+
+# ==============================================================================
+# Archivos personales del agente de desarrollo
+# ==============================================================================
+.claude/settings.local.json

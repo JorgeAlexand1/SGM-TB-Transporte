@@ -9,6 +9,7 @@ from odoo.exceptions import UserError, ValidationError
 
 from ..lib import geo_utils, traccar_parser
 from ..lib.traccar_client import TraccarClient, TraccarError
+from .gps_posicion import verificar_gestor
 
 _logger = logging.getLogger(__name__)
 
@@ -100,7 +101,7 @@ class FleetVehicle(models.Model):
                     parseadas.append(traccar_parser.parse_posicion(raw))
                 except (ValueError, TypeError):
                     malformadas += 1
-            res = self.env['transporte.gps.posicion'].registrar_posiciones(self, parseadas)
+            res = self.env['transporte.gps.posicion'].sudo().registrar_posiciones(self, parseadas)
             self._procesar_posiciones_nuevas(res['nuevas'])
             log_vals.update(
                 posiciones_traidas=len(crudas),
@@ -129,6 +130,7 @@ class FleetVehicle(models.Model):
     @api.model
     def procesar_webhook(self, parsed, inicio=None):
         """Registra una posición recibida por webhook. None si el dispositivo no está asociado a un bus."""
+        verificar_gestor(self.env)
         inicio = inicio if inicio is not None else time.monotonic()
         bus = self.search([('traccar_device_id', '=', parsed['traccar_device_id'])], limit=1)
         if not bus:
@@ -154,7 +156,11 @@ class FleetVehicle(models.Model):
             _logger.info("Sync Traccar omitida: %s", exc)
             return
         for bus in buses:
-            bus._sincronizar_traccar('cron', client)
+            try:  # H-B08: un fallo inesperado en un bus no detiene la sincronización del resto
+                with self.env.cr.savepoint():
+                    bus._sincronizar_traccar('cron', client)
+            except Exception:  # noqa: BLE001 - se registra y se continúa con el siguiente bus
+                _logger.exception("Sync Traccar del bus %s abortada por un error inesperado", bus.display_name)
         self._cron_actualizar_senal()
 
     # ------------------------------------------------------------------ procesamiento

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from odoo import api, fields, models
 
+from odoo.addons.transporte_gps_traccar.models.gps_posicion import verificar_gestor
+
 
 class TransporteCalidadMedicion(models.Model):
     """Mediciones de calidad del software: tiempos de respuesta y exactitud de la sincronización."""
@@ -25,6 +27,10 @@ class TransporteCalidadMedicion(models.Model):
 
     @api.model
     def registrar(self, tipo, duracion_ms=0, registros=0, valor=0.0, ok=True, detalle=False):
-        """Registra una medición. Devuelve el id (invocable también por XML-RPC desde scripts)."""
+        """Registra una medición. Devuelve el id (invocable también por XML-RPC desde scripts).
+
+        Solo Administrador de Operaciones o procesos internos (sudo): H-A03.
+        """
+        verificar_gestor(self.env)
         return self.sudo().create({'tipo': tipo, 'duracion_ms': int(duracion_ms), 'registros': int(registros),
                                    'valor': valor, 'ok': ok, 'detalle': detalle}).id

@@ -153,7 +153,7 @@ class TransporteCalidadDashboard(models.AbstractModel):
 
     @api.model
     def _vehiculos(self, viajes_periodo):
-        buses = self.env['fleet.vehicle'].search([('es_bus_pasajeros', '=', True)])
+        buses = self.env['fleet.vehicle'].search([('es_bus_pasajeros', '=', True), ('capacidad_total', '>', 0)])
         Viaje = self.env['transporte.viaje']
         filas = []
         for b in buses:
@@ -235,7 +235,7 @@ class TransporteCalidadDashboard(models.AbstractModel):
             'opciones': {
                 'rutas': [{'id': r.id, 'nombre': '%s - %s' % (r.codigo, r.name)} for r in self.env['transporte.ruta'].search([])],
                 'buses': [{'id': b.id, 'nombre': b.display_name}
-                          for b in self.env['fleet.vehicle'].search([('es_bus_pasajeros', '=', True)])],
+                          for b in self.env['fleet.vehicle'].search([('es_bus_pasajeros', '=', True), ('capacidad_total', '>', 0)])],
             },
             'resumen': {
                 'viajes': len(viajes), 'evaluados': len(evaluados),
@@ -255,7 +255,7 @@ class TransporteCalidadDashboard(models.AbstractModel):
         ms = int((time.perf_counter() - inicio) * 1000)
         datos['calculo_ms'] = ms
         if filtros.get('registrar'):
-            self.env['transporte.calidad.medicion'].registrar(
+            self.env['transporte.calidad.medicion'].sudo().registrar(
                 'dashboard', ms, registros=len(viajes) + len(incidencias),
                 detalle='Filtros: %s' % datos['filtros'])
         return datos
@@ -304,7 +304,7 @@ class TransporteCalidadDashboard(models.AbstractModel):
         valor = reglas.porcentaje(iguales, verificadas)
         detalle = _('%s verificadas, %s idénticas, %s no encontradas en Traccar, %s con diferencias %s') % (
             verificadas, iguales, faltantes, len(distintas), distintas[:20] or '')
-        self.env['transporte.calidad.medicion'].registrar(
+        self.env['transporte.calidad.medicion'].sudo().registrar(
             'exactitud_sync', (time.perf_counter() - inicio) * 1000, registros=verificadas, valor=valor,
             ok=iguales == verificadas, detalle=detalle)
         return {'valor': valor, 'verificadas': verificadas, 'iguales': iguales, 'faltantes': faltantes,

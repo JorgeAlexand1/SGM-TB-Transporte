@@ -47,7 +47,9 @@ class TransporteCalidadSimulacion(models.TransientModel):
         return self.env.cr.fetchone()[0] - 1
 
     def _a_utc(self, dia, hora_min):
-        zona = pytz.timezone(self.env.user.tz or ZONA_DEFECTO)
+        # H-A05: la hora del plan es la hora local de operación (Ambato), no la zona del usuario que
+        # ejecuta el asistente; con otra zona los recorridos quedaban desplazados (p. ej. 6 h).
+        zona = pytz.timezone(ZONA_DEFECTO)
         local = zona.localize(datetime.combine(dia, dtime(hora_min[0], hora_min[1])))
         return local.astimezone(pytz.utc).replace(tzinfo=None)
 
@@ -74,7 +76,7 @@ class TransporteCalidadSimulacion(models.TransientModel):
         descripcion, esperadas = simulador.ESCENARIOS[escenario]
         viaje = Viaje.create({
             'ruta_id': ruta.id, 'vehicle_id': bus.id, 'driver_id': self.driver_id.id,
-            'fecha_viaje': fields.Date.to_date(fields.Datetime.context_timestamp(self, salida_plan)),
+            'fecha_viaje': pytz.utc.localize(salida_plan).astimezone(pytz.timezone(ZONA_DEFECTO)).date(),
             'hora_salida_planificada': salida_plan, 'hora_llegada_planificada': llegada_plan,
             'notas': _('DATOS SIMULADOS - escenario "%s": %s') % (escenario, descripcion),
         })

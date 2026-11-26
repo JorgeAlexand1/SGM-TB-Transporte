@@ -371,3 +371,34 @@ class TestSeguridad(CalidadCommon):
         self.assertEqual(r1['evaluados'], 1)
         with self.assertRaises(AccessError):
             self.ruta1.with_user(usuario).write({'trazado_referencia': '[[0, 0], [1, 1]]'})
+
+    def test_rpc_registro_gps_y_mediciones_restringido(self):
+        """H-A03: métodos públicos que escriben con sudo() solo para gestor o procesos internos."""
+        ahora = fields.Datetime.now().replace(microsecond=0)
+        pos = {'traccar_position_id': ID_BASE + 900, 'traccar_device_id': 9901, 'latitud': -1.24,
+               'longitud': -78.62, 'velocidad_kmh': 0.0, 'fecha_gps': ahora, 'valida': True}
+        interno = new_test_user(self.env, login='tcal_interno', groups='base.group_user')
+        consulta = new_test_user(self.env, login='tcal_consulta2', groups='transporte_core.group_transporte_user')
+        portal = new_test_user(self.env, login='tcal_portal', groups='base.group_portal')
+        for usuario in (interno, consulta, portal):
+            with self.assertRaises(AccessError):
+                self.env['transporte.gps.posicion'].with_user(usuario).registrar_posiciones(self.bus1, [pos])
+            with self.assertRaises(AccessError):
+                self.env['transporte.calidad.medicion'].with_user(usuario).registrar('dashboard', 5)
+            with self.assertRaises(AccessError):
+                self.env['fleet.vehicle'].with_user(usuario).procesar_webhook(dict(pos))
+        self.assertFalse(self.env['transporte.gps.posicion'].search([('traccar_position_id', '=', ID_BASE + 900)]))
+        gestor = new_test_user(self.env, login='tcal_gestor', groups='transporte_core.group_transporte_manager')
+        res = self.env['transporte.gps.posicion'].with_user(gestor).registrar_posiciones(self.bus1, [pos])
+        self.assertEqual(len(res['nuevas']), 1)
+        self.assertTrue(self.env['transporte.calidad.medicion'].with_user(gestor).registrar('dashboard', 5))
+        # proceso interno (sudo) desde un usuario sin permisos: el dashboard sigue registrando su tiempo
+        d = self.env['transporte.calidad.dashboard'].with_user(consulta).get_dashboard_data({'registrar': True})
+        self.assertIn('software', d)
+
+    def test_simulacion_usa_hora_local_de_operacion(self):
+        """H-A05: la zona del usuario no desplaza la hora planificada de los recorridos simulados."""
+        self.env.user.tz = 'Europe/Brussels'
+        asistente = self.env['transporte.calidad.simulacion'].new({})
+        utc = asistente._a_utc(fields.Date.to_date('2026-11-21'), (6, 30))
+        self.assertEqual(utc, datetime(2026, 11, 21, 11, 30))  # 06:30 America/Guayaquil = 11:30 UTC

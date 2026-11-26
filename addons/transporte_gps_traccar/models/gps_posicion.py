@@ -3,10 +3,25 @@ import logging
 
 from psycopg2 import IntegrityError
 
-from odoo import api, fields, models
+from odoo import _, api, fields, models
+from odoo.exceptions import AccessError
 from odoo.tools import mute_logger
 
 _logger = logging.getLogger(__name__)
+
+GRUPO_GESTOR = 'transporte_core.group_transporte_manager'
+
+
+def verificar_gestor(env):
+    """Autoriza operaciones que escriben datos de telemetría o mediciones (H-A03).
+
+    Los métodos públicos son invocables por RPC por cualquier usuario autenticado y escriben con
+    sudo(); solo se permiten a procesos internos (env.su: cron/webhook/código con sudo) o al grupo
+    Administrador de Operaciones.
+    """
+    if not env.su and not env.user.has_group(GRUPO_GESTOR):
+        raise AccessError(_('Solo el Administrador de Operaciones o un proceso interno puede '
+                            'registrar posiciones GPS o mediciones.'))
 
 
 class GpsPosicion(models.Model):
@@ -37,6 +52,7 @@ class GpsPosicion(models.Model):
 
         :return: dict con 'nuevas' (recordset), 'duplicadas' (int) e 'invalidas' (int)
         """
+        verificar_gestor(self.env)
         vistos = set()
         unicos = []
         for p in parsed_list:
