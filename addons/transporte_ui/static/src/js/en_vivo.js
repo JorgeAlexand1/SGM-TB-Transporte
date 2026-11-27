@@ -94,10 +94,9 @@ export class EnVivoSgm extends Component {
     crearMapa() {
         this.map = L.map(this.mapaRef.el, { zoomControl: false }).setView(CENTRO_UTA, 13);
         L.control.zoom({ position: "bottomright" }).addTo(this.map);
-        L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-            maxZoom: 19,
-            subdomains: "abcd",
-            attribution: "&copy; OpenStreetMap &copy; CARTO",
+        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+             maxZoom: 19,
+            attribution: "&copy; OpenStreetMap contributors",
         }).addTo(this.map);
         for (const linea of this.state.datos.lineas) {
             this.capasLinea[linea.id] = this.crearCapaLinea(linea).addTo(this.map);
